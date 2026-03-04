@@ -1345,9 +1345,21 @@ window.$docsify = {
           const a = document.createElement('a');
           a.href = url;
           a.download = filename;
+          a.className = 'dpr-sidebar-export-link';
+          a.target = '_self';
+          a.style.display = 'none';
+          const stopLinkNav = (event) => {
+            event.stopPropagation();
+            if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+          };
+          a.addEventListener('click', stopLinkNav, true);
           document.body.appendChild(a);
-          a.click();
-          a.remove();
+          requestAnimationFrame(() => {
+            a.click();
+            setTimeout(() => {
+              a.remove();
+            }, 0);
+          });
           setTimeout(() => URL.revokeObjectURL(url), 500);
         };
 
@@ -3321,6 +3333,10 @@ window.$docsify = {
 
             const link = e.target && e.target.closest ? e.target.closest('a[href]') : null;
             if (!link) return;
+            if (link.hasAttribute('download')) return;
+            if (link.classList && link.classList.contains('dpr-sidebar-export-link')) return;
+            const rawHref = String(link.getAttribute('href') || '').trim();
+            if (rawHref.startsWith('blob:')) return;
             const href = link.getAttribute('href') || '';
             const target = normalizeHref(href);
             if (!target || !isPaperHref(target) && !isPaperHrefFallback(target)) {
