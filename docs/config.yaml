@@ -25,3 +25,21 @@ subscriptions:
     stage: A
     diff_threshold_pct: 15
   keyword_recall_mode: or
+  intent_profiles:
+    - tag: RAG
+      description: 毕设课题
+      enabled: true
+      keywords:
+        - keyword: RAG
+          keyword_cn: 检索增强生成
+          query: R
+        - keyword: reinforce learning
+          keyword_cn: 强化学习
+          query: r
+      intent_queries:
+        - query: reinforce learning for RAG
+          query_cn: 强化学习优化RAG
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-03-11T07:17:58.700Z'
