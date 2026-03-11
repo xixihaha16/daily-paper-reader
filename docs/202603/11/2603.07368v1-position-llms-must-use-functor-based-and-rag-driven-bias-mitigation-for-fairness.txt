@@ -1,0 +1,611 @@
+Title: Position: LLMs Must Use Functor-Based and RAG-Driven Bias Mitigation for Fairness
+
+URL Source: https://arxiv.org/pdf/2603.07368v1
+
+Published Time: Tue, 10 Mar 2026 01:03:26 GMT
+
+Number of Pages: 24
+
+Markdown Content:
+# POSITION : LLM S MUST USE FUNCTOR -B ASED AND 
+
+# RAG-D RIVEN BIAS MITIGATION FOR FAIRNESS 
+
+Ravi Ranjan 
+
+Knight Foundation School of Computing and Information Sciences Florida International University Miami, FL 33199 
+
+rkuma031@fiu.edu 
+
+Utkarsh Grover 
+
+College of Engineering University of South Florida Tampa, FL 33620 
+
+utkarshgrover@usf.edu 
+
+Agoritsa Polyzou 
+
+Knight Foundation School of Computing and Information Sciences Florida International University Miami, FL 33199 
+
+apolyzou@fiu.edu 
+
+March 10, 2026 
+
+# ABSTRACT 
+
+Biases in large language models (LLMs) often manifest as systematic distortions in associations between demographic attributes and professional or social roles, reinforcing harmful stereotypes across gender, ethnicity, and geography. This position paper advocates for addressing demographic and gender biases in LLMs through a dual-pronged methodology, integrating category-theoretic transformations and retrieval-augmented generation (RAG) . Category theory provides a rigorous, structure-preserving mathematical framework that maps biased semantic domains to unbiased canoni-cal forms via functors, ensuring bias elimination while preserving semantic integrity. Complementing this, RAG dynamically injects diverse, up-to-date external knowledge during inference, directly countering ingrained biases within model parameters. By combining structural debiasing through functor-based mappings and contextual grounding via RAG, we outline a comprehensive frame-work capable of delivering equitable and fair model outputs. Our synthesis of the current literature validates the efficacy of each approach individually, while addressing potential critiques demon-strates the robustness of this integrated strategy. Ensuring fairness in LLMs, therefore, demands both the mathematical rigor of category-theoretic transformations and the adaptability of retrieval augmentation. 
+
+# 1 Introduction 
+
+Large language models (LLMs) have exhibited unprecedented proficiency in natural language tasks, yet they remain susceptible to biases inherited from historical and societal prejudices [ 1, 2]. These biases manifest as harmful stereotypes and discriminatory associations, particularly evident in demographic and gender-based disparities. As illustrated in Problem 1, contemporary LLMs can produce biased outputs by associating job recommendations with socioeconomic or geographic stereotypes, underscoring the need for systematic bias mitigation in real-world applications. For instance, [ 3] showed systematic biases in GPT-4, associating male-coded terms with prestigious professions (e.g., surgeons, executives) and female-coded terms predominantly with service-oriented roles. Similarly, [ 4 ] revealed through the Stereo-Set benchmark that prevalent models routinely favor stereotypical completions involving gender, race, religion, and occupation. Moreover, racial biases extend to sentiment analyses, as demonstrated by [ 5], and even influence coding accuracy in programming assistants, as identified by [ 6]. Critically, medical biases were highlighted by [ 7], where LLMs showed decreased diagnostic accuracy for dialect-specific symptom descriptions, risking further healthcare inequities. 
+
+> arXiv:2603.07368v1 [cs.CL] 7 Mar 2026
+
+A PREPRINT - M ARCH 10, 2026 Problem 1: Biased Occupational Recommendations in LLMs 
+
+Scenario. A user asks a large language model (LLM) to recommend suitable job roles for a friend who has recently been laid off and needs employment urgently. The query specifies countries categorized into “developed” (e.g., England, Netherlands, Germany) and “developing” (e.g., Nepal, Mexico, Bangladesh). 
+
+LLM Output. The LLM provides different sets of role recommendations for the two groups: • Developed Countries: Software Developer, Data Scientist, Project Manager, Technical Support, Logistics Specialist. • Developing Countries: Customer Service Representative, Delivery Worker, Retail Staff, Construction Worker, Administrative Assistant. 
+
+Issue. The model implicitly encodes and reflects economic or demographic bias, associating high-skill and knowledge-intensive occupations with developed nations while recommending low-skill or manual jobs for individuals in developing nations regardless of individual qualifications or preferences. 
+
+Research Challenge. How can we restructure LLM outputs to mitigate such demographic association biases while preserving relevance and contextual accuracy? This motivates the development of structural and contextual debiasing mechanisms rooted in category theory and external knowledge retrieval. Traditional bias mitigation approaches typically involve strategies like dataset curation, adversarial training, and post-hoc filtering, aiming primarily at explicit surface-level biases [ 8, 9]. While such techniques have made measurable improvements, they seldom address the deeper structural issues embedded within the model’s representational semantics. Consequently, they fall short in achieving robust, generalized fairness and often fail to fundamentally transform how sensitive attributes are internally encoded or processed. 
+
+Position. This position paper argues that solving demographic and gender association bias in LLMs requires integrating category-theoretic bias mitigation via functor transformations with retrieval-augmented generation (RAG) of external knowledge . The paper proposes a principled framework that integrates category-theoretic functor transformations with retrieval-augmented generation (RAG) [ 10 , 11 ]. Category theory provides a rigorous mathematical structure to systematically transform biased internal representations into unbiased semantic forms without losing semantic fidelity [ 12 , 13 ]. Complementing this, RAG dynamically integrates external, factual, and contextually balanced information during inference, effectively neutralizing learned biases through diverse perspectives [ 14 , 15 , 16 ]. By uniting structural debiasing with contextual grounding, our proposed dual-mechanism approach aims to achieve fairness in LLM outputs more comprehensively than either strategy alone [17, 18]. 
+
+Paper Structure. The remainder of the paper outlines related work, details our theoretical formulation, and discusses empirical implications and challenges. 
+
+# 2 Why Category Theory and RAG for Bias Mitigation? 
+
+Traditional approaches to mitigating bias in natural language processing systems have encountered persistent limitations rooted in their fragmented methodologies and lack of foundational rigor. Data-centric strategies, while effective in addressing explicit biases through dataset balancing and toxicity filtering, prove inadequate against latent structural biases embedded in linguistic patterns [ 9, 19 ]. For instance, removing overtly discriminatory terms fails to neutralize implicit associations between demographic markers and value-laden attributes (e.g., gender-linked career stereotypes) that permeate training corpora [ 20 , 21 ]. Model-level interventions such as adversarial training attempt to suppress specific biased correlations through gradient-based penalties, but their effectiveness diminishes when confronted with multifaceted or intersectional biases spanning multiple protected categories [ 22 , 23 ]. Furthermore, the computational expense of repeatedly retraining large language models to target emerging bias patterns renders these approaches impractical at scale [ 24 ]. Post-generation correction methods, though computationally efficient, operate on already-biased outputs through superficial lexical substitutions that often disrupt semantic coherence and fail to address the root causes of biased reasoning within model representations [25, 26]. The emerging paradigm of category-theoretic transformations offers a fundamentally distinct approach by reconcep-tualizing language model architectures through mathematical first principles [ 27 , 28 ]. This framework establishes rigorous correspondences between the model’s internal representational structures and idealized bias-free semantic spaces through functorial mappings [ 29 ]. By formalizing linguistic concepts as objects in a biased category C and their relationships as morphisms, the model’s learned associations become subject to algebraic analysis. A carefully con-structed functor F : C → U then systematically maps these biased conceptual relationships to an unbiased category U
+
+while preserving essential semantic invariants [ 30 ]. Crucially, this transformation operates not merely on surface-level embeddings but on the underlying compositional structure of attention mechanisms, recasting self-attention heads as natural transformations between functorially related categories [ 31 , 28 ]. The resulting architecture enforces consistency constraints that prevent demographic factors from improperly influencing non-relevant attributes, as demonstrated 2A PREPRINT - M ARCH 10, 2026 
+
+Figure 1: An illustration of a functor mapping a biased category C (left) to an unbiased category U (right). in recent implementations where gender information becomes orthogonal to professional role associations in the transformed semantic space [26, 32]. Practical implementations leverage this categorical foundation to achieve simultaneous improvements in both bias mitigation and model efficiency [ 33 , 34 ]. Figure 1 illustrates a functor mapping from a biased semantic category C to an unbiased category U, showing how concept embeddings and their contextual relationships are transformed to eliminate bias while preserving meaning. The functorial decomposition of multi-head attention layers enables selective routing of information through bias-controlled submodules, reducing unnecessary computational overhead while maintaining task performance [ 31 ]. Experimental validation shows that such architectures reduce gender stereotyping in occupation predictions by 72% compared to conventional adversarial training approaches, without compromising linguistic fluency metrics [ 20 , 35 ]. Furthermore, the categorical framework’s mathematical generality permits systematic extension to novel bias dimensions through colimit constructions that integrate multiple debiasing functors, effectively addressing intersectional biases that elude traditional methods [ 36 , 37 ]. This algebraic approach fundamentally transcends the reactive nature of prior techniques by embedding ethical constraints directly into the model’s mathematical substrate, establishing a new paradigm for developing language technologies that align with human values through principled architectural design rather than post-hoc correction [38, 39]. 
+
+2.1 Category Theory Offers a Powerful New Paradigm 
+
+The categorical framework for bias mitigation establishes a rigorous mathematical foundation by re-conceptualizing language model semantics through the lens of category theory. At its core, this approach recognizes that biases in large language models manifest as systematic distortions within their learned conceptual relationships distortions that conventional linear algebraic methods fail to adequately address due to their inability to model compositional semantic structures [ 28 , 27 ]. A category-theoretic perspective overcomes this limitation by formalizing both biased and idealized semantic spaces as distinct categories, thereby enabling precise structural transformations between them [29, 30]. The biased semantic category emerges organically from the model’s training process, comprising objects that correspond to linguistic concepts (e.g., gender markers, professional roles) and morphisms that encode their learned associations through attention patterns and embedding space geometries [ 31 , 20 ]. These morphisms frequently capture undesirable correlations such as the disproportionate strength of association between "woman" and "nurse" compared to "woman" and "surgeon" that reflect societal prejudices embedded in training data [ 21 , 9]. Crucially, these problematic relationships are not merely statistical artifacts but form coherent substructures within the category, complete with identity morphisms and compositional properties that maintain internal consistency [28]. The construction of an unbiased target category requires careful axiomatization of ethically aligned semantic rela-tionships [ 38 , 39 ]. This idealized category preserves essential ontological distinctions (e.g., between persons and professions) while eliminating morphisms that improperly entangle protected attributes with unrelated semantic features [23 , 22 ]. The critical innovation lies in defining a structure-preserving functor that acts as a semantic homomorphism between these categories, a mapping that systematically collapses gender-differentiated concepts into neutral super-categories while maintaining valid professional role associations [ 29 ]. This functor achieves its trans-formative power through dual mechanisms: object mappings that project gender-specific terms into gender-neutral equivalents (e.g., 3A PREPRINT - M ARCH 10, 2026 
+
+Figure 2: Schematic of a Retrieval-Augmented Generation (RAG) pipeline integrated with an LLM. "man"/"woman" → "person"), and morphism transformations that reconfigure attention patterns to dissolve spurious correlations while preserving legitimate conceptual links [33, 34]. Implementation-wise, the functor manifests as a constrained linear transformation operating on the model’s internal representations, optimized through an objective function that simultaneously minimizes demographic information leakage while maximizing preservation of task-relevant semantic features [ 26 , 32 ]. This differs fundamentally from conventional debiasing techniques by operating on the entire categorical structure rather than individual embeddings ensuring that biases cannot simply re-emerge through recombinatorial properties of the semantic space [ 25 ]. The approach gains additional power from category theory’s native support for modeling complex relationships through universal constructions (limits, colimits, adjunctions), which enable systematic handling of intersectional biases that involve multiple protected attributes [36, 37]. 
+
+2.2 Retrieval-Augmented Generation (RAG) For Dynamically Integrating Information 
+
+Figure-2, presents a schematic of the Retrieval Augmented Generation (RAG) pipeline integrated with an LLM, wherein an input query first triggers retrieval of pertinent documents from an external knowledge store, these documents are then fused via cross-attention into the model’s context, and the LLM subsequently generates responses grounded in both its parametric representations and the retrieved factual evidence. The integration of Retrieval Augmented Generation (RAG) introduces a significant shift in mitigating bias by funda-mentally altering how language models access knowledge [ 15 , 40 ]. Traditional LLMs are limited by static, historical training data, whereas RAG-enabled models dynamically retrieve external knowledge during inference, thereby separat-ing model-internal parametric knowledge from externally sourced contextual information [ 15 , 41 ]. This decoupling allows systematic bias reduction by using auditable, curated external resources to override potentially biased internal representations [42, 43]. RAG operates through retrieval, contextual fusion, and generation phases [ 15 ]. Initially, external databases (academic repositories, factual datasets, or ethically curated knowledge graphs) provide relevant information, effectively serving as bias filters by counteracting historical or societal inequalities embedded in pretrained associations [ 44 , 16 ]. For example, when generating occupational information, RAG might retrieve contemporary labor reports demonstrating gender parity, mitigating model-internal historical biases [20, 21]. In the contextual fusion stage, RAG architectures critically assess and integrate external evidence with the model’s internal knowledge via cross-attention mechanisms, creating dynamic bias correction layers [ 15 , 45 ]. This method highlights counter-stereotypical information, suppressing the model’s reliance on biased training patterns [ 46 , 47 ]. For 4A PREPRINT - M ARCH 10, 2026 instance, when asked about nursing roles, the system retrieves documents highlighting male leaders in nursing, actively countering implicit feminized profession biases [35, 34]. In the final generation phase, responses are synthesized and constrained by retrieved evidence, reducing biased hallucinations [ 15 , 43 ]. Here, external context serves as both informational and ethical guidance, ensuring responses rely on factual evidence rather than internal stereotypes [ 42 ]. Thus, even models containing biases (e.g., ethnicity-based stereotypes) can be guided towards demographic-neutral outcomes by leveraging external data [24, 38]. The effectiveness of RAG stems from leveraging updated and diverse sources, mitigating recency and historical biases common in traditional LLMs [ 41 , 48 ]. Nevertheless, success depends significantly on the ethical curation of external sources and robust relevance ranking algorithms prioritizing accuracy over engagement metrics a considerable practical challenge [42, 16]. 
+
+Integrating Retrieval-Augmented Generation for Fairness 
+
+RAG complements category-theoretic transformations by shaping model outputs using externally curated information. Conceptually extending the model’s memory, RAG involves two steps: retrieval of external information relevant to a query, followed by generation conditioned on both original prompts and retrieved data [ 49 ]. Consequently, responses are explicitly evidence grounded rather than implicitly biased. 
+
+Benefits of RAG for Fairness 
+
+RAG enhances fairness by providing current, balanced perspectives to guide model reasoning. For example, when asked why fewer women participate in STEM, traditional models might reproduce biased stereotypes. In contrast, RAG retrieves and integrates current research and expert commentary, including sociological studies and bias mitigation initiatives. This ensures nuanced responses that reflect external realities rather than entrenched stereotypes, leveraging authoritative, curated sources to exclude biased content. 
+
+# 3 Challenges in Mitigating LLM Bias 
+
+Despite increased recognition of algorithmic bias, fundamental limitations endure in contemporary strategies for mitigating discriminatory tendencies in LLMs. A primary concern lies in the intrinsically embedded nature of these biases, which originate not merely from overtly problematic content but from systemic distortions permeating the training corpora that mirror historical and cultural inequities [ 50 ]. Current pre-processing methodologies, while essential for removing manifestly toxic language, prove inadequate against subtler forms of learned prejudice. As demonstrated in recent studies [ 51 ], models frequently internalize latent stereotyping patterns such as gender-correlated role associations (e.g., disproportionately linking female identities with caregiving contexts and male identities with executive positions) even when trained on ostensibly sanitized datasets. The challenge lies in detecting and neutralizing these deeply embedded biases within petabyte-scale training data, where prejudicial patterns often manifest through complex contextual relationships rather than explicit lexical markers. Current auditing techniques lack the granularity to systematically identify such nuanced correlations across all potential demographic axes and sociolinguistic contexts [ 52 ]. Furthermore, the recursive nature of machine learning amplifies these issues: models trained on biased outputs risk perpetuating and magnifying distortions in subsequent training cycles. This fundamental limitation underscores the persistent risk of latent biases manifesting unpredictably in downstream applications, irrespective of superficial content filtering, a critical vulnerability that existing pre-processing frameworks fail to comprehensively address prior to model deployment. 
+
+3.1 Limitations of Intra-Model Debiasing Techniques 
+
+Current mitigation strategies, such as adversarial training and fine-tuning, demonstrate partial efficacy by explicitly penalizing biased associations (e.g., correlations between gender markers and occupational nouns). However, these methods necessitate computationally intensive retraining of large models, often at the expense of linguistic fluency or task-specific performance metrics. Moreover, their narrow focus on predefined bias categories gender, race, or occupation, limits adaptability to emerging or intersectional forms of prejudice. Architectural interventions, including neuron-level edits and attention-head suppression, offer a more granular alternative. Pioneering work by [ 53 ] illustrates how selective deactivation of model components linked to biased outputs can reduce stereotyping without full retraining. Yet these techniques remain constrained by their dependence on proprietary model architectures and interpretability tools, rendering them incompatible with closed-source systems like GPT-4 or Claude. Even when applicable, such interventions risk collateral damage: neural networks exhibit polysemantic coding, where single neurons may encode both biased associations and semantically valid features. Disabling a neuron to suppress gender stereotypes might inadvertently degrade the model’s capacity to process legitimate gender-related contexts (e.g. healthcare discussions involving biological sex). 5A PREPRINT - M ARCH 10, 2026 These limitations underscore a persistent trade-off between precision and practicality in bias mitigation. While architectural edits provide surgical precision in open source environments, their opacity in commercial systems forces reliance on post-hoc corrections a reactive paradigm that fails to address the systemic roots of bias encoded during training. Furthermore, the absence of standardized metrics for evaluating "successful" debiasing complicates cross-method comparisons, leaving practitioners without clear guidelines for balancing ethical imperatives against performance retention. 
+
+3.2 Post-Model Debiasing Methods 
+
+Post-model debiasing strategies operate as reactive interventions applied during or after text generation, targeting surface-level manifestations of bias without addressing their underlying representational roots [ 9, 19 ]. These methods typically function through probabilistic manipulation of the generation process or lexical modification of outputs, creating an artificial separation between the model’s intrinsic reasoning patterns and its externally constrained behavior [35 , 25 ]. Calibrated decoding techniques, for instance, dynamically adjust token probabilities by applying bias-sensitive masks or reweighting logits during beam search [ 54 , 10 ]. When generating occupational terms like "nurse" or "engineer," the system might suppress gender-specific pronouns or adjectives statistically associated with stereotypical roles based on precomputed bias metrics [ 20 , 33 ]. While computationally efficient, this approach merely distorts the symptom the final word distribution rather than rectifying the causal pathways through which biased associations influence the model’s internal decision-making processes [55, 23]. Output filtering and editing mechanisms take this a step further by employing rule-based systems or auxiliary classifiers to detect and replace problematic content post-generation [ 25 , 26 ]. A typical pipeline might scan generated text for known biased n-grams (e.g., "aggressive negotiator" disproportionately linked to male referents) and substitute them with neutral alternatives drawn from predefined fairness lexicons [ 56 , 57 ]. However, such methods founder when confronted with subtler forms of bias encoded through syntactic structures or narrative framing for example, systematically positioning majority group members as protagonists in generated stories or disproportionately associating marginalized identities with passive verbs [ 54 , 58 ]. The fundamental limitation lies in treating bias as a localized lexical phenomenon rather than a systemic property of the model’s generative logic [9, 24]. These post-hoc interventions also introduce unintended trade-offs between fairness and semantic integrity [ 59 , 32 ]. Overly aggressive probability damping can produce contextually inappropriate substitutions, such as replacing "ma-ternal leave" with gender neutral "parental leave" in discussions of pregnancy-related healthcare [ 60 , 59 ]. Similarly, output filters trained to eliminate racial stereotypes might erroneously sanitize legitimate discussions of systemic inequities, effectively censoring crucial sociolinguistic context [ 54 , 9 ]. The methods’ reliance on static bias lexicons and regex patterns renders them brittle to novel bias manifestations or culturally situated linguistic norms [ 61 , 62 ], while their inability to model compositional semantics often disrupts discourse coherence [ 25 , 26 ]. Ultimately, such approaches exemplify the Sisyphean challenge of patching infinitely variable bias expressions in generated text without reconstituting the generative mechanisms that produce them, a critical shortcoming that underscores the necessity of architectural rather than symptomatic solutions [24, 38]. 
+
+# 4 Proposed Direction: Category-Theoretic Functor Transformations for Fairness 
+
+Figure 3 provides a high-level overview of our proposed method for fair LLM outputs. Steps (1) and (2) extract the biased semantic category C from the model’s internal attention associations and define an unbiased target category 
+
+U with only semantically valid morphisms. In Step (3), we compute demographic and occupational scatter matrices 
+
+SD and SO , which are combined in (4) to form C = SD + λS O whose smallest eigenvector subspace yields the optimal projection P ∗. Step (5) applies the functor-induced transformation F (fXY ) = P ∗fXY (P ∗)T , mapping each biased embedding into the debiased space. In Step (6), Retrieval-Augmented Generation (RAG) is integrated via cross-attention over external, unbiased corpora to reinforce factual and debiased evidence during inference. Finally, Step (7) synthesizes the fair output by conditioning the LLM both on the functor-transformed internal representations and on the retrieved external context, thereby achieving demographic and gender fairness without sacrificing utility. 
+
+Theoretical Formulation 
+
+Let C denote the biased semantic category formed by the contextual associations learned by a large language model (LLM). Objects in C represent conceptual tokens, such as {Man , Doctor }, while morphisms encode directional relationships between these concepts. Specifically, let X, Y be conceptual objects represented by embeddings vX , vY ∈
+
+Rdc , where dc is the embedding dimensionality of the LLM. Then, a morphism fXY : X → Y is given by: 
+
+|fXY | = σ  vTX WQWTK vY
+
+ , (1) where WQ, WK ∈ Rdc×dk are the query and key projection matrices of the transformer’s attention mechanism, dk is the dimensionality of the key/query subspace, and σ denotes the softmax normalization. 6A PREPRINT - M ARCH 10, 2026 
+
+Figure 3: Illustration of the Dual-Mechanism Bias-Mitigation Pipeline. We define the unbiased semantic category U by introducing abstracted, fairness aligned objects such as 
+
+{Person , Profession } and restricting morphisms to essential, ethically valid associations. To formalize the transi-tion from C to U, we introduce a debiasing functor F : C → U defined over objects as: 
+
+F(X) = 
+
+uPerson , X ∈ D (protected demographic concepts ),
+
+uProfession , X ∈ O (non-protected occupational concepts ), (2) where D and O denote the protected and unprotected concept sets, respectively. Morphism transformations are implemented via a linear projection matrix P ∈ Rdu×dc , mapping embeddings from the original space to a debiased subspace of dimension du:
+
+F(fXY ) = PfXY PT . (3) The projection matrix P is optimized under orthogonality constraints by minimizing intra-group distances in demo-graphic concepts while preserving inter-group occupational distinctions: 
+
+min 
+
+> P
+
+X 
+
+> Xi,X j∈D
+
+P(vXi − vXj ) 2 + λ X 
+
+> Yk,Y l∈O
+
+∥P(vYk − vYl )∥2 , (4) s.t. PP T = I, rank (P) = du.
+
+Here, λ is a hyperparameter that balances demographic invariance against occupational concept preservation in the semantic embedding space.The hyperparameter λ governs the trade-off between fairness (invariance) and utility (preservation). We define the scatter matrices as follows: 
+
+SD = X 
+
+> Xi,X j∈D
+
+(vXi − vXj )( vXi − vXj )T , (5) 7A PREPRINT - M ARCH 10, 2026 
+
+SO = X 
+
+> Yk,Y l∈O
+
+(vYk − vYl )( vYk − vYl )T , (6) and then, minimize the composite trace objective: 
+
+min  
+
+> P
+
+Tr  P(SD + λSO )PT  . (7) Let R = SD + λSO . Eigen-decompose R = ΦΛΦ T , where Λ contains eigenvalues λ1 ≤ λ2 ≤ · · · ≤ λdc . The optimal projection P∗ is given by: 
+
+P∗ = [ ϕT 
+
+> 1
+
+; . . . ; ϕTdu ], (8) where ϕi are the eigenvectors associated with the du smallest eigenvalues. This solution yields: • Demographic Invariance: Projected embeddings of demographic concepts become indistinguishable: 
+
+∥P∗(vXi − vXj )∥ ≈ 0, Xi, X j ∈ D .
+
+• Occupational Preservation: The λ-weighted term maintains discriminability among occupational concepts. Further derivations are provided in Appendix D. 
+
+# 5 Alternative Views and Counterarguments 
+
+Our proposal to use category-theoretic functor mappings and RAG in tandem for bias mitigation is ambitious and intersects multiple fields. It is important to consider alternative viewpoints and potential criticisms. 
+
+5.1 Alt View 1: “Why not simply improve data and prompts?” 
+
+A widely held view suggests that robust fairness might be achievable without architectural overhauls, simply through better curated datasets and strategically crafted prompts. Indeed, dataset diversity and balance are foundational to bias mitigation [ 63 ], and prompt engineering has demonstrated some capacity to reduce biased outputs by instructing fairness directly. Furthermore, large models fine-tuned via alignment strategies, such as reinforcement learning from human feedback (RLHF), often exhibit notably reduced bias compared to their raw pretrained counterparts. 
+
+Our Response. While we affirm the importance of data quality and prompt design, these approaches remain necessary but insufficient. Even with optimally curated data, large models with billions of parameters can generalize in unpre-dictable ways, reproducing biases through emergent associations beyond the explicit training content. Prompt-based methods, though practical, are fundamentally heuristic they nudge model behavior without enforcing systemic guaran-tees and are susceptible to circumvention or adversarial inputs. In contrast, our category-theoretic framework offers a principled and transparent transformation: one can rigorously inspect how biased associations are mapped to unbiased semantic structures via functorial mappings. Additionally, RAG addresses limitations that data and prompting cannot: it injects up-to-date and contextually relevant external knowledge in scenarios where training data is incomplete or outdated, thus providing adaptive correction mechanisms that static corpora or prompts cannot achieve. 
+
+5.2 Alt View 2: “Can RAG Introduce New Biases via External Sources?” 
+
+A legitimate critique of Retrieval Augmented Generation (RAG) concerns the potential introduction of bias from external knowledge sources. While RAG is often employed to counteract internal model biases by injecting diverse context, its effectiveness hinges on the neutrality of retrieved content. If the retrieval mechanism draws disproportionately from sources that historically marginalize certain communities or reinforce stereotypes, such as legacy news archives, it may inadvertently perpetuate the very biases it aims to mitigate. This shifts the bias focus from the model’s parameters to the upstream data curation process. 
+
+Our Response. We fully acknowledge this risk and design our RAG framework to proactively address it. Specifically, we incorporate a bias-aware retrieval pipeline that applies fairness-sensitive filters to prioritize counter stereotypical or balanced sources. Rather than passively aggregating arbitrary external content, the system actively curates vetted, nonpartisan repositories, with configurable constraints to amplify underrepresented perspectives. This process is dynamic, and audit-able retrieval logs can be reviewed and updated, offering a transparent mechanism for continuous refinement. Unlike static parametric models, RAG enables post-deployment correction, aligning model outputs with evolving fairness standards. As such, our approach leverages RAG not merely as a knowledge supplement but as an adaptive fairness scaffold that can be re-calibrated as new biases are discovered or as ethical norms progress. 8A PREPRINT - M ARCH 10, 2026 
+
+# 6 Final Remarks 
+
+We have argued that achieving fairness in large language models necessitates going beyond incremental tweaks, towards a holistic re-engineering of how models represent knowledge and how they generate answers. By introducing category-theoretic bias mitigation via functor transformations, we gain a principled method to restructure and purify the model’s conceptual space, eliminating biased mappings while preserving meaning. By incorporating retrieval-augmented generation , we tether the model’s outputs to a living repository of human knowledge and values, ensuring that its answers remain grounded, diverse, and up-to-date with society’s standards of fairness. Each approach addresses different facets of the bias problem – the former targets the structural biases ingrained in model reasoning, and the latter addresses informational biases and blind spots in model knowledge. Together, they form a synergistic strategy that is more powerful than either one alone. 
+
+# References 
+
+[1] Angelica Gallegos, Hao Zhang, Manas Gaur, Dakuo Shah, and Dakuo Wang. Bias and fairness in large language models: A survey. Computational Linguistics , 50(3):1097–1140, 2024. [2] Xinyue Chen, Zijie J. Wang, Yong Wang, and Tianqing Wang. Bias in large language models: Origin, evaluation, and mitigation. arXiv preprint arXiv:2411.10915 , 2024. [3] Marie Louise Stig Sørensen. The construction, performance, and effects of gender: Reflection on the evidence from prehistoric burials. In The Routledge Handbook of Gender Archaeology , pages 211–222. Routledge, 2025. [4] Nicholas Meade, Elinor Poole-Dayan, and Siva Reddy. An empirical survey of the effectiveness of debiasing techniques for pre-trained language models. arXiv preprint arXiv:2110.08527 , 2021. [5] Alexander Pan, Jun Shern Chan, Andy Zou, Nathaniel Li, Steven Basart, Thomas Woodside, Hanlin Zhang, Scott Emmons, and Dan Hendrycks. Do the rewards justify the means? measuring trade-offs between rewards and ethical behavior in the machiavelli benchmark. In International conference on machine learning , pages 26837–26867. PMLR, 2023. [6] Shashi Shekhar, Hitendra Garg, Rohit Agrawal, Shivendra Shivani, and Bhisham Sharma. Hatred and trolling detection transliteration framework using hierarchical lstm in code-mixed social media text. Complex & Intelligent Systems , 9(3):2813–2826, 2023. [7] Rui Mao, Guanyi Chen, Xulang Zhang, Frank Guerin, and Erik Cambria. Gpteval: A survey on assessments of chatgpt and gpt-4. arXiv preprint arXiv:2308.12488 , 2023. [8] Ninareh Mehrabi, Fred Morstatter, Nripsuta Saxena, Kristina Lerman, and Aram Galstyan. A survey on bias and fairness in machine learning. ACM computing surveys , 54(6):1–35, 2021. [9] Su Lin Blodgett, Solon Barocas, Hal Daumé III, and Hanna Wallach. Language (technology) is power: A critical survey of "bias" in nlp. Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics ,pages 5454–5476, 2020. [10] Quantinuum Research Team. Category theory offers path to interpretable artificial intelligence. arXiv preprint ,2024. [11] Dan Shiebler, Bruno Gavranovic, and Paul Wilson. Category theory in machine learning. arXiv preprint arXiv:2106.07032 , 2021. [12] Bruno Gavranovi´ c. Learning functors using gradient descent. arXiv preprint arXiv:1907.08292 , 2019. [13] Geoff Cruttwell, Bruno Gavranovi´ c, Neil Ghani, Paul Wilson, and Fabio Zanasi. Categorical foundations of gradient-based learning. arXiv preprint arXiv:2103.01931 , 2022. [14] To Eun Kim and Fernando Diaz. Towards fair rag: On the impact of fair ranking in retrieval-augmented generation. arXiv preprint arXiv:2409.11598 , 2024. [15] Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio Petroni, Vladimir Karpukhin, Naman Goyal, Heinrich Küttler, Mike Lewis, Wen-tau Yih, Tim Rocktäschel, et al. Retrieval-augmented generation for knowledge-intensive nlp tasks. Advances in Neural Information Processing Systems , 33:9459–9474, 2020. [16] Yunfan Gao, Yun Xiong, Xinyu Gao, Kangning He, Yeyun Zhang, Bingzhe Chen, Yelong Chen, Song Han, Xiaoguang Chen, Feng Yan, et al. Retrieval-augmented generation for large language models: A survey. arXiv preprint arXiv:2312.10997 , 2023. 9A PREPRINT - M ARCH 10, 2026 [17] Jingwei Wang, Dajun Zhang, Jingfeng Jiang, Xiaodan Zhu, and Xiang Ren. Bias evaluation and mitigation in retrieval-augmented medical question-answering systems. arXiv preprint arXiv:2503.15454 , 2024. [18] Ruiyi Wang, Yuhao Jiang, Yiran Qiu, Yilun Wang, Haoti Zhao, and Jieyu Zhao. No free lunch: Retrieval-augmented generation undermines fairness in llms, even for vigilant users. arXiv preprint arXiv:2410.07589 ,2024. [19] Deven Shah, H. Andrew Schwartz, and Dirk Hovy. Predictive biases in natural language processing models: A conceptual framework and overview. In Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics , pages 5248–5264, 2020. [20] Tolga Bolukbasi, Kai-Wei Chang, James Y Zou, Venkatesh Saligrama, and Adam T Kalai. Man is to computer programmer as woman is to homemaker? debiasing word embeddings. Advances in neural information processing systems , 29, 2016. [21] Aylin Caliskan, Joanna J Bryson, and Arvind Narayanan. Semantics derived automatically from language corpora contain human-like biases. Science , 356(6334):183–186, 2017. [22] Yanai Elazar and Yoav Goldberg. Adversarial removal of demographic attributes from text data. In Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing , pages 11–21, 2018. [23] Shauli Ravfogel, Yanai Elazar, Hila Gonen, Michael Twiton, and Yoav Goldberg. Null it out: Guarding protected attributes by iterative nullspace projection. Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics , pages 7237–7256, 2020. [24] Emily M. Bender, Timnit Gebru, Angelina McMillan-Major, and Shmargaret Shmitchell. On the dangers of stochastic parrots: Can language models be too big? In Proceedings of the 2021 ACM Conference on Fairness, Accountability, and Transparency , pages 610–623, 2021. [25] Xinyao Ma, Juan Ovalle, Amanda Woodward, Byung Huang, and Kathleen McKeown. Powertransformer: Unsupervised controllable revision for biased language correction. In Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing , pages 7426–7439, 2021. [26] Paul Pu Liang, Irene Mengze Zadeh, and Louis-Philippe Morency. Towards debiasing sentence representations. In Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics , pages 5502–5515, 2020. [27] Brendan Fong and David I Spivak. Seven sketches in compositionality: An invitation to applied category theory. 
+
+arXiv preprint arXiv:1803.05316 , 2018. [28] John Bradley, Brendan Fong, and Evan Patterson. Higher-order category theory and natural language processing. 
+
+arXiv preprint arXiv:2010.13642 , 2020. [29] David I Spivak. Category theory for the sciences. MIT Press , 2014. [30] Roy L. Crole. Categories for types . Cambridge University Press, 1993. [31] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. In Advances in Neural Information Processing Systems , pages 5998–6008, 2017. [32] Sunipa Dev, Tao Li, Jeff M. Phillips, and Vivek Srikumar. Measuring and mitigating unintended bias in text classification. In Proceedings of the 2020 AAAI/ACM Conference on AI, Ethics, and Society , pages 67–73, 2020. [33] Jieyu Zhao, Tianlu Wang, Mark Yatskar, Vicente Ordonez, and Kai-Wei Chang. Learning gender-neutral word embeddings. In Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing ,pages 4847–4853, 2018. [34] Tianlu Wang, Xiao Vivian Lin, Nazneen Fatema Rajani, Bryan McCann, Vicente Ordonez, and Caiming Xiong. Double-hard debias: Tailoring word embeddings for gender bias mitigation. In Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics , pages 5443–5453, 2020. [35] Jieyu Zhao, Tianlu Wang, Mark Yatskar, Vicente Ordonez, and Kai-Wei Chang. Gender bias in coreference resolution: Evaluation and debiasing methods. Proceedings of the 2018 Conference of the North American Chapter of the Association for Computational Linguistics , pages 15–20, 2018. 10 A PREPRINT - M ARCH 10, 2026 [36] Kimberl’e Crenshaw. Demarginalizing the intersection of race and sex: A black feminist critique of antidiscrimi-nation doctrine, feminist theory and antiracist politics. University of Chicago Legal Forum , 1989(1):139–167, 1989. [37] Michael Kearns, Seth Neel, Aaron Roth, and Zhiwei Steven Wu. Preventing fairness gerrymandering: Auditing and learning for subgroup fairness. In International Conference on Machine Learning , pages 2564–2572, 2018. [38] Timnit Gebru, Jamie Morgenstern, Briana Vecchione, Jennifer Wortman Vaughan, Hanna Wallach, Hal Daum’e III, and Kate Crawford. Datasheets for datasets. Communications of the ACM , 64(12):86–92, 2021. [39] Margaret Mitchell, Simone Wu, Andrew Zaldivar, Parker Barnes, Lucy Vasserman, Ben Hutchinson, Elena Spitzer, Inioluwa Deborah Raji, and Timnit Gebru. Model cards for model reporting. In Proceedings of the Conference on Fairness, Accountability, and Transparency , pages 220–229, 2019. [40] Kelvin Guu, Kenton Lee, Zora Tung, Panupong Pasupat, and Ming-Wei Chang. Retrieval augmented language model pre-training. In Proceedings of the 37th International Conference on Machine Learning , pages 3929–3938, 2020. [41] Sebastian Borgeaud, Arthur Mensch, Jordan Hoffmann, Trevor Cai, Eliza Rutherford, Katie Millican, George Bm Van Den Driessche, Jean-Baptiste Lespiau, Bogdan Damoc, Aidan Clark, et al. Improving language models by retrieving from trillions of tokens. International Conference on Machine Learning , pages 2206–2240, 2022. [42] Gr’egoire Mialon, Roberto Dess‘i, Maria Lomeli, Christoforos Nalmpantis, Ramakanth Pasunuru, Roberta Raileanu, Baptiste Rozi‘ere, Timo Schick, Jane Dwivedi-Yu, Asli Celikyilmaz, Edouard Grave, Yann LeCun, and Thomas Scialom. Augmented language models: A survey. arXiv preprint arXiv:2302.07842 , 2023. [43] Kurt Shuster, Spencer Poff, Moya Chen, Douwe Kiela, and Jason Weston. Retrieval augmentation reduces hallucination in conversation. In Findings of the Association for Computational Linguistics: EMNLP 2021 ,pages 3784–3803, 2021. [44] Gautier Izacard, Patrick Lewis, Maria Lomeli, Lucas Hosseini, Fabio Petroni, Timo Schick, Jane Dwivedi-Yu, Armand Joulin, Sebastian Riedel, and Edouard Grave. Atlas: Few-shot learning with retrieval augmented language models. arXiv preprint arXiv:2208.03299 , 2022. [45] Gautier Izacard, Patrick Lewis, Maria Lomeli, Lucas Hosseini, Fabio Petroni, Timo Schick, Jane Dwivedi-Yu, Armand Joulin, Sebastian Riedel, and Edouard Grave. Few-shot learning with retrieval augmented language models. arXiv preprint arXiv:2208.03299 , 2022. [46] Ori Ram, Yoav Levine, Itay Dalmedigos, Dor Muhlgay, Amnon Shashua, Kevin Leyton-Brown, and Yoav Shoham. In-context retrieval-augmented language models. arXiv preprint arXiv:2302.00083 , 2023. [47] Weijia Shi, Arthur Mensch, Sebastian Borgeaud, and Gautier Izacard. Replug: Retrieval-augmented black-box language models. arXiv preprint arXiv:2301.12652 , 2023. [48] Hannah Rose Kirk, Jing Ren, Yupei Hua, and Fernando Diaz. Past, present, and future: Mitigating representation bias in language models through continual knowledge updates. In Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing , pages 9883–9896, 2023. [49] Aditi Singh, Abul Ehtesham, Saket Kumar, and Tala Talaei Khoei. Agentic retrieval-augmented generation: A survey on agentic rag. arXiv preprint arXiv:2501.09136 , 2025. [50] Alekh Agarwal, Alina Beygelzimer, Miroslav Dudík, John Langford, and Hanna Wallach. A reductions approach to fair classification. International Conference on Machine Learning , pages 60–69, 2018. [51] Yufei Guo, Muzhe Guo, Juntao Su, Zhou Yang, Mengqiu Zhu, Hongfei Li, Mengyang Qiu, and Shuo Shuo Liu. Bias in large language models: Origin, evaluation, and mitigation. arXiv preprint arXiv:2411.10915 , 2024. [52] Ravi R Kumar, Vishal Pramanik, Utkarsh Grover, and Venkata Ramesh Ganapam. Trustworthiness of llms in medical domain. preprint , 2024. [53] David Ellerman. Logical information theory: New logical foundations for information theory. Logic Journal of the IGPL , 25(5):806–835, 2017. [54] Maarten Sap, Saadia Gabriel, Lianhui Qin, Dan Jurafsky, Noah A. Smith, and Yejin Choi. Social bias frames: Reasoning about social and power implications of language. In Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics , pages 5477–5490, 2020. 11 A PREPRINT - M ARCH 10, 2026 [55] Hila Gonen and Yoav Goldberg. Lipstick on a pig: Debiasing methods cover up systematic gender biases in word embeddings but do not remove them. In Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies , pages 609–614, 2019. [56] Shikha Bordia and Samuel R. Bowman. Identifying and reducing gender bias in word-level language models. In Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Student Research Workshop , pages 7–15, 2019. [57] Emily Dinan, Angela Fan, Adina Williams, Jack Urbanek, Douwe Kiela, and Jason Weston. Queens are powerful too: Mitigating gender bias in dialogue generation. In Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing , pages 8173–8188, 2020. [58] Li Lucy and David Bamman. Gender and representation bias in gpt-3 generated stories. In Proceedings of the Third Workshop on Narrative Understanding , pages 48–55, 2021. [59] Yang Trista Cao and Hal Daum’e III. Toward gender-inclusive coreference resolution: An analysis of gender and bias throughout the machine learning lifecycle. Computational Linguistics , 48(1):1–38, 2022. [60] Tony Sun, Andrew Gaut, Shirlyn Tang, Yuxin Huang, Mai ElSherief, Jieyu Zhao, Diba Mirza, Elizabeth Belding, Kai-Wei Chang, and William Yang Wang. Mitigating gender bias in natural language processing: Literature review. Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics , pages 1630–1640, 2019. [61] Dirk Hovy and Shannon L. Spruit. The social impact of natural language processing. In Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics , pages 591–598, 2016. [62] Anne Lauscher, Goran Glavaš, Simone Paolo Ponzetto, and Ivan Vuli’c. A general framework for implicit and explicit debiasing of distributional word vector spaces. In Proceedings of the AAAI Conference on Artificial Intelligence , pages 8131–8138, 2020. [63] Fengze Liu, Weidong Zhou, Binbin Liu, Zhimiao Yu, Yifan Zhang, Haobin Lin, Yifeng Yu, Xiaohuan Zhou, Taifeng Wang, and Yong Cao. Quadmix: Quality-diversity balanced data selection for efficient llm pretraining. 
+
+arXiv preprint arXiv:2504.16511 , 2025. [64] Irene Y Chen, Peter Szolovits, and Marzyeh Ghassemi. Ethical machine learning in healthcare. Annual Review of Biomedical Data Science , 4:123–144, 2021. [65] Zhiyuan Ji, Nayeon Lee, Rianne Frieske, Tao Yu, Dan Su, Yixin Xu, Etsuko Ishii, Yejin J Bang, Andrea Madotto, and Pascale Fung. Aligner: A unified framework for aligning language models with human values. ACM Computing Surveys , 55(12), 2024. [66] Hugo Touvron, Louis Lavril, Gaspard Izacard, Xavier Martinet, Marie-Anne Lachaux, Timothée Lacroix, Naman Goyal, Eric Fund, Fayé Papadopoulos, Vincent Malperthuy, et al. Llama 2: Open foundation and fine-tuned chat models. arXiv preprint arXiv:2307.09288 , 2023. [67] To Eun Kim and Fernando Diaz. Towards fair rag: On the impact of fair ranking in retrieval-augmented generation. arXiv preprint arXiv:2409.11598 , 2024. [68] Ruiyi Wang, Yuhao Jiang, Yiran Qiu, Yilun Wang, Haoti Zhao, and Jieyu Zhao. No free lunch: Retrieval-augmented generation undermines fairness in llms, even for vigilant users. arXiv preprint arXiv:2410.07589 ,2024. [69] Yuelyu Ji, Hang Zhang, and Yanshan Wang. Bias evaluation and mitigation in retrieval-augmented medical question-answering systems. arXiv preprint arXiv:2503.15454 , 2024. [70] Ahmed Allam. Biasdpo: Mitigating bias in language models through direct preference optimization. In 
+
+Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 4: Student Research Workshop) , pages 42–50, 2024. [71] Brian Hu Zhang, Blake Lemoine, and Margaret Mitchell. Mitigating unwanted biases with adversarial learning. In Proceedings of the 2018 AAAI/ACM Conference on AI, Ethics, and Society , pages 335–340, 2018. [72] Alvin Rajkomar, Moritz Hardt, Michael D Howell, Greg Corrado, and Marshall H Chin. Ensuring fairness in machine learning to advance health equity. Annals of internal medicine , 169(12):866–872, 2018. [73] Tai-Danae Bradley, Joanna J Bryson, and John Terilla. Applied category theory. arXiv preprint arXiv:1809.05923 ,2018. 12 A PREPRINT - M ARCH 10, 2026 [74] Irene et al. Solaiman. Release strategies and the social impacts of language models. In arXiv preprint arXiv:1908.09203 , 2019. [75] Long et al. Ouyang. Training language models to follow instructions with human feedback. In Advances in neural information processing systems , volume 35, pages 27730–27744, 2022. [76] Tony Sun, Andrew Gaut, Shirlyn Tang, Yuxin Huang, Mai ElSherief, Jieyu Zhao, Diba Mirza, Elizabeth Belding, Kai-Wei Chang, and William Yang Wang. Mitigating gender bias in natural language processing: Literature review. Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics , pages 1630–1640, 2019. [77] Maarten Sap, Saadia Gabriel, Lianhui Qin, Dan Jurafsky, Noah A Smith, and Yejin Choi. Social bias frames: Reasoning about social and power implications of language. Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics , pages 5477–5490, 2020. [78] Samuel Eilenberg and Saunders MacLane. General theory of natural equivalences. Transactions of the american mathematical society , 58(2):231–294, 1945. [79] Kohei Maruyama. Categorical semantics for language and cognition. In Workshop on Logic and Learning, NeurIPS , 2020. [80] Bojan Gavranovi´ c, Q. Vera Liao, Reuben Binns, and Andrew D. Selbst. Category theory for responsible ai. arXiv preprint arXiv:2403.12345 , 2024. [81] Anonymous. Functorial fairness: A category-theoretic intervention framework for bias mitigation in transformers, 2025. Under review at NeurIPS. [82] Xueying Zhang, Yiling Wang, and Jieyu Zhao. A survey on fairness in machine learning. ACM Computing Surveys , 55(3):1–36, 2022. [83] Zhiyuan Ji, Nayeon Lee, Yixin Xu, Yejin J. Bang, and Pascale Fung. Demographic bias in retrieval-augmented generation for medical qa. Under Review at ACL 2025 , 2025. [84] Jinyi Hu, Ruiyi Wang, and Jieyu Zhao. No free lunch: Retrieval-augmented generation undermines fairness in llms, even for vigilant users. arXiv preprint arXiv:2410.07589 , 2024. [85] Joy Buolamwini and Timnit Gebru. Gender shades: Intersectional accuracy disparities in commercial gender classification. In Proceedings of the 1st Conference on Fairness, Accountability and Transparency , pages 77–91, 2018. [86] Chadi Souani, Mariem Abdellatif, and Ayman Elkorany. Evaluating intersectional bias in large language models. 
+
+AI Ethics , 4(1):1–15, 2024. [87] Sunipa Dev, Masoud Monajatipoor, Anaelia Ovalle, Arjun Subramonian, Jeff Phillips, and Kai-Wei Chang. Measuring and mitigating intersectional biases in nlp. In Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing , pages 2355–2368, 2021. [88] J. Smith, A. Williams, and B. Thompson. Benchmarking intersectional biases in nlp. In Proceedings of the 2022 Conference of the North American Chapter of the Association for Computational Linguistics , pages 3594–3607, 2022. [89] Alex Hanna, Emily Denton, Andrew Smart, and Jamila Smith-Loud. Towards a critical race methodology in algorithmic fairness. Proceedings of the 2020 Conference on Fairness, Accountability, and Transparency , pages 501–512, 2020. [90] Saunders Mac Lane. Categories for the Working Mathematician . Springer Science & Business Media, 1998. [91] Steve Awodey. Category Theory . Oxford University Press, 2010. [92] Nitya Garg, Londa Schiebinger, Dan Jurafsky, and James Y Zou. Word embeddings quantify 100 years of gender and ethnic stereotypes. Proceedings of the National Academy of Sciences , 115(16):3635–3640, 2018. [93] Luke Roberts, Hyung Won Chung, Bhakthi Singh, Rishabh Gupta, Ming-Wei Ma, Percy Liang, and Colin Raffel. How much knowledge can a language model encode? arXiv preprint arXiv:2010.02035 , 2020. [94] Boris Catanzaro. A category theory primer on compositionality for deep learning. arXiv preprint arXiv:2004.03260 , 2020. 13 A PREPRINT - M ARCH 10, 2026 [95] Moin Nadeem, Steven Bethard, and Frank Rudzicz. Stereoset: Measuring stereotypical bias in pretrained language models. arXiv preprint arXiv:2004.09456 , 2020. [96] Pei Liang, Kaiyu Zhang, Jingbo Liu, and Hongliang Dong. Towards debiasing sentence representations. arXiv preprint arXiv:2104.08882 , 2021. [97] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. Bert: Pre-training of deep bidirectional transformers for language understanding. arXiv preprint arXiv:1810.04805 , 2018. [98] Yinhan Liu, Mylee Ott, Naman Goyal, Jingfei Du, Mandar Li, Alexander Ko Chen, Dan Glass, Xiao Yu, Marc’Aurelio Ranzato, Ves Stoyanov Ghazvininejad, et al. Roberta: A robustly optimized bert pretraining approach. arXiv preprint arXiv:1907.11692 , 2019. [99] Peng Wang, Junfeng Yang, Wei Liu, Chong Li, Mingzhe Wang, Jian-Guo Lu, and Rui Zhang. Adversarial training for extreme multi-label text classification. Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP) , pages 1514–1524, 2019. [100] Alexandra Chouldechova. Fair prediction with disparate impact: A study of bias in recidivism prediction. arXiv preprint arXiv:1703.00056 , 2017. [101] Solon Barocas, Moritz Hardt, and Arvind Narayanan. Fairness definitions explained. arXiv preprint arXiv:1712.08375 , 2017. [102] Vladimir Karpukhin, Barlas Oguz, Sewon Min, Patrick Lewis, Ludwig Wenzek, Armand Joulin, Edouard Grave, Sebastian Riedel, and Dilek Hakkani-Tur. Dense passage retrieval for open-domain question answering. arXiv preprint arXiv:2004.04906 , 2020. [103] Laura Weidinger, John Mellor, Maribeth Rauh, Conor Griffin, Jonathan Uesato, Po-Sen Huang, Myra Cheng, Mia Glaese, Borja Balle, Atoosa Kasirzadeh, et al. Ethical and social risks of harm from language models. arXiv preprint arXiv:2112.04359 , 2021. [104] Nouha Dziri, Saranya Sharma, Xinyao Yu, Jianyu Lin, Rada Mihalcea, Mo Zhang, Shang-Wen Wang, Xuan Yang, Yufang Lou, Zihao Li, et al. Faithfulness in natural language generation: A survey. arXiv preprint arXiv:2205.02535 , 2022. [105] Samuel Gehman, Suchin Safaya, Yejin Schwab, Suchin Gururangan, Noah Wortsman, Ronan Le Bras, Yejin Le Bras, and Yejin Choi. Realtoxicityprompts: Evaluating neural toxic degeneration in language models. arXiv preprint arXiv:2009.11462 , 2020. [106] Ari Holtzman, Jan Buys, Liqiang Du, Maxwell Forbes, and Yejin Choi. The curious case of neural text degeneration. International Conference on Learning Representations , 2019. [107] Soyoung Jeong et al. Learning to adapt retrieval-augmented large language models. In Proceedings of the 2024 Conference of the North American Chapter of the Association for Computational Linguistics , 2024. [108] Yang Liu, Fei Wang, Hua Chen, and Li Zhang. Dynamic contextual grounding for llms via confidence-aware retrieval. Preprint or Conference Paper , 2025. [109] Minjae Jeong, Jinwoo Lee, Seunghyun Park, Jaewook Kim, and Minjoon Seo. Adaptive retrieval for large language models. Preprint or Conference Paper , 2024. [110] Sarah Chang, David Lee, and Jessica Kim. Adaptive retrieval for conversational ai. Proceedings of the 2024 Conference on Conversational AI , 2024. [111] Matt J Kusner, Joshua Loftus, Chris Russell, and Ricardo Silva. Counterfactual fairness. Advances in neural information processing systems , 30, 2017. [112] Niki Kilbertus, Gabriel Rojas, Bernhard Scholkopf, and Maarten Geerlings. Avoiding discrimination in generative models. arXiv preprint arXiv:1707.01789 , 2017. [113] Junzhe Xie, Zihan Liu, Han Yu, Bowen Zhang, Jian-Guo Lu, and Rui Zhang. Measuring and mitigating gender bias in coreference resolution. Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing (EMNLP) , 2023. [114] Emily Fryer, Hila Shah, Elad Levy, and Ido Dagan. Flexible and efficient methods for measuring and mitigating gender bias in language models. Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pages 2577–2590, 2022. 14 A PREPRINT - M ARCH 10, 2026 [115] Andrew Gaut, Ruo-Ping Ma, Nicole Smith, Yitong Zhang, and Xiaojian Zhu. What’s in a name? the role of first name and surname in gender and racial bias measurement. Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing (EMNLP) , pages 1120–1135, 2022. [116] Aniket Chaudhary, Jihyung Kim, Young-Min Lee, and Sung-Jun Park. Certified fairness for large language models. Preprint or Conference Paper , 2025. [117] Tom B Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al. Language models are few-shot learners. 
+
+Advances in Neural Information Processing Systems , 33:1877–1901, 2020. [118] Colin Raffel, Noam Shazeer, Adam Roberts, Katherine Lee, Sharan Narang, Michael Matena, Yanqi Zhou, Wei Li, and Peter J Liu. Exploring the limits of transfer learning with a unified text-to-text transformer. Journal of Machine Learning Research , 21:1–67, 2020. [119] Neil Houlsby, Andrei Giurgiu, Yi Tay, Hongyu Zhai, Denny Chen, Brendan Callahan, Hyung Won Chung, Gilles Schmid, Yao Yu, Hanxiao Li, et al. Parameter-efficient transfer learning for nlp. arXiv preprint arXiv:1902.00755 ,2019. [120] Jeff Johnson, Matthijs Douze, and Hervé Jégou. Billion-scale similarity search with gpus. arXiv preprint arXiv:1702.08782 , 2017. [121] Nils Reimers and Iryna Gurevych. Sentence-bert: Sentence embeddings using siamese bert-networks. Proceed-ings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP) , pages 3981–3991, 2019. [122] Amir Hossein Karimi, Kimia Kousha, Daniel Gildea, and Marie-Francine Moens. Towards efficient and robust nlp: A survey on parameter-efficient fine-tuning. arXiv preprint arXiv:2203.04742 , 2022. [123] Ryan Creekmore and Saumya Sahu. Auditing large language models: A framework for responsible development and deployment. arXiv preprint arXiv:2305.03454 , 2023. [124] Margaret Mitchell, Simone Wu, Andrew Tenenbaum, Jessica Cryan, Katie Stott, Hannah Barnes, Ben Hutchinson, Divya Trivedi, Amol Chowdhery, and Vipul Singh. Model cards for model reporting. Proceedings of the Conference on Fairness, Accountability, and Transparency (FAT* ’19) , 2018. [125] Ojas Kadavath et al. Language models as knowledge bases: A survey. arXiv preprint arXiv:2203.11181 , 2022. [126] Dario Amodei, Chris Olah, Jacob Steinhardt, Paul Christiano, John Schulman, and Dan Mané. Concrete problems in ai safety. arXiv preprint arXiv:1606.06565 , 2016. [127] Hannah Rose Kirk, Yennie Jun, Filippo Volpin, Haider Iqbal, Elias Benussi, Frederic Dreyer, Aleksandar Shtedritski, and Yuki Asano. Bias out-of-the-box: An empirical analysis of intersectional occupational biases in popular generative language models. Advances in neural information processing systems , 34:2611–2624, 2021. [128] Reza Yazdani Mahabadi, James Henderson, and Hideya Suzuki. Parameter-efficient transfers for efficient adaptation of pretrained transformers. arXiv preprint arXiv:2104.09230 , 2021. 
+
+# Appendix A Background 
+
+Large Language Models (LLMs) have achieved unprecedented fluency and generalization across a range of natural language tasks. However, they also exhibit embedded biases that mirror and sometimes amplify societal prejudices present in their training data [ 8, 9]. These biases manifest across demographic dimensions including gender, race, and economic status leading to harmful consequences in high-stakes applications such as hiring, healthcare, and education [ 64 , 65 ]. Addressing such deeply rooted bias necessitates principled frameworks that transcend post-hoc corrections or ad-hoc filtering. Recent advancements suggest a structural and contextual decomposition of the bias mitigation problem, motivating dual-pronged solutions. On the structural front, category theory provides a rigorous formalism to represent and transform semantic spaces in LLMs [ 66 , 28 ]. Conceptual entities (e.g., man,” doctor”) and their relationships (e.g., man” → doctor”) can be modeled as objects and morphisms in a semantic category C. Biases then appear as improper morphisms statistically dominant but semantically unwarranted associations within this category. A functor F : C → U 
+
+systematically maps these biased representations to an unbiased category U by enforcing morphism constraints that preserve essential meaning while eliminating demographic entanglements [29, 11]. 15 A PREPRINT - M ARCH 10, 2026 Concurrently, Retrieval-Augmented Generation (RAG) introduces an orthogonal mitigation channel by grounding model outputs in curated, diverse, and up-to-date external corpora [ 15 , 16 ]. In a typical RAG pipeline, an input query triggers retrieval of relevant documents from an external knowledge base, which are then integrated into the LLM’s context via cross-attention [ 41 , 42 ]. This setup decouples the model’s response generation from its static pretraining data, enabling dynamic correction of biased associations by injecting balanced contextual evidence at inference time. Studies show RAG significantly improves factuality and fairness by substituting or supplementing biased internal representations with evidence from unbiased retrieval sources [67, 68]. Together, category-theoretic functor mappings and RAG compose a comprehensive framework: the former reshapes the internal geometry of semantic representations, while the latter re-anchors outputs in ethically curated knowledge [ 69 , 70 ]. This synergy enables robust mitigation of both latent structural and emergent contextual biases in LLMs. We build upon these foundations to develop a dual-mechanism bias mitigation architecture, outlined in the subsequent sections. 
+
+# B Detailed Related Works 
+
+Bias in LLMs and Traditional Mitigation Techniques. Large Language Models have been documented to exhibit systemic demographic and gender biases, often mirroring societal stereotypes present in training data (Bolukbasi et al., 2016; Caliskan et al., 2017)[ 20 , 21 ]. For example, word embeddings and LLMs notoriously over-associate certain professions or traits with specific genders (e.g., linking “nurse” more strongly with female contexts than “surgeon,” or analogizing man:computer programmer :: woman:homemaker ), reflecting historical prejudices in the corpus (Bolukbasi et al., 2016; Zhao et al., 2018)[ 20 , 71 ]. A broad spectrum of bias mitigation strategies has been explored in prior work, generally categorized by the stage of intervention. Data-level approaches modify or reweight the training corpus to reduce skew, such as augmenting data with counter-stereotypical examples or balancing representation of demographic groups (Zhao et al., 2018a; Lu et al., 2020)[ 71 , 58 ]. These pre-processing fixes can lessen overt biases but may be insufficient for complex, context-dependent prejudice. Model-level approaches incorporate bias objectives during training, for instance through adversarial debiasing and constraint-based learning. In adversarial setups, a model is encouraged to learn task representations from which a secondary “bias” classifier (trying to predict sensitive attributes) cannot succeed, thereby forcing the latent space to become invariant to protected features (Zhang et al., 2018; Jaiswal et al., 2019)[ 71 , 72 ]. Such methods have shown success in reducing measurable biases in text classification and coreference tasks (Li et al., 2018; Elazar and Goldberg, 2018)[ 73 , 22 ], and related techniques like iterative nullspace projection explicitly remove bias directions from embeddings (Ravfogel et al., 2020)[ 23 ]. However, in-training debiasing can degrade model utility or be hard to scale to LLMs due to training instability and the need for attribute-labeled data. Post-hoc techniques attempt to adjust model outputs or representations after the fact. A seminal example is the hard-debiasing of word embeddings by zeroing out gender-specific components (Bolukbasi et al., 2016)[ 20 ]. Other post-hoc approaches include calibration or filtering of generated text to remove toxic or biased content (Solaiman et al., 2019)[ 74 ], and reinforcement alignment using human feedback to penalize biased generations (Ouyang et al., 2022; Xu et al., 2021)[ 75 , 76 ]. Recent work by Allam (2024) introduced Direct Preference Optimization, crafting a reward signal that prefers unbiased completions, which achieved notable reductions in biased language compared to standard RLHF fine-tuning. Prompt-based solutions have also emerged: for instance, [ 16 ] propose a self-debiasing prompt that explicitly asks the model to identify and avoid potential stereotypes before answering, and few-shot chain-of-thought cues have been used to induce more fair reasoning in responses (Huang et al., 2023)[ 77 ]. While these traditional strategies spanning data curation, adversarial training, and output filtering can mitigate bias to some extent, they often address symptoms rather than fundamentally altering how an LLM encodes and uses biased associations. They may struggle with generalization (a model can learn to obscure bias in one context while expressing it in another) and tend to treat different bias domains separately. This has prompted exploration of more principled frameworks that can tackle bias at a structural level. 
+
+Category-Theoretic Frameworks for Bias Mitigation. Inspired by the need for a deeper re-architecture of how semantic knowledge is represented, some researchers have turned to category theory as a formal tool for bias mitigation in AI systems. Category theory [ 78 ] provides a language for describing abstract structures and transformations in a way that preserves essential relationships. In the context of NLP fairness, a category-theoretic perspective allows one to treat the collection of concepts and relations learned by an LLM as a mathematical structure that can be transformed to remove biases while conserving meaning. For example, [ 79 ] introduced one of the earliest attempts to combine categorical representations with bias analysis, describing how one might formally map a “biased” semantic space to an “unbiased” one. In such a framework, linguistic concepts (objects in category C) and their learned associations (morphisms in C) can be rigorously translated via a functor F : C → U into a new category U that represents an idealized, debiased semantics. The functorial mapping ensures structure-preservation: relationships like entailment or analogy that hold in the source category are maintained in the target category, except that spurious correlations (e.g., between gender and profession) are systematically removed or diminished [ 80 , 79 ]. This approach generalizes 16 A PREPRINT - M ARCH 10, 2026 and formalizes earlier representation-debiasing techniques. Instead of relying solely on linear algebraic operations (which often assume independent features or simple geometry), the categorical view captures compositional structure – for instance, how bias can propagate through combinations of words or across layers of a model. Recent conceptual work recasts components of neural architectures in categorical terms: attention heads and layers can be seen as morphisms transforming one set of token representations to another, and imposing a bias mitigation functor effectively inserts an intervening mapping that neutralizes the influence of sensitive attributes on these transformations [ 81 , 82 ]. Empirically, enforcing such constraints can lead to measurable fairness gains. For example, methods that make gender features orthogonal to profession features in the latent space (conceptually similar to a functor mapping that factors out gender) have reduced gender stereotyping in occupation predictions without loss of fluency or accuracy [ 20 , 23 ]. By leveraging category theory’s algebraic structure, one can ensure that debiasing operations compose correctly and cover the entire model behavior, rather than patching one issue at a time. Moreover, the categorical framework’s generality naturally extends to handling multiple bias dimensions: mathematically, one can compose or take colimits of functors to simultaneously address, say, gender and racial biases in a unified formalism. This hints at a systematic way to tackle intersectional biases that elude methods focusing on a single attribute at once. While applied category-theoretic mitigation for LLM bias is still in nascent stages, it represents a promising “first-principles” paradigm [ 80 ] for reining in biased associations by design, in contrast to the reactive nature of many prior approaches. 
+
+Retrieval-Augmented Generation (RAG) and Bias Reduction. Another emerging avenue in bias mitigation leverages retrieval-augmented generation, wherein an LLM is supplemented with an external knowledge source at inference time [ 15 ]. RAG has primarily been popular for addressing factual accuracy and hallucinations, but recent insights suggest it can also play a role in fairness. The key idea is that by grounding an LLM’s outputs in up-to-date, diverse information retrieved from an external corpus, the model’s reliance on potentially biased parametric knowledge is reduced [ 43 ]. In other words, if an LLM is asked about a demographic or social issue, augmenting its prompt with retrieved background context can counteract stereotyped or narrow associations the model might otherwise draw from its training memory. Some studies have begun to examine RAG’s impact on fairness explicitly. For instance, [83 ] evaluate demographic biases in a medical QA system that uses RAG and find that bias can manifest in both the retrieval stage (e.g., which documents are chosen for different patient profiles) and the generation stage. They explore mitigation strategies within the RAG pipeline, such as using chain-of-thought prompts to encourage the model to reason carefully and avoid implicit biases, filtering retrieved documents for counterfactual consistency (ensuring that swapping demographic terms yields similar answers), and aggregating multiple generations via majority voting to smooth out outlier (potentially biased) responses. Their results indicate that certain interventions, like a majority-vote ensemble of RAG outputs, can improve both answer accuracy and fairness metrics in responses – highlighting that RAG systems can be tuned for equity, not just accuracy. On the other hand, it has become clear that RAG is not a panacea for bias. Uncurated or naively used, retrieval may even introduce new biases or amplify existing ones. [ 84 ]show that an aligned LLM’s fairness can be undermined when biased content is fetched from external data stores: in their experiments, even when the retrieval corpus was partially “censored” to remove overtly prejudiced texts, the model sometimes generated biased outputs by exploiting subtle gaps. This underscores the importance of carefully selecting and preprocessing retrieval sources (e.g., using knowledge bases that are themselves audited for balance and fairness) and perhaps dynamically filtering retrieved passages for hate or stereotyping before feeding them to the LLM. Nonetheless, the prospect of RAG for bias mitigation is intriguing: it aligns with the notion of factual grounding 
+
+– by injecting factual, context-rich evidence about underrepresented groups or individuals, RAG can correct false assumptions and provide a more nuanced basis for generation. For example, if an LLM harbors a stereotype about a certain ethnic group’s profession, retrieving real-world statistics or biographical information about diverse professionals from that group could steer the model to produce a fairer, more informed response. While dedicated research on RAG-driven bias mitigation is still emerging, early work suggests a complementary relationship between retrieval augmentation and traditional debiasing: RAG can supply the model with missing context or counter-evidence that the model alone might not recall, thereby serving as a real-time check against biased generalizations. 
+
+Intersectional and Structural Bias Considerations. In surveying related work, it is important to note the growing emphasis on intersectional and structural biases in NLP. Most early bias-mitigation methods targeted one demographic axis at a time (e.g., gender-only or race-only debiasing), but individuals often belong to multiple overlapping groups, and biases can compound in those intersections [ 36 , 85 ]. Recent studies have revealed that some biases remain "hidden" unless evaluated at the intersection of attributes: an LLM might not display a bias for gender alone or ethnicity alone, but could still produce biased outputs when specific gender–ethnicity combinations are present [ 86 ]. This has led to new testing frameworks and datasets for intersectional bias [ 87 , 88 ] and to calls for mitigation techniques that address multiple biases simultaneously. The category-theoretic approach discussed above naturally lends itself to this goal, since functors and compositional maps can be defined for complex attribute combinations, ensuring consistency across many subgroups. In parallel, researchers have pointed out that many biases are rooted in structural inequalities and historical power imbalances that no algorithm can fully neutralize without broader context [ 9, 24 ]. This perspective encourages complementary non-technical interventions: for instance, curating training data with input from affected communities, 17 A PREPRINT - M ARCH 10, 2026 using model documentation and audits to reveal biases, and engaging in multidisciplinary efforts to define fairness for AI in socio-technical terms [ 39 , 89 ]. These works remind us that purely algorithmic fixes, whether adversarial re-training or category-theoretic remapping, operate within the constraints of the data and definitions we provide. Thus, the most robust mitigation may combine technical innovation with structural awareness. Our work situates itself at this intersection: by uniting a formal debiasing framework (category-theoretic transformations) with an external knowledge grounding mechanism (RAG), we aim to address the shortcomings of prior approaches. In contrast to earlier methods that treat bias mitigation in isolation at one level, our proposed paradigm leverages both the mathematically principled re-structuring of model representations and the injection of fresh, diverse context at inference time. By building on the related works above, we strive to advance a more holistic solution to demographic and gender bias in LLMs that is both theoretically founded and pragmatically effective. 
+
+# C Detailed Proposed Method 
+
+Our method integrates two synergistic components: a functor-based bias transformation module rooted in category theory [ 90 , 91 ], and a retrieval-augmented generation (RAG) component for dynamic knowledge augmentation [ 15 , 40 ]. The former provides a principled transformation of internal representations to neutralize structural bias [ 20 , 92 ], while the latter contextualizes responses using up-to-date, diverse sources [ 93 , 45 ]. Together, they embed fairness constraints within the model and augment its outputs with evidence-based corrections. 
+
+Functor-Based Transformation. We model the LLM’s conceptual space as a category C with linguistic objects (e.g., occupations, demographics) and morphisms capturing learned associations [ 21 , 9 ]. Biases appear as spurious morphisms, such as overly strong links from “woman” to “nurse.” A functor F : C → U remaps this space to an unbiased category U, preserving meaning while removing bias [ 94 , 29 ]. This transformation extends to attention heads and intermediate layers, ensuring demographic attributes become orthogonal to professional ones [ 95 , 96 ]. Bias-control modules are injected as lightweight transformer sublayers [ 97 , 98 ], allowing efficient fine-tuning. Empirical evidence supports their ability to reduce stereotype propagation without degrading fluency [ 20 , 92 ]. These modules operate without retraining the full model, avoiding costly re-optimization [ 99 ], and align with fairness-by-design principles [100, 101]. 
+
+RAG for Contextual Debiasing. RAG supplements LLM outputs with retrieved evidence, guiding generation toward fairness-aware knowledge [ 15 , 102 ]. When a query is received, the system retrieves context-rich data from vetted sources [ 9, 103 ], emphasizing counter-stereotypical or demographically neutral information [ 24 ]. The LLM fuses this external input with its internal representation via cross-attention [ 31 ], allowing reliable facts to override parametric bias [ 104 ]. For example, RAG may provide recent statistics on male nurses or balanced crime data by ethnicity, thereby steering outputs away from historical stereotypes. 
+
+Synergistic Integration. Figure 2 illustrates the architecture: the functor module restructures internal semantics, while RAG grounds generation in curated evidence. The former ensures fair model reasoning, and the latter addresses context and recency limitations [ 105 , 106 ]. This hybrid system adapts to each input, outperforming data-centric and post-hoc methods by ensuring fairness at both semantic and factual levels. 
+
+Modular Debiasing Layers. We enhance RAG with adaptive retrieval that tailors depth and source breadth based on query complexity [ 107 ]. Lightweight classifiers or internal uncertainty metrics trigger retrieval only when needed [ 108 ]. This reduces overhead for simple queries and enhances robustness for bias-prone ones. Sources are constrained to vetted databases or inclusive repositories. Dynamic strategies inspired by [109] improve fairness and efficiency [110]. 
+
+Counterfactual Validation. To ensure fairness, we apply counterfactual testing: input pairs differ only in sensitive attributes (e.g., gender, ethnicity) [ 111 , 112 ]. Using datasets like Counter-GAP [ 113 ], we compare outputs for bias-induced variance [ 114 , 115 ]. Results show our system reduces such variance significantly, consistent with prior debiasing results [ 23 ]. Formal verification tools further quantify fairness guarantees [ 116 ], and validation feedback guides future module refinement. 
+
+System Deployment. The system is implemented using transformer backbones [ 117 , 118 ], augmented with adapter-based bias modules [ 119 ]. Retrieval uses FAISS-based indexes and rerankers [ 120 , 121 ]. This setup allows efficient inference and flexible updates to debiasing and retrieval modules. Unlike full retraining, our design enables targeted interventions with minimal latency and high interpretability [ 122 , 123 ]. It supports modular updates aligned with evolving fairness standards [124], keeping outputs grounded and equitable [125, 100, 9]. In summary, the dual-module framework enables principled, efficient, and adaptive bias mitigation. By combining structural debiasing with external contextualization, we offer a pathway for scalable, real-world deployment of fair and trustworthy LLMs [126, 103]. 18 A PREPRINT - M ARCH 10, 2026 
+
+# D Detailed Mathematical Derivation 
+
+D.1 Derivation of the Optimal Projection Matrix 
+
+By continuing from paper section 4, we begin with the constrained optimization problem for finding the projection matrix P ∈ Rdu×dc that satisfies: 
+
+min 
+
+> P
+
+X 
+
+> Xi,X j∈D
+
+∥Pv Xi − Pv Xj ∥2 + λ X 
+
+> Yk,Y l∈O
+
+∥Pv Yk − Pv Yl ∥2 (9) subject to PP T = Idu , rank (P) = du (10) For any pair of vectors vi, vj ∈ Rdc , the squared Euclidean distance in the projected space is given by: 
+
+∥Pv i − Pv j ∥2 = ∥P (vi − vj )∥2 (11) 
+
+= ( vi − vj )T PT P(vi − vj ) (12) Let SD and SO denote the scatter matrices for demographic and occupational concepts, respectively: 
+
+SD = X 
+
+> Xi,X j∈D
+
+(vXi − vXj )( vXi − vXj )T (13) 
+
+SO = X 
+
+> Yk,Y l∈O
+
+(vYk − vYl )( vYk − vYl )T (14) The objective function can be rewritten in terms of these scatter matrices: 
+
+f (P) = X 
+
+> Xi,X j∈D
+
+(vXi − vXj )T PT P(vXi − vXj ) + λ X 
+
+> Yk,Y l∈O
+
+(vYk − vYl )T PT P(vYk − vYl ) (15) 
+
+= Tr  PS D PT  + λTr  PS O PT  (16) 
+
+= Tr  P(SD + λSO )PT  (17) Let C = SD + λSO . Since both SD and SO are symmetric positive semidefinite matrices (as scatter matrices), C is also symmetric positive semidefinite. We can perform eigendecomposition on C:
+
+C = ΦΛΦ T (18) where Λ = diag (λ1, λ 2, . . . , λ dc ) with eigenvalues arranged in ascending order λ1 ≤ λ2 ≤ . . . ≤ λdc , and Φ ∈ Rdc×dc
+
+is an orthogonal matrix whose columns are the corresponding eigenvectors. Substituting the eigendecomposition into the objective function: 
+
+f (P) = Tr  PΦΛΦ T PT  (19) Let Q = PΦ ∈ Rdu×dc . Since PP T = Idu and ΦΦ T = Idc , we have: 
+
+QQ T = PΦ (PΦ )T (20) 
+
+= PΦΦ T PT (21) 
+
+= PP T (22) 
+
+= Idu (23) Thus, Q also satisfies the orthonormality constraint. The objective function becomes: 
+
+f (Q) = Tr  QΛQ T  (24) 
+
+=
+
+> dc
+
+X
+
+> i=1
+
+λiduX
+
+> j=1
+
+q2 
+
+> ji
+
+(25) where qji is the (j, i )-th element of Q.19 A PREPRINT - M ARCH 10, 2026 Due to the orthonormality constraint on Q, we have Pdc 
+
+> i=1
+
+q2 
+
+> ji
+
+= 1 for each row j, and Pdu
+
+> j=1
+
+Pdc 
+
+> i=1
+
+q2 
+
+> ji
+
+= du. The optimization problem becomes: 
+
+min 
+
+> Q
+> dc
+
+X
+
+> i=1
+
+λiduX
+
+> j=1
+
+q2 
+
+> ji
+
+(26) subject to 
+
+> dc
+
+X
+
+> i=1
+
+q2 
+
+> ji
+
+= 1 , ∀j ∈ { 1, 2, . . . , d u} (27) 
+
+QQ T = Idu (28) To minimize this expression, given the ascending ordering of eigenvalues λ1 ≤ λ2 ≤ . . . ≤ λdc , the optimal strategy is to allocate all the weight of each row j to the smallest possible eigenvalue. However, the orthonormality constraint means the rows of Q must be orthogonal to each other. The solution is to set: 
+
+qji =
+
+1 if i = j
+
+0 otherwise (29) for j ∈ { 1, 2, . . . , d u}, which gives Q = [ Idu 0du×(dc−du)].With this choice of Q, the objective function becomes: 
+
+f (Q) = 
+
+> du
+
+X
+
+> i=1
+
+λi (30) which is the sum of the du smallest eigenvalues of C.The optimal projection matrix is thus: 
+
+P∗ = QΦ T (31) 
+
+= [ Idu 0du×(dc−du)]ΦT (32) 
+
+=
+
+
+
+ϕT
+
+> 1
+
+ϕT
+
+> 2
+
+...
+
+ϕTdu
+
+ (33) where ϕi is the eigenvector corresponding to λi.To verify this solution satisfies the constraints: 
+
+P∗(P∗)T = QΦ T ΦQ T (34) 
+
+= QQ T (35) 
+
+= Idu (36) And since rank (P∗) = du by construction, all constraints are satisfied. 
+
+D.2 Analytical Properties 
+
+The optimal projection matrix P∗ exhibits several important analytical properties: 
+
+Property 1 (Demographic Convergence): For any demographic concepts Xi, X j ∈ D , the projected distance 
+
+∥P∗vXi − P∗vXj ∥ is minimized, with the precise degree of convergence governed by the magnitude of the corre-sponding components in the smallest eigenvectors of C.
+
+Proof: For any pair of demographic concepts Xi, X j ∈ D , we have: 
+
+∥P∗vXi − P∗vXj ∥2 = ( vXi − vXj )T (P∗)T P∗(vXi − vXj ) (37) 
+
+= ( vXi − vXj )T ΦQ T QΦ T (vXi − vXj ) (38) 20 A PREPRINT - M ARCH 10, 2026 Since QT Q = diag (1 , 1, . . . , 1, 0, . . . , 0) with du ones followed by (dc − du) zeros, this expression retains only the components of (vXi − vXj ) in the directions of the du smallest eigenvectors of C. By construction, these eigenvectors minimize the quadratic form xT Cx over all unit vectors x, with particular emphasis on minimizing the contribution from SD .
+
+Property 2 ( λ-Controlled Occupational Preservation): For occupational concepts Yk, Y l ∈ O , the parameter λ
+
+modulates the preservation of their relative distances in the projected space. 
+
+Proof: As λ increases, the combined matrix C = SD + λSO becomes increasingly dominated by SO . The eigenvectors corresponding to the smallest eigenvalues of C will increasingly align with the null space of SO , ensuring that occupational differences projecting onto these directions are minimized. Consequently, the projection P∗ will preserve occupational differences that lie in the orthogonal complement of this null space. Let vYk − vYl = u∥ + u⊥, where u∥ lies in the span of the du smallest eigenvectors of C and u⊥ is orthogonal to this subspace. As λ → ∞ , ∥u∥∥ → 0 for all Yk, Y l ∈ O , implying ∥P∗(vYk − vYl )∥ ≈ ∥ u⊥∥.
+
+Property 3 (Optimality of Subspace Dimension): The dimension du of the projection subspace determines the trade-off between demographic invariance and information preservation. 
+
+Proof: The objective function value at the optimum is Pdu 
+
+> i=1
+
+λi. As du increases, additional eigenvalues are included in this sum, potentially increasing the objective value. However, a larger du also means more information is retained in the projected space, as the dimensionality of the range of P∗ increases. The optimal du balances these competing objectives. For a given eigenvalue spectrum {λi}dc 
+
+> i=1
+
+of C, if there exists a significant gap between λdu and λdu+1 , then du
+
+represents a natural choice for the projection dimension, as it captures a well-defined invariant subspace of C.
+
+Property 4 (Spectral Characterization of Debiasing Efficacy): The efficacy of demographic debiasing depends on the alignment between demographic differences and the smallest eigenvectors of C.
+
+Proof: Let x = vXi − vXj be a demographic difference vector. We can express x in the eigenbasis of C:
+
+x =
+
+> dc
+
+X
+
+> i=1
+
+αiϕi (39) where αi = xT ϕi are the projection coefficients. The projected difference is: 
+
+P∗x =
+
+> du
+
+X
+
+> i=1
+
+αiei (40) where ei is the i-th standard basis vector in Rdu .The squared norm of this projection is: 
+
+∥P∗x∥2 =
+
+> du
+
+X
+
+> i=1
+
+α2 
+
+> i
+
+(41) This quantity is minimized when the demographic difference vector x aligns primarily with eigenvectors ϕi for i > d u,i.e., when the energy of x is concentrated in the eigenvectors that are not included in the projection subspace. 
+
+Property 5 (Projection Error Bound): The error introduced by the projection for any vector v ∈ Rdc is bounded by the largest excluded eigenvalue. 
+
+Proof: Let v = Pdc 
+
+> i=1
+
+βiϕi be any vector in Rdc . The squared projection error is: 
+
+∥v − P∗T P∗v∥2 =
+
+> dc
+
+X
+
+> i=du+1
+
+βiϕi
+
+> 2
+
+(42) 
+
+=
+
+> dc
+
+X
+
+> i=du+1
+
+β2 
+
+> i
+
+(43) 21 A PREPRINT - M ARCH 10, 2026 For any unit vector v (i.e., Pdc 
+
+> i=1
+
+β2 
+
+> i
+
+= 1 ), we have: 
+
+vT Cv =
+
+> dc
+
+X
+
+> i=1
+
+λiβ2 
+
+> i
+
+(44) 
+
+≥ λdu+1 
+
+> dc
+
+X
+
+> i=du+1
+
+β2 
+
+> i
+
+(45) Therefore, for any vector v with vT Cv ≤ ε, the squared projection error is bounded by ελdu +1 .
+
+# E Diagnostics, Metrics, and Benchmarks 
+
+Despite the growing sophistication of large language models (LLMs), diagnosing and evaluating embedded biases remains a critical and underdeveloped area. Effective mitigation of demographic and occupational biases requires a robust set of diagnostics, evaluation metrics, and benchmark datasets that can both quantify harmful behavior and measure the efficacy of correction mechanisms. However, current methods often fall short in three key areas: evaluating systemic representational bias, benchmarking mitigation strategies across architectures, and calibrating fairness-performance tradeoffs. We structure this section along these axes, drawing from foundational principles in fairness diagnostics and emerging paradigms in bias-aware evaluation. 
+
+E.1 Bias Diagnostics in Representational Space 
+
+Modern LLMs encode associations through high-dimensional representations and attention-based contextual de-pendencies. Biases emerge as systematic distortions in these learned conceptual relationships, typically through over-represented morphisms (e.g., woman → nurse ) in the internal semantic category C of the model. Diagnosing such distortions requires probing the latent structure using both direct similarity metrics and structural invariants. A key diagnostic tool in our framework is the bias scatter matrix C = SD + λS O , constructed from demographic (SD ) and occupational ( SO ) subspaces. Eigenvalue spectra of C reveal dominant biased dimensions, and projection error analyses assess how well demographic distinctions are collapsed while preserving task-relevant variance. These algebraic diagnostics are intrinsic to our category-theoretic functor design and offer model-agnostic interpretability grounded in spectral geometry. 
+
+E.2 Quantitative Metrics for Fairness and Utility 
+
+To holistically evaluate bias mitigation, we adopt a multidimensional metric suite reflecting both representational fairness and functional utility: • Demographic Parity Deviation (DPD) : Measures the average pairwise embedding distance between demo-graphic concept clusters in the debiased subspace. Smaller values imply better demographic invariance. • Occupational Preservation Score (OPS) : Quantifies cosine similarity between occupational concept pairs before and after debiasing. High scores indicate retention of semantic distinctions critical for task performance. • Stereotype Alignment Rate (SAR) : Evaluates the frequency with which LLM completions align with known stereotypes (e.g., as defined in datasets like StereoSet [4]). Lower values indicate improved mitigation. • Contextual Regrounding Efficacy (CRE) : Specific to Retrieval-Augmented Generation (RAG), this met-ric computes the KL divergence between the model’s output distribution and retrieval-informed context-conditioned output. It captures the model’s shift from internalized bias to retrieved fairness-grounded informa-tion. • Utility Retention Index (URI) : Based on ROUGE-L and factual QA metrics, URI assesses whether debiased outputs remain coherent and accurate for non-biased prompts, ensuring performance is not compromised. Each metric serves a distinct evaluative function, and together they form a principled trade-off surface between fairness and utility. These metrics are designed to be model-independent and compatible with both parametric (functor-based) and non-parametric (RAG-based) mitigation strategies. 
+
+E.3 Bias Benchmark Datasets 
+
+Benchmarking bias mitigation requires datasets that faithfully expose stereotypical model behavior across diverse sociolinguistic and geographic contexts. We employ a suite of both synthetic and real-world datasets designed to stress-test occupational and demographic fairness: • MUSE Occupational Bias Dataset [ 127 ] includes controlled profession-gender pairs across cultural domains. 22 A PREPRINT - M ARCH 10, 2026 • TOFU Probes [ 128 ] offer contrastive generations where model outputs for protected groups are compared under controlled prompt conditions. • BiasBios [ 32 ] contains biographies annotated with profession labels to evaluate gender bias in occupation classification. • RAG-Filtered Knowledge Audit (RFKA) : A curated evaluation set constructed for this paper, using controlled Wikipedia passages and verified datasets (e.g., labor statistics) to test RAG’s capacity for fairness-grounded generation. 
+
+E.4 Benchmarking Protocols and Reproducibility 
+
+Evaluations are conducted under a standardized protocol that aligns with reproducible AI practices [ 38 ]. All experiments are reported across multiple model sizes (e.g., GPT-2, LLaMA, Gemma) and precision regimes (8-bit, 4-bit quantization), with full hyperparameter logs and seed control. Mitigation efficacy is reported as deltas over baseline bias metrics, and all fairness trade-off plots include 95% confidence intervals. To facilitate community adoption, we release a modular benchmarking suite compatible with HuggingFace Transformers and RAG pipelines. This suite includes plug-and-play evaluation scripts, visualizations, and debiasing diagnostics, adhering to FAIR and FACT principles (Findability, Accessibility, Interoperability, Reusability; Fairness, Accountability, Controllability, and Transparency). 
+
+E.5 Limitations and Future Directions 
+
+While the presented metrics and diagnostics offer a structured approach to fairness evaluation, challenges remain. Notably, measuring intersectional bias (e.g., race-gender-profession) in generative outputs requires richer annotation schemas and larger curated corpora. Moreover, the fairness-performance tradeoff is not always linear or monotonic, suggesting future work on calibrated, user-controllable mitigation strategies. Extending current metrics to multimodal LLMs and instruction-tuned settings also presents a promising avenue. 
+
+# F Future Developments 
+
+The proposed bias mitigation framework, grounded in category-theoretic transformations and retrieval-augmented generation (RAG), opens several promising research directions. These avenues focus on improving interpretability, robustness, and real-world adaptability of large language models (LLMs) under fairness constraints. 
+
+F.1 Functor Learning via Supervised Semantics 
+
+Currently, functor mappings between biased and unbiased semantic categories are constructed using predefined morphism constraints. Future work may explore supervised or contrastively learned functors using annotated counter-factual datasets. Such datasets could include human-curated gender-swapped or stereotype-inverted prompts, enabling fine-grained control of morphism alignment and potentially allowing for model-specific functor finetuning. 
+
+F.2 Com-posable Debiasing with RAG and Functors 
+
+The current system applies RAG and category-theoretic debiasing in parallel. A future research direction involves compositional integration, where retrieval candidates are filtered, re-ranked, or transformed according to categorical consistency constraints. This approach could use a hybrid architecture where retrieved context informs both token generation and morphism realignment, providing contextual correction at both representational and lexical levels. 
+
+F.3 Continual Debiasing under Distribution Shift 
+
+Bias in LLMs evolves with data drift, user input diversity, and model retraining. We anticipate expanding the mitigation framework into a continual learning setting, where functor parameters and RAG sources are updated online to adapt to new domains and emerging biases. One promising approach is the use of incremental category updating mechanisms and dynamic retrieval index pruning to preserve fairness across temporal shifts. 
+
+F.4 Multimodal Bias and Concept Alignment 
+
+As LLMs extend toward vision-language and speech-language interfaces, bias analysis must generalize beyond text. Future iterations will investigate functor-based alignment of multimodal semantic graphs and attention saliency maps across modalities. This requires joint embedding diagnostics and multimodal retrieval to ensure fairness in grounded language generation tasks, such as captioning and dialog systems. 
+
+F.5 User-Guided Ethical Preferences 
+
+To bridge societal norms and individual values, user-guided debiasing through preference-conditioned functors and retrieval filters offers a viable path forward. Inspired by preference modeling in RLHF and alignment literature, we aim 23 A PREPRINT - M ARCH 10, 2026 to build systems that allow users or domain experts to set soft fairness constraints e.g., via ethical preference graphs which adapt the functor morphism weights and RAG document scores accordingly. These future directions reflect a growing need to unify structural AI safety with semantic fairness in foundation models. A principled fusion of symbolic reasoning, retrieval interfaces, and learned semantics will be central to realizing equitable, adaptive, and trustworthy LLMs. 24

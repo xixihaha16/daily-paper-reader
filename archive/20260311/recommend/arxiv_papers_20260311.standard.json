@@ -1,0 +1,731 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-03-11T19:35:55.690928+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 12,
+    "deep_cap": 6,
+    "deep_selected": 8,
+    "quick_candidates": 11,
+    "quick_skim_target": 11,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2603.09891v1",
+      "title": "Overview of the TREC 2025 Retrieval Augmented Generation (RAG) Track",
+      "abstract": "The second edition of the TREC Retrieval Augmented Generation (RAG) Track advances research on systems that integrate retrieval and generation to address complex, real-world information needs. Building on the foundation of the inaugural 2024 track, this year's challenge introduces long, multi-sentence narrative queries to better reflect the deep search task with the growing demand for reasoning-driven responses. Participants are tasked with designing pipelines that combine retrieval and generation while ensuring transparency and factual grounding. The track leverages the MS MARCO V2.1 corpus and employs a multi-layered evaluation framework encompassing relevance assessment, response completeness, attribution verification, and agreement analysis. By emphasizing multi-faceted narratives and attribution-rich answers from over 150 submissions this year, the TREC 2025 RAG Track aims to foster innovation in creating trustworthy, context-aware systems for retrieval augmented generation.",
+      "authors": [
+        "Shivani Upadhyay",
+        "Nandan Thakur",
+        "Ronak Pradeep",
+        "Nick Craswell",
+        "Daniel Campos",
+        "Jimmy Lin"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR"
+      ],
+      "published": "2026-03-10T16:49:18+00:00",
+      "link": "https://arxiv.org/pdf/2603.09891v1",
+      "tags": [
+        "keyword:RAG",
+        "query:RAG"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "TREC 2025 RAG track overview and evaluation",
+      "llm_evidence_cn": "TREC 2025 RAG赛道概览与评估",
+      "llm_evidence": "TREC 2025 RAG赛道概览与评估",
+      "canonical_evidence": "TREC 2025 RAG赛道概览与评估",
+      "llm_tldr_en": "Provides a comprehensive framework and benchmark for evaluating RAG systems on complex queries.",
+      "llm_tldr_cn": "为评估复杂查询下的RAG系统提供了一个全面的框架和基准。",
+      "llm_tldr": "为评估复杂查询下的RAG系统提供了一个全面的框架和基准。",
+      "llm_tags": [
+        "query:rag"
+      ],
+      "matched_query_tag": "query:rag",
+      "matched_query_text": "R",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.03180v1",
+      "title": "Type-Aware Retrieval-Augmented Generation with Dependency Closure for Solver-Executable Industrial Optimization Modeling",
+      "abstract": "Automated industrial optimization modeling requires reliable translation of natural-language requirements into solver-executable code. However, large language models often generate non-compilable models due to missing declarations, type inconsistencies, and incomplete dependency contexts. We propose a type-aware retrieval-augmented generation (RAG) method that enforces modeling entity types and minimal dependency closure to ensure executability. Unlike existing RAG approaches that index unstructured text, our method constructs a domain-specific typed knowledge base by parsing heterogeneous sources, such as academic papers and solver code, into typed units and encoding their mathematical dependencies in a knowledge graph. Given a natural-language instruction, it performs hybrid retrieval and computes a minimal dependency-closed context, the smallest set of typed symbols required for solver-executable code, via dependency propagation over the graph. We validate the method on two constraint-intensive industrial cases: demand response optimization in battery production and flexible job shop scheduling. In the first case, our method generates an executable model incorporating demand-response incentives and load-reduction constraints, achieving peak shaving while preserving profitability; conventional RAG baselines fail. In the second case, it consistently produces compilable models that reach known optimal solutions, demonstrating robust cross-domain generalization; baselines fail entirely. Ablation studies confirm that enforcing type-aware dependency closure is essential for avoiding structural hallucinations and ensuring executability, addressing a critical barrier to deploying large language models in complex engineering optimization tasks.",
+      "authors": [
+        "Y. Zhong",
+        "R. Huang",
+        "M. Wang",
+        "Z. Guo",
+        "YC. Li",
+        "M. Yu",
+        "Z. Jin"
+      ],
+      "primary_category": "cs.SE",
+      "categories": [
+        "cs.SE",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-03-03T17:41:34+00:00",
+      "link": "https://arxiv.org/pdf/2603.03180v1",
+      "tags": [
+        "keyword:RAG",
+        "query:RAG"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Type-aware RAG for industrial optimization modeling",
+      "llm_evidence_cn": "用于工业优化建模的类型感知RAG",
+      "llm_evidence": "用于工业优化建模的类型感知RAG",
+      "canonical_evidence": "用于工业优化建模的类型感知RAG",
+      "llm_tldr_en": "Proposes a type-aware RAG method to ensure the executability of generated industrial optimization models.",
+      "llm_tldr_cn": "提出一种类型感知的RAG方法，以确保生成的工业优化模型的可执行性。",
+      "llm_tldr": "提出一种类型感知的RAG方法，以确保生成的工业优化模型的可执行性。",
+      "llm_tags": [
+        "query:rag"
+      ],
+      "matched_query_tag": "query:rag",
+      "matched_query_text": "R",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.03617v1",
+      "title": "RAGTrack: Language-aware RGBT Tracking with Retrieval-Augmented Generation",
+      "abstract": "RGB-Thermal (RGBT) tracking aims to achieve robust object localization across diverse environmental conditions by fusing visible and thermal infrared modalities. However, existing RGBT trackers rely solely on initial-frame visual information for target modeling, failing to adapt to appearance variations due to the absence of language guidance. Furthermore, current methods suffer from redundant search regions and heterogeneous modality gaps, causing background distraction. To address these issues, we first introduce textual descriptions into RGBT tracking benchmarks. This is accomplished through a pipeline that leverages Multi-modal Large Language Models (MLLMs) to automatically produce texual annotations. Afterwards, we propose RAGTrack, a novel Retrieval-Augmented Generation framework for robust RGBT tracking. To this end, we introduce a Multi-modal Transformer Encoder (MTE) for unified visual-language modeling. Then, we design an Adaptive Token Fusion (ATF) to select target-relevant tokens and perform channel exchanges based on cross-modal correlations, mitigating search redundancies and modality gaps. Finally, we propose a Context-aware Reasoning Module (CRM) to maintain a dynamic knowledge base and employ a Retrieval-Augmented Generation (RAG) to enable temporal linguistic reasoning for robust target modeling. Extensive experiments on four RGBT benchmarks demonstrate that our framework achieves state-of-the-art performance across various challenging scenarios. The source code is available https://github.com/IdolLab/RAGTrack.",
+      "authors": [
+        "Hao Li",
+        "Yuhao Wang",
+        "Wenning Hao",
+        "Pingping Zhang",
+        "Dong Wang",
+        "Huchuan Lu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-03-04T01:02:04+00:00",
+      "link": "https://arxiv.org/pdf/2603.03617v1",
+      "tags": [
+        "keyword:RAG",
+        "query:RAG"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "RGBT tracking with Retrieval-Augmented Generation",
+      "llm_evidence_cn": "结合检索增强生成的 RGBT 追踪",
+      "llm_evidence": "结合检索增强生成的 RGBT 追踪",
+      "canonical_evidence": "结合检索增强生成的 RGBT 追踪",
+      "llm_tldr_en": "Integrates RAG into RGBT tracking to adapt to appearance variations using language guidance.",
+      "llm_tldr_cn": "将 RAG 集成到 RGBT 追踪中，利用语言引导适应外观变化。",
+      "llm_tldr": "将 RAG 集成到 RGBT 追踪中，利用语言引导适应外观变化。",
+      "llm_tags": [
+        "query:rag"
+      ],
+      "matched_query_tag": "query:rag",
+      "matched_query_text": "R",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.04663v1",
+      "title": "Neuro-Symbolic Financial Reasoning via Deterministic Fact Ledgers and Adversarial Low-Latency Hallucination Detector",
+      "abstract": "Standard Retrieval-Augmented Generation (RAG) architectures fail in high-stakes financial domains due to two fundamental limitations: the inherent arithmetic incompetence of Large Language Models (LLMs) and the distributional semantic conflation of dense vector retrieval (e.g., mapping ``Net Income'' to ``Net Sales'' due to contextual proximity). In deterministic domains, a 99% accuracy rate yields 0% operational trust. To achieve zero-hallucination financial reasoning, we introduce the Verifiable Numerical Reasoning Agent (VeNRA). VeNRA shifts the RAG paradigm from retrieving probabilistic text to retrieving deterministic variables via a strictly typed Universal Fact Ledger (UFL), mathematically bounded by a novel Double-Lock Grounding algorithm. Recognizing that upstream parsing anomalies inevitably occur, we introduce the VeNRA Sentinel: a 3-billion parameter SLM trained to forensically audit Python execution traces with only one token test budget. To train this model, we avoid traditional generative hallucination datasets in favor of Adversarial Simulation, programmatically sabotaging golden financial records to simulate production-level ``Ecological Errors'' (e.g., Logic Code Lies and Numeric Neighbor Traps). Finally, to optimize the Sentinel under strict latency budgets, we utilize a single-pass classification paradigm with optional post thinking for debug. We identify the phenomenon of Loss Dilution in Reverse-Chain-of-Thought training and present a novel, OOM-safe Micro-Chunking loss algorithm to stabilize gradients under extreme differential penalization.",
+      "authors": [
+        "Pedram Agand"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CE"
+      ],
+      "published": "2026-03-04T22:55:16+00:00",
+      "link": "https://arxiv.org/pdf/2603.04663v1",
+      "tags": [
+        "keyword:RAG",
+        "query:RAG"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Shifting the RAG paradigm for financial reasoning",
+      "llm_evidence_cn": "转变金融推理中的 RAG 范式",
+      "llm_evidence": "转变金融推理中的 RAG 范式",
+      "canonical_evidence": "转变金融推理中的 RAG 范式",
+      "llm_tldr_en": "Proposes VeNRA to achieve zero-hallucination financial RAG by retrieving deterministic variables.",
+      "llm_tldr_cn": "提出 VeNRA，通过检索确定性变量实现零幻觉的金融 RAG。",
+      "llm_tldr": "提出 VeNRA，通过检索确定性变量实现零幻觉的金融 RAG。",
+      "llm_tags": [
+        "query:rag"
+      ],
+      "matched_query_tag": "query:rag",
+      "matched_query_text": "R",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.04951v1",
+      "title": "Retrieval-Augmented Generation with Covariate Time Series",
+      "abstract": "While RAG has greatly enhanced LLMs, extending this paradigm to Time-Series Foundation Models (TSFMs) remains a challenge. This is exemplified in the Predictive Maintenance of the Pressure Regulating and Shut-Off Valve (PRSOV), a high-stakes industrial scenario characterized by (1) data scarcity, (2) short transient sequences, and (3) covariate coupled dynamics. Unfortunately, existing time-series RAG approaches predominantly rely on generated static vector embeddings and learnable context augmenters, which may fail to distinguish similar regimes in such scarce, transient, and covariate coupled scenarios. To address these limitations, we propose RAG4CTS, a regime-aware, training-free RAG framework for Covariate Time-Series. Specifically, we construct a hierarchal time-series native knowledge base to enable lossless storage and physics-informed retrieval of raw historical regimes. We design a two-stage bi-weighted retrieval mechanism that aligns historical trends through point-wise and multivariate similarities. For context augmentation, we introduce an agent-driven strategy to dynamically optimize context in a self-supervised manner. Extensive experiments on PRSOV demonstrate that our framework significantly outperforms state-of-the-art baselines in prediction accuracy. The proposed system is deployed in Apache IoTDB within China Southern Airlines. Since deployment, our method has successfully identified one PRSOV fault in two months with zero false alarm.",
+      "authors": [
+        "Kenny Ye Liang",
+        "Zhongyi Pei",
+        "Huan Zhang",
+        "Yuhui Liu",
+        "Shaoxu Song",
+        "Jianmin Wang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-05T08:45:24+00:00",
+      "link": "https://arxiv.org/pdf/2603.04951v1",
+      "tags": [
+        "keyword:RAG",
+        "query:RAG"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Training-free RAG framework for time-series",
+      "llm_evidence_cn": "用于时间序列的免训练 RAG 框架",
+      "llm_evidence": "用于时间序列的免训练 RAG 框架",
+      "canonical_evidence": "用于时间序列的免训练 RAG 框架",
+      "llm_tldr_en": "Develops RAG4CTS, a regime-aware RAG framework tailored for covariate time-series foundation models.",
+      "llm_tldr_cn": "开发了 RAG4CTS，一种专为协变量时间序列基础模型设计的状态感知 RAG 框架。",
+      "llm_tldr": "开发了 RAG4CTS，一种专为协变量时间序列基础模型设计的状态感知 RAG 框架。",
+      "llm_tags": [
+        "query:rag"
+      ],
+      "matched_query_tag": "query:rag",
+      "matched_query_text": "R",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.05207v1",
+      "title": "Core-based Hierarchies for Efficient GraphRAG",
+      "abstract": "Retrieval-Augmented Generation (RAG) enhances large language models by incorporating external knowledge. However, existing vector-based methods often fail on global sensemaking tasks that require reasoning across many documents. GraphRAG addresses this by organizing documents into a knowledge graph with hierarchical communities that can be recursively summarized. Current GraphRAG approaches rely on Leiden clustering for community detection, but we prove that on sparse knowledge graphs, where average degree is constant and most nodes have low degree, modularity optimization admits exponentially many near-optimal partitions, making Leiden-based communities inherently non-reproducible. To address this, we propose replacing Leiden with k-core decomposition, which yields a deterministic, density-aware hierarchy in linear time. We introduce a set of lightweight heuristics that leverage the k-core hierarchy to construct size-bounded, connectivity-preserving communities for retrieval and summarization, along with a token-budget-aware sampling strategy that reduces LLM costs. We evaluate our methods on real-world datasets including financial earnings transcripts, news articles, and podcasts, using three LLMs for answer generation and five independent LLM judges for head-to-head evaluation. Across datasets and models, our approach consistently improves answer comprehensiveness and diversity while reducing token usage, demonstrating that k-core-based GraphRAG is an effective and efficient framework for global sensemaking.",
+      "authors": [
+        "Jakir Hossain",
+        "Ahmet Erdem Sarıyüce"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR",
+        "cs.CL"
+      ],
+      "published": "2026-03-05T14:17:30+00:00",
+      "link": "https://arxiv.org/pdf/2603.05207v1",
+      "tags": [
+        "keyword:RAG",
+        "query:RAG"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "GraphRAG for global sensemaking",
+      "llm_evidence_cn": "用于全局理解的图检索增强生成",
+      "llm_evidence": "用于全局理解的图检索增强生成",
+      "canonical_evidence": "用于全局理解的图检索增强生成",
+      "llm_tldr_en": "Proposes k-core decomposition to improve the reproducibility and efficiency of hierarchical GraphRAG systems.",
+      "llm_tldr_cn": "提出k-core分解方法，旨在提高分层图检索增强生成（GraphRAG）系统的可复现性与效率。",
+      "llm_tldr": "提出k-core分解方法，旨在提高分层图检索增强生成（GraphRAG）系统的可复现性与效率。",
+      "llm_tags": [
+        "query:rag"
+      ],
+      "matched_query_tag": "query:rag",
+      "matched_query_text": "R",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.07233v1",
+      "title": "Retrieval-Augmented Generation for Predicting Cellular Responses to Gene Perturbation",
+      "abstract": "Predicting how cells respond to genetic perturbations is fundamental to understanding gene function, disease mechanisms, and therapeutic development. While recent deep learning approaches have shown promise in modeling single-cell perturbation responses, they struggle to generalize across cell types and perturbation contexts due to limited contextual information during generation. We introduce PT-RAG (Perturbation-aware Two-stage Retrieval-Augmented Generation), a novel framework that extends Retrieval-Augmented Generation beyond traditional language-model applications to cellular biology. Unlike standard RAG systems designed for text retrieval with pre-trained LLMs, perturbation retrieval lacks established similarity metrics and requires learning what constitutes relevant context, making differentiable retrieval essential. PT-RAG addresses this through a two-stage pipeline: first, retrieving candidate perturbations $K$ using GenePT embeddings, then adaptively refining the selection through Gumbel-Softmax discrete sampling conditioned on both the cell state and the input perturbation. This cell-type-aware differentiable retrieval enables end-to-end optimization of the retrieval objective jointly with generation. On the Replogle-Nadig single-gene perturbation dataset, we demonstrate that PT-RAG outperforms both STATE and vanilla RAG under identical experimental conditions, with the strongest gains in distributional similarity metrics ($W_1$, $W_2$). Notably, vanilla RAG's dramatic failure is itself a key finding: it demonstrates that differentiable, cell-type-aware retrieval is essential in this domain, and that naive retrieval can actively harm performance. Our results establish retrieval-augmented generation as a promising paradigm for modelling cellular responses to gene perturbation. The code to reproduce our experiments is available at https://github.com/difra100/PT-RAG_ICLR.",
+      "authors": [
+        "Andrea Giuseppe Di Francesco",
+        "Andrea Rubbi",
+        "Pietro Liò"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.IR"
+      ],
+      "published": "2026-03-07T14:31:27+00:00",
+      "link": "https://arxiv.org/pdf/2603.07233v1",
+      "tags": [
+        "keyword:RAG",
+        "query:RAG"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "RAG applied to cellular biology",
+      "llm_evidence_cn": "应用于细胞生物学的RAG",
+      "llm_evidence": "应用于细胞生物学的RAG",
+      "canonical_evidence": "应用于细胞生物学的RAG",
+      "llm_tldr_en": "Adapts RAG for predicting cellular responses to gene perturbations in biological contexts.",
+      "llm_tldr_cn": "将RAG技术应用于生物学背景下预测细胞对基因扰动的反应。",
+      "llm_tldr": "将RAG技术应用于生物学背景下预测细胞对基因扰动的反应。",
+      "llm_tags": [
+        "query:rag"
+      ],
+      "matched_query_tag": "query:rag",
+      "matched_query_text": "R",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.09704v1",
+      "title": "Evaluation of LLMs in retrieving food and nutritional context for RAG systems",
+      "abstract": "In this article, we evaluate four Large Language Models (LLMs) and their effectiveness at retrieving data within a specialized Retrieval-Augmented Generation (RAG) system, using a comprehensive food composition database. Our method is focused on the LLMs ability to translate natural language queries into structured metadata filters, enabling efficient retrieval via a Chroma vector database. By achieving high accuracy in this critical retrieval step, we demonstrate that LLMs can serve as an accessible, high-performance tool, drastically reducing the manual effort and technical expertise previously required for domain experts, such as food compilers and nutritionists, to leverage complex food and nutrition data. However, despite the high performance on easy and moderately complex queries, our analysis of difficult questions reveals that reliable retrieval remains challenging when queries involve non-expressible constraints. These findings demonstrate that LLM-driven metadata filtering excels when constraints can be explicitly expressed, but struggles when queries exceed the representational scope of the metadata format.",
+      "authors": [
+        "Maks Požarnik Vavken",
+        "Matevž Ogrinc",
+        "Tome Eftimov",
+        "Barbara Koroušić Seljak"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-10T14:15:35+00:00",
+      "link": "https://arxiv.org/pdf/2603.09704v1",
+      "tags": [
+        "keyword:RAG",
+        "query:RAG"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Evaluation of LLMs in specialized RAG systems",
+      "llm_evidence_cn": "评估专用RAG系统中的大语言模型",
+      "llm_evidence": "评估专用RAG系统中的大语言模型",
+      "canonical_evidence": "评估专用RAG系统中的大语言模型",
+      "llm_tldr_en": "Evaluates LLM effectiveness in retrieving nutritional data within a specialized RAG framework.",
+      "llm_tldr_cn": "评估了大语言模型在专用RAG框架中检索营养数据的有效性。",
+      "llm_tldr": "评估了大语言模型在专用RAG框架中检索营养数据的有效性。",
+      "llm_tags": [
+        "query:rag"
+      ],
+      "matched_query_tag": "query:rag",
+      "matched_query_text": "R",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2603.03745v1",
+      "title": "RAGNav: A Retrieval-Augmented Topological Reasoning Framework for Multi-Goal Visual-Language Navigation",
+      "abstract": "Vision-Language Navigation (VLN) is evolving from single-point pathfinding toward the more challenging Multi-Goal VLN. This task requires agents to accurately identify multiple entities while collaboratively reasoning over their spatial-physical constraints and sequential execution order. However, generic Retrieval-Augmented Generation (RAG) paradigms often suffer from spatial hallucinations and planning drift when handling multi-object associations due to the lack of explicit spatial modeling.To address these challenges, we propose RAGNav, a framework that bridges the gap between semantic reasoning and physical structure. The core of RAGNav is a Dual-Basis Memory system, which integrates a low-level topological map for maintaining physical connectivity with a high-level semantic forest for hierarchical environment abstraction. Building on this representation, the framework introduces an anchor-guided conditional retrieval and a topological neighbor score propagation mechanism. This approach facilitates the rapid screening of candidate targets and the elimination of semantic noise, while performing semantic calibration by leveraging the physical associations inherent in the topological neighborhood.This mechanism significantly enhances the capability of inter-target reachability reasoning and the efficiency of sequential planning. Experimental results demonstrate that RAGNav achieves state-of-the-art (SOTA) performance in complex multi-goal navigation tasks.",
+      "authors": [
+        "Ling Luo",
+        "Qiangian Bai"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.RO"
+      ],
+      "published": "2026-03-04T05:31:33+00:00",
+      "link": "https://arxiv.org/pdf/2603.03745v1",
+      "tags": [
+        "keyword:RAG",
+        "query:RAG"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "RAG for visual-language navigation",
+      "llm_evidence_cn": "用于视觉语言导航的RAG",
+      "llm_evidence": "用于视觉语言导航的RAG",
+      "canonical_evidence": "用于视觉语言导航的RAG",
+      "llm_tldr_en": "Integrates RAG with topological maps to improve spatial reasoning and planning in multi-goal navigation tasks.",
+      "llm_tldr_cn": "将RAG与拓扑地图结合，提升多目标导航任务中的空间推理与规划能力。",
+      "llm_tldr": "将RAG与拓扑地图结合，提升多目标导航任务中的空间推理与规划能力。",
+      "llm_tags": [
+        "query:rag"
+      ],
+      "matched_query_tag": "query:rag",
+      "matched_query_text": "R",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.03919v1",
+      "title": "When Safety Becomes a Vulnerability: Exploiting LLM Alignment Homogeneity for Transferable Blocking in RAG",
+      "abstract": "Retrieval-Augmented Generation (RAG) enhances the capabilities of large language models (LLMs) by incorporating external knowledge, but its reliance on potentially poisonable knowledge bases introduces new availability risks. Attackers can inject documents that cause LLMs to refuse benign queries, attacks known as blocking attacks. Prior blocking attacks relying on adversarial suffixes or explicit instruction injection are increasingly ineffective against modern safety-aligned LLMs. We observe that safety-aligned LLMs exhibit heightened sensitivity to query-relevant risk signals, causing alignment mechanisms designed for harm prevention to become a source of exploitable refusal. Moreover, mainstream alignment practices share overlapping risk categories and refusal criteria, a phenomenon we term alignment homogeneity, enabling restricted risk context constructed on an accessible LLM to transfer across LLMs. Based on this insight, we propose TabooRAG, a transferable blocking attack framework operating under a strict black-box setting. An attacker can generate a single retrievable blocking document per query by optimizing against a surrogate LLM in an accessible RAG environment, and directly transfer it to an unknown target RAG system without access to the target model. We further introduce a query-aware strategy library to reuse previously effective strategies and improve optimization efficiency. Experiments across 7 modern LLMs and 3 datasets demonstrate that TabooRAG achieves stable cross-model transferability and state-of-the-art blocking success rates, reaching up to 96% on GPT-5.2. Our findings show that increasingly standardized safety alignment across modern LLMs creates a shared and transferable attack surface in RAG systems, revealing a need for improved defenses.",
+      "authors": [
+        "Junchen Li",
+        "Chao Qi",
+        "Rongzheng Wang",
+        "Qizhi Chen",
+        "Liang Xu",
+        "Di Liang",
+        "Bob Simons",
+        "Shuang Liang"
+      ],
+      "primary_category": "cs.CR",
+      "categories": [
+        "cs.CR"
+      ],
+      "published": "2026-03-04T10:27:09+00:00",
+      "link": "https://arxiv.org/pdf/2603.03919v1",
+      "tags": [
+        "keyword:RAG",
+        "query:RAG"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Vulnerabilities and blocking attacks in RAG systems",
+      "llm_evidence_cn": "RAG系统中的漏洞与阻断攻击",
+      "llm_evidence": "RAG系统中的漏洞与阻断攻击",
+      "canonical_evidence": "RAG系统中的漏洞与阻断攻击",
+      "llm_tldr_en": "Analyzes how safety alignment can be exploited to cause refusal in RAG systems via blocking attacks.",
+      "llm_tldr_cn": "分析了如何利用安全对齐机制在RAG系统中通过阻断攻击导致拒绝服务。",
+      "llm_tldr": "分析了如何利用安全对齐机制在RAG系统中通过阻断攻击导致拒绝服务。",
+      "llm_tags": [
+        "query:rag"
+      ],
+      "matched_query_tag": "query:rag",
+      "matched_query_text": "R",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.03967v1",
+      "title": "UniRain: Unified Image Deraining with RAG-based Dataset Distillation and Multi-objective Reweighted Optimization",
+      "abstract": "Despite significant progress has been made in image deraining, we note that most existing methods are often developed for only specific types of rain degradation and fail to generalize across diverse real-world rainy scenes. How to effectively model different rain degradations within a universal framework is important for real-world image deraining. In this paper, we propose UniRain, an effective unified image deraining framework capable of restoring images degraded by rain streak and raindrop under both daytime and nighttime conditions. To better enhance unified model generalization, we construct an intelligent retrieval augmented generation (RAG)-based dataset distillation pipeline that selects high-quality training samples from all public deraining datasets for better mixed training. Furthermore, we incorporate a simple yet effective multi-objective reweighted optimization strategy into the asymmetric mixture-of-experts (MoE) architecture to facilitate consistent performance and improve robustness across diverse scenes. Extensive experiments show that our framework performs favorably against the state-of-the-art models on our proposed benchmarks and multiple public datasets.",
+      "authors": [
+        "Qianfeng Yang",
+        "Qiyuan Guan",
+        "Xiang Chen",
+        "Jiyu Jin",
+        "Guiyue Jin",
+        "Jiangxin Dong"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-03-04T11:58:51+00:00",
+      "link": "https://arxiv.org/pdf/2603.03967v1",
+      "tags": [
+        "keyword:RAG",
+        "query:RAG"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "RAG-based dataset distillation for image deraining",
+      "llm_evidence_cn": "基于RAG的图像去雨数据集蒸馏",
+      "llm_evidence": "基于RAG的图像去雨数据集蒸馏",
+      "canonical_evidence": "基于RAG的图像去雨数据集蒸馏",
+      "llm_tldr_en": "Applies RAG to image deraining by distilling high-quality datasets to improve model generalization.",
+      "llm_tldr_cn": "将RAG应用于图像去雨任务，通过蒸馏高质量数据集来提高模型的泛化能力。",
+      "llm_tldr": "将RAG应用于图像去雨任务，通过蒸馏高质量数据集来提高模型的泛化能力。",
+      "llm_tags": [
+        "query:rag"
+      ],
+      "matched_query_tag": "query:rag",
+      "matched_query_text": "R",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.08068v1",
+      "title": "In-Context Reinforcement Learning for Tool Use in Large Language Models",
+      "abstract": "While large language models (LLMs) exhibit strong reasoning abilities, their performance on complex tasks is often constrained by the limitations of their internal knowledge. A compelling approach to overcome this challenge is to augment these models with external tools -- such as Python interpreters for mathematical computations or search engines for retrieving factual information. However, enabling models to use these tools effectively remains a significant challenge. Existing methods typically rely on cold-start pipelines that begin with supervised fine-tuning (SFT), followed by reinforcement learning (RL). These approaches often require substantial amounts of labeled data for SFT, which is expensive to annotate or synthesize. In this work, we propose In-Context Reinforcement Learning (ICRL), an RL-only framework that eliminates the need for SFT by leveraging few-shot prompting during the rollout stage of RL. Specifically, ICRL introduces in-context examples within the rollout prompts to teach the model how to invoke external tools. Furthermore, as training progresses, the number of in-context examples is gradually reduced, eventually reaching a zero-shot setting where the model learns to call tools independently. We conduct extensive experiments across a range of reasoning and tool-use benchmarks. Results show that ICRL achieves state-of-the-art performance, demonstrating its effectiveness as a scalable, data-efficient alternative to traditional SFT-based pipelines.",
+      "authors": [
+        "Yaoqi Ye",
+        "Yiran Zhao",
+        "Keyu Duan",
+        "Zeyu Zheng",
+        "Kenji Kawaguchi",
+        "Cihang Xie",
+        "Michael Qizhe Shieh"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-09T08:06:18+00:00",
+      "link": "https://arxiv.org/pdf/2603.08068v1",
+      "tags": [
+        "keyword:RAG",
+        "query:RAG"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "RL for tool use and search engine retrieval in LLMs",
+      "llm_evidence_cn": "用于LLM工具使用和搜索引擎检索的强化学习",
+      "llm_evidence": "用于LLM工具使用和搜索引擎检索的强化学习",
+      "canonical_evidence": "用于LLM工具使用和搜索引擎检索的强化学习",
+      "llm_tldr_en": "Explores in-context reinforcement learning to help LLMs effectively use external tools and search engines.",
+      "llm_tldr_cn": "探索上下文强化学习，帮助LLM有效利用外部工具和搜索引擎进行检索。",
+      "llm_tldr": "探索上下文强化学习，帮助LLM有效利用外部工具和搜索引擎进行检索。",
+      "llm_tags": [
+        "query:rag:composite"
+      ],
+      "matched_query_tag": "query:rag:composite",
+      "matched_query_text": "Papers central to 毕设课题, especially work that connects or combines: R; reinforce learning for RAG.",
+      "matched_requirement_id": "req-composite-rag",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.07368v1",
+      "title": "Position: LLMs Must Use Functor-Based and RAG-Driven Bias Mitigation for Fairness",
+      "abstract": "Biases in large language models (LLMs) often manifest as systematic distortions in associations between demographic attributes and professional or social roles, reinforcing harmful stereotypes across gender, ethnicity, and geography. This position paper advocates for addressing demographic and gender biases in LLMs through a dual-pronged methodology, integrating category-theoretic transformations and retrieval-augmented generation (RAG). Category theory provides a rigorous, structure-preserving mathematical framework that maps biased semantic domains to unbiased canonical forms via functors, ensuring bias elimination while preserving semantic integrity. Complementing this, RAG dynamically injects diverse, up-to-date external knowledge during inference, directly countering ingrained biases within model parameters. By combining structural debiasing through functor-based mappings and contextual grounding via RAG, we outline a comprehensive framework capable of delivering equitable and fair model outputs. Our synthesis of the current literature validates the efficacy of each approach individually, while addressing potential critiques demonstrates the robustness of this integrated strategy. Ensuring fairness in LLMs, therefore, demands both the mathematical rigor of category-theoretic transformations and the adaptability of retrieval augmentation.",
+      "authors": [
+        "Ravi Ranjan",
+        "Utkarsh Grover",
+        "Agorista Polyzou"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-03-07T22:40:44+00:00",
+      "link": "https://arxiv.org/pdf/2603.07368v1",
+      "tags": [
+        "keyword:RAG",
+        "query:RAG"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "RAG-driven bias mitigation",
+      "llm_evidence_cn": "RAG驱动的偏差缓解",
+      "llm_evidence": "RAG驱动的偏差缓解",
+      "canonical_evidence": "RAG驱动的偏差缓解",
+      "llm_tldr_en": "Advocates for using RAG and category theory to mitigate demographic and gender biases in large language models.",
+      "llm_tldr_cn": "主张结合RAG与范畴论方法，缓解大语言模型中的人口统计学与性别偏差。",
+      "llm_tldr": "主张结合RAG与范畴论方法，缓解大语言模型中的人口统计学与性别偏差。",
+      "llm_tags": [
+        "query:rag"
+      ],
+      "matched_query_tag": "query:rag",
+      "matched_query_text": "R",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.04257v1",
+      "title": "Memex(RL): Scaling Long-Horizon LLM Agents via Indexed Experience Memory",
+      "abstract": "Large language model (LLM) agents are fundamentally bottlenecked by finite context windows on long-horizon tasks. As trajectories grow, retaining tool outputs and intermediate reasoning in-context quickly becomes infeasible: the working context becomes prohibitively long, eventually exceeds the context budget, and makes distant evidence harder to use even when it is still present. Existing solutions typically shorten context through truncation or running summaries, but these methods are fundamentally lossy because they compress or discard past evidence itself. We introduce Memex, an indexed experience memory mechanism that instead compresses context without discarding evidence. Memex maintains a compact working context consisting of concise structured summaries and stable indices, while storing full-fidelity underlying interactions in an external experience database under those indices. The agent can then decide when to dereference an index and recover the exact past evidence needed for the current subgoal. We optimize both write and read behaviors with our reinforcement learning framework MemexRL, using reward shaping tailored to indexed memory usage under a context budget, so the agent learns what to summarize, what to archive, how to index it, and when to retrieve it. This yields a substantially less lossy form of long-horizon memory than summary-only approaches. We further provide a theoretical analysis showing the potential of the Memex loop to preserve decision quality with bounded dereferencing while keeping effective in-context computation bounded as history grows. Empirically, on challenging long-horizon tasks, Memex agent trained with MemexRL improves task success while using a significantly smaller working context.",
+      "authors": [
+        "Zhenting Wang",
+        "Huancheng Chen",
+        "Jiayun Wang",
+        "Wei Wei"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-03-04T16:45:06+00:00",
+      "link": "https://arxiv.org/pdf/2603.04257v1",
+      "tags": [
+        "query:RAG"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Indexed experience memory for LLM agents using RL",
+      "llm_evidence_cn": "使用强化学习的LLM智能体索引经验记忆",
+      "llm_evidence": "使用强化学习的LLM智能体索引经验记忆",
+      "canonical_evidence": "使用强化学习的LLM智能体索引经验记忆",
+      "llm_tldr_en": "Introduces Memex, an indexed memory mechanism to scale long-horizon LLM agents without discarding evidence.",
+      "llm_tldr_cn": "引入Memex索引记忆机制，在不丢弃证据的情况下扩展长周期LLM智能体的处理能力。",
+      "llm_tldr": "引入Memex索引记忆机制，在不丢弃证据的情况下扩展长周期LLM智能体的处理能力。",
+      "llm_tags": [
+        "query:rag:composite"
+      ],
+      "matched_query_tag": "query:rag:composite",
+      "matched_query_text": "Papers central to 毕设课题, especially work that connects or combines: R; reinforce learning for RAG.",
+      "matched_requirement_id": "req-composite-rag",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.09331v1",
+      "title": "Reward-Zero: Language Embedding Driven Implicit Reward Mechanisms for Reinforcement Learning",
+      "abstract": "We introduce Reward-Zero, a general-purpose implicit reward mechanism that transforms natural-language task descriptions into dense, semantically grounded progress signals for reinforcement learning (RL). Reward-Zero serves as a simple yet sophisticated universal reward function that leverages language embeddings for efficient RL training. By comparing the embedding of a task specification with embeddings derived from an agent's interaction experience, Reward-Zero produces a continuous, semantically aligned sense-of-completion signal. This reward supplements sparse or delayed environmental feedback without requiring task-specific engineering. When integrated into standard RL frameworks, it accelerates exploration, stabilizes training, and enhances generalization across diverse tasks. Empirically, agents trained with Reward-Zero converge faster and achieve higher final success rates than conventional methods such as PPO with common reward-shaping baselines, successfully solving tasks that hand-designed rewards could not in some complex tasks. In addition, we develop a mini benchmark for the evaluation of completion sense during task execution via language embeddings. These results highlight the promise of language-driven implicit reward functions as a practical path toward more sample-efficient, generalizable, and scalable RL for embodied agents. Code will be released after peer review.",
+      "authors": [
+        "Heng Zhang",
+        "Haddy Alchaer",
+        "Arash Ajoudani",
+        "Yu She"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-10T08:07:49+00:00",
+      "link": "https://arxiv.org/pdf/2603.09331v1",
+      "tags": [
+        "query:RAG"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "language embedding driven rewards for RL",
+      "llm_evidence_cn": "语言嵌入驱动的强化学习奖励",
+      "llm_evidence": "语言嵌入驱动的强化学习奖励",
+      "canonical_evidence": "语言嵌入驱动的强化学习奖励",
+      "llm_tldr_en": "Transforms natural-language task descriptions into dense reward signals for RL using embeddings.",
+      "llm_tldr_cn": "利用嵌入技术将自然语言任务描述转化为强化学习的稠密奖励信号。",
+      "llm_tldr": "利用嵌入技术将自然语言任务描述转化为强化学习的稠密奖励信号。",
+      "llm_tags": [
+        "query:rag:composite"
+      ],
+      "matched_query_tag": "query:rag:composite",
+      "matched_query_text": "Papers central to 毕设课题, especially work that connects or combines: R; reinforce learning for RAG.",
+      "matched_requirement_id": "req-composite-rag",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.09160v1",
+      "title": "RubiCap: Rubric-Guided Reinforcement Learning for Dense Image Captioning",
+      "abstract": "Dense image captioning is critical for cross-modal alignment in vision-language pretraining and text-to-image generation, but scaling expert-quality annotations is prohibitively expensive. While synthetic captioning via strong vision-language models (VLMs) is a practical alternative, supervised distillation often yields limited output diversity and weak generalization. Reinforcement learning (RL) could overcome these limitations, but its successes have so far been concentrated in verifiable domains that rely on deterministic checkers -- a luxury not available in open-ended captioning. We address this bottleneck with RubiCap, a novel RL framework that derives fine-grained, sample-specific reward signals from LLM-written rubrics. RubiCap first assembles a diverse committee of candidate captions, then employs an LLM rubric writer to extract consensus strengths and diagnose deficiencies in the current policy. These insights are converted into explicit evaluation criteria, enabling an LLM judge to decompose holistic quality assessment and replace coarse scalar rewards with structured, multi-faceted evaluations. Across extensive benchmarks, RubiCap achieves the highest win rates on CapArena, outperforming supervised distillation, prior RL methods, human-expert annotations, and GPT-4V-augmented outputs. On CaptionQA, it demonstrates superior word efficiency: our 7B model matches Qwen2.5-VL-32B-Instruct, and our 3B model surpasses its 7B counterpart. Remarkably, using the compact RubiCap-3B as a captioner produces stronger pretrained VLMs than those trained on captions from proprietary models.",
+      "authors": [
+        "Tzu-Heng Huang",
+        "Sirajul Salekin",
+        "Javier Movellan",
+        "Frederic Sala",
+        "Manjot Bilkhu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-03-10T03:51:27+00:00",
+      "link": "https://arxiv.org/pdf/2603.09160v1",
+      "tags": [
+        "query:RAG"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "LLM-guided reward signals for reinforcement learning",
+      "llm_evidence_cn": "LLM引导的强化学习奖励信号",
+      "llm_evidence": "LLM引导的强化学习奖励信号",
+      "canonical_evidence": "LLM引导的强化学习奖励信号",
+      "llm_tldr_en": "Uses LLM-written rubrics to provide fine-grained reward signals for RL in open-ended captioning tasks.",
+      "llm_tldr_cn": "利用LLM编写的准则为开放式描述任务中的强化学习提供细粒度奖励信号。",
+      "llm_tldr": "利用LLM编写的准则为开放式描述任务中的强化学习提供细粒度奖励信号。",
+      "llm_tags": [
+        "query:rag:composite"
+      ],
+      "matched_query_tag": "query:rag:composite",
+      "matched_query_text": "Papers central to 毕设课题, especially work that connects or combines: R; reinforce learning for RAG.",
+      "matched_requirement_id": "req-composite-rag",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.05066v1",
+      "title": "Reward-Conditioned Reinforcement Learning",
+      "abstract": "RL agents are typically trained under a single, fixed reward function, which makes them brittle to reward misspecification and limits their ability to adapt to changing task preferences. We introduce Reward-Conditioned Reinforcement Learning (RCRL), a framework that trains a single agent to optimize a family of reward specifications while collecting experience under only one nominal objective. RCRL conditions the agent on reward parameterizations and learns multiple reward objectives from a shared replay data entirely off-policy, enabling a single policy to represent reward-specific behaviors. Across single-task, multi-task, and vision-based benchmarks, we show that RCRL not only improves performance under the nominal reward parameterization, but also enables efficient adaptation to new parameterizations. Our results demonstrate that RCRL provides a scalable mechanism for learning robust, steerable policies without sacrificing the simplicity of single-task training.",
+      "authors": [
+        "Michal Nauman",
+        "Marek Cygan",
+        "Pieter Abbeel"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-05T11:29:17+00:00",
+      "link": "https://arxiv.org/pdf/2603.05066v1",
+      "tags": [
+        "keyword:RAG",
+        "query:RAG"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Reinforcement learning framework for reward optimization",
+      "llm_evidence_cn": "用于奖励优化的强化学习框架",
+      "llm_evidence": "用于奖励优化的强化学习框架",
+      "canonical_evidence": "用于奖励优化的强化学习框架",
+      "llm_tldr_en": "Introduces a framework for training RL agents to optimize multiple reward specifications off-policy.",
+      "llm_tldr_cn": "引入了一种训练强化学习智能体以离线策略优化多种奖励规范的框架。",
+      "llm_tldr": "引入了一种训练强化学习智能体以离线策略优化多种奖励规范的框架。",
+      "llm_tags": [
+        "query:rag"
+      ],
+      "matched_query_tag": "query:rag",
+      "matched_query_text": "reinforce learning for RAG",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.09497v1",
+      "title": "EmbC-Test: How to Speed Up Embedded Software Testing Using LLMs and RAG",
+      "abstract": "Manual development of automatic tests for embedded C software is a strenuous and time-consuming task that does not scale well. With the accelerating pace of software release cycles, verification increasingly becomes the bottleneck in the embedded development workflow. This paper presents a Retrieval-Augmented Generation (RAG) pipeline as a solution for partial automation of the verification process. By grounding a large language model in project-specific artifacts, the approach reduces hallucinations and improves project alignment. An industrial evaluation showed that the generated tests are 100 % syntactically correct, with 85 % successfully passing runtime validation. The proposed solution has the potential to save up to 66 % of the testing time compared to manual test writing while generating 270 tests per hour.",
+      "authors": [
+        "Maximilian Harnot",
+        "Sebastian Komarnicki",
+        "Michal Polok",
+        "Timo Oksanen"
+      ],
+      "primary_category": "cs.SE",
+      "categories": [
+        "cs.SE"
+      ],
+      "published": "2026-03-10T10:58:59+00:00",
+      "link": "https://arxiv.org/pdf/2603.09497v1",
+      "tags": [
+        "keyword:RAG",
+        "query:RAG"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "RAG pipeline for embedded software verification",
+      "llm_evidence_cn": "用于嵌入式软件验证的RAG流水线",
+      "llm_evidence": "用于嵌入式软件验证的RAG流水线",
+      "canonical_evidence": "用于嵌入式软件验证的RAG流水线",
+      "llm_tldr_en": "Applies RAG to automate embedded C software testing and reduce hallucinations in test generation.",
+      "llm_tldr_cn": "利用RAG自动化嵌入式C软件测试，减少测试生成中的幻觉。",
+      "llm_tldr": "利用RAG自动化嵌入式C软件测试，减少测试生成中的幻觉。",
+      "llm_tags": [
+        "query:rag"
+      ],
+      "matched_query_tag": "query:rag",
+      "matched_query_text": "R",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.09065v1",
+      "title": "Learning Adaptive LLM Decoding",
+      "abstract": "Decoding from large language models (LLMs) typically relies on fixed sampling hyperparameters (e.g., temperature, top-p), despite substantial variation in task difficulty and uncertainty across prompts and individual decoding steps. We propose to learn adaptive decoding policies that dynamically select sampling strategies at inference time, conditioned on available compute resources. Rather than fine-tuning the language model itself, we introduce lightweight decoding adapters trained with reinforcement learning and verifiable terminal rewards (e.g. correctness on math and coding tasks). At the sequence level, we frame decoding as a contextual bandit problem: a policy selects a decoding strategy (e.g. greedy, top-k, min-p) for each prompt, conditioned on the prompt embedding and a parallel sampling budget. At the token level, we model decoding as a partially observable Markov decision process (POMDP), where a policy selects sampling actions at each token step based on internal model features and the remaining token budget. Experiments on the MATH and CodeContests benchmarks show that the learned adapters improve the accuracy-budget tradeoff: on MATH, the token-level adapter improves Pass@1 accuracy by up to 10.2% over the best static baseline under a fixed token budget, while the sequence-level adapter yields 2-3% gains under fixed parallel sampling. Ablation analyses support the contribution of both sequence- and token-level adaptation.",
+      "authors": [
+        "Chloe H. Su",
+        "Zhe Ye",
+        "Samuel Tenka",
+        "Aidan Yang",
+        "Soonho Kong",
+        "Udaya Ghai"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-10T01:15:26+00:00",
+      "link": "https://arxiv.org/pdf/2603.09065v1",
+      "tags": [
+        "query:RAG"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Decoding adapters trained with reinforcement learning",
+      "llm_evidence_cn": "使用强化学习训练的解码适配器",
+      "llm_evidence": "使用强化学习训练的解码适配器",
+      "canonical_evidence": "使用强化学习训练的解码适配器",
+      "llm_tldr_en": "Learns adaptive LLM decoding policies using reinforcement learning to optimize sampling strategies.",
+      "llm_tldr_cn": "利用强化学习学习自适应大模型解码策略，以优化采样方案。",
+      "llm_tldr": "利用强化学习学习自适应大模型解码策略，以优化采样方案。",
+      "llm_tags": [
+        "query:rag"
+      ],
+      "matched_query_tag": "query:rag",
+      "matched_query_text": "reinforce learning for RAG",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
