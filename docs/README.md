@@ -6,79 +6,73 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-03-11
-- 运行时间：2026-03-11 19:38:30 UTC
+- 最新运行日期：2026-03-13
+- 运行时间：2026-03-13 19:22:19 UTC
 - 运行状态：成功
-- 本次总论文数：19
-- 精读区：8
+- 本次总论文数：17
+- 精读区：6
 - 速读区：11
 
 ### 今日简报（AI）
-今日聚焦 19 篇 AI 前沿进展，深度拆解满分级 TREC 2025 RAG 综述与工业级优化建模。
-核心突破在于 RAG 的标准化评估体系及类型感知闭环技术，并同步探索了具身导航与强化学习的新范式。
-推荐优先阅读 RAG 赛道综述以把握技术风向，同时关注隐式奖励机制在工具调用中的潜力。
-- 详情：[/202603/11/README](/202603/11/README)
+今日深度复盘 17 篇 AI 论文，核心攻克 RAG 检索覆盖度与智能体自我评估奖励机制。
+顶尖研究揭示了“评估即行动”的自我反馈模式，并提出超越相关性、以信息覆盖度衡量 RAG 质量的新标准。
+建议关注如何利用结构化数据与实体摘要优化复杂问答，提升垂直领域 RAG 系统的检索精准度。
+- 详情：[/202603/13/README](/202603/13/README)
 
 ### 精读区论文标签
-1. [Overview of the TREC 2025 Retrieval Augmented Generation (RAG) Track](/202603/11/2603.09891v1-overview-of-the-trec-2025-retrieval-augmented-generation-rag-track)  
+1. [Evaluate-as-Action: Self-Evaluated Process Rewards for Retrieval-Augmented Agents](/202603/13/2603.09203v2-evaluate-as-action-self-evaluated-process-rewards-for-retrieval-augmented-agents)  
    标签：评分：10.0/10、query:rag
-   evidence：TREC 2025 RAG赛道概览与评估
-2. [Type-Aware Retrieval-Augmented Generation with Dependency Closure for Solver-Executable Industrial Optimization Modeling](/202603/11/2603.03180v1-type-aware-retrieval-augmented-generation-with-dependency-closure-for-solver-executable-industrial-optimization-modeling)  
+   evidence：检索增强智能体的强化学习
+2. [Beyond Relevance: On the Relationship Between Retrieval and RAG Information Coverage](/202603/13/2603.08819v2-beyond-relevance-on-the-relationship-between-retrieval-and-rag-information-coverage)  
    标签：评分：9.0/10、query:rag
-   evidence：用于工业优化建模的类型感知RAG
-3. [RAGTrack: Language-aware RGBT Tracking with Retrieval-Augmented Generation](/202603/11/2603.03617v1-ragtrack-language-aware-rgbt-tracking-with-retrieval-augmented-generation)  
+   evidence：检索与RAG信息覆盖率关系的系统研究
+3. [Reason and Verify: A Framework for Faithful Retrieval-Augmented Generation](/202603/13/2603.10143v1-reason-and-verify-a-framework-for-faithful-retrieval-augmented-generation)  
    标签：评分：9.0/10、query:rag
-   evidence：结合检索增强生成的 RGBT 追踪
-4. [Neuro-Symbolic Financial Reasoning via Deterministic Fact Ledgers and Adversarial Low-Latency Hallucination Detector](/202603/11/2603.04663v1-neuro-symbolic-financial-reasoning-via-deterministic-fact-ledgers-and-adversarial-low-latency-hallucination-detector)  
+   evidence：具有推理和验证功能的忠实RAG框架
+4. [AILS-NTUA at SemEval-2026 Task 8: Evaluating Multi-Turn RAG Conversations](/202603/13/2603.10524v1-ails-ntua-at-semeval-2026-task-8-evaluating-multi-turn-rag-conversations)  
    标签：评分：9.0/10、query:rag
-   evidence：转变金融推理中的 RAG 范式
-5. [Retrieval-Augmented Generation with Covariate Time Series](/202603/11/2603.04951v1-retrieval-augmented-generation-with-covariate-time-series)  
+   evidence：多轮RAG对话系统架构
+5. [Can Small Language Models Use What They Retrieve? An Empirical Study of Retrieval Utilization Across Model Scale](/202603/13/2603.11513v1-can-small-language-models-use-what-they-retrieve-an-empirical-study-of-retrieval-utilization-across-model-scale)  
    标签：评分：9.0/10、query:rag
-   evidence：用于时间序列的免训练 RAG 框架
-6. [Core-based Hierarchies for Efficient GraphRAG](/202603/11/2603.05207v1-core-based-hierarchies-for-efficient-graphrag)  
+   evidence：RAG中检索利用率的实证研究
+6. [QChunker: Learning Question-Aware Text Chunking for Domain RAG via Multi-Agent Debate](/202603/13/2603.11650v1-qchunker-learning-question-aware-text-chunking-for-domain-rag-via-multi-agent-debate)  
    标签：评分：9.0/10、query:rag
-   evidence：用于全局理解的图检索增强生成
-7. [Retrieval-Augmented Generation for Predicting Cellular Responses to Gene Perturbation](/202603/11/2603.07233v1-retrieval-augmented-generation-for-predicting-cellular-responses-to-gene-perturbation)  
-   标签：评分：9.0/10、query:rag
-   evidence：应用于细胞生物学的RAG
-8. [Evaluation of LLMs in retrieving food and nutritional context for RAG systems](/202603/11/2603.09704v1-evaluation-of-llms-in-retrieving-food-and-nutritional-context-for-rag-systems)  
-   标签：评分：9.0/10、query:rag
-   evidence：评估专用RAG系统中的大语言模型
+   evidence：为特定领域 RAG 学习问题感知的文本分块
 
 ### 速读区论文标签
-1. [RAGNav: A Retrieval-Augmented Topological Reasoning Framework for Multi-Goal Visual-Language Navigation](/202603/11/2603.03745v1-ragnav-a-retrieval-augmented-topological-reasoning-framework-for-multi-goal-visual-language-navigation)  
+1. [Evaluation of LLMs in retrieving food and nutritional context for RAG systems](/202603/13/2603.09704v2-evaluation-of-llms-in-retrieving-food-and-nutritional-context-for-rag-systems)  
    标签：评分：8.0/10、query:rag
-   evidence：用于视觉语言导航的RAG
-2. [In-Context Reinforcement Learning for Tool Use in Large Language Models](/202603/11/2603.08068v1-in-context-reinforcement-learning-for-tool-use-in-large-language-models)  
+   evidence：评估 LLM 在专业 RAG 系统中的检索能力
+2. [Structured Linked Data as a Memory Layer for Agent-Orchestrated Retrieval](/202603/13/2603.10700v1-structured-linked-data-as-a-memory-layer-for-agent-orchestrated-retrieval)  
    标签：评分：8.0/10、query:rag
-   evidence：用于LLM工具使用和搜索引擎检索的强化学习
-3. [Reward-Zero: Language Embedding Driven Implicit Reward Mechanisms for Reinforcement Learning](/202603/11/2603.09331v1-reward-zero-language-embedding-driven-implicit-reward-mechanisms-for-reinforcement-learning)  
+   evidence：智能体编排检索
+3. [MDER-DR: Multi-Hop Question Answering with Entity-Centric Summaries](/202603/13/2603.11223v1-mder-dr-multi-hop-question-answering-with-entity-centric-summaries)  
    标签：评分：8.0/10、query:rag
-   evidence：语言嵌入驱动的强化学习奖励
-4. [EmbC-Test: How to Speed Up Embedded Software Testing Using LLMs and RAG](/202603/11/2603.09497v1-embc-test-how-to-speed-up-embedded-software-testing-using-llms-and-rag)  
+   evidence：知识图谱RAG
+4. [Meta-Reinforcement Learning with Self-Reflection for Agentic Search](/202603/13/2603.11327v1-meta-reinforcement-learning-with-self-reflection-for-agentic-search)  
    标签：评分：8.0/10、query:rag
-   evidence：用于嵌入式软件验证的RAG流水线
-5. [When Safety Becomes a Vulnerability: Exploiting LLM Alignment Homogeneity for Transferable Blocking in RAG](/202603/11/2603.03919v1-when-safety-becomes-a-vulnerability-exploiting-llm-alignment-homogeneity-for-transferable-blocking-in-rag)  
+   evidence：用于代理搜索和探索的元强化学习
+5. [Detecting RAG Advertisements Across Advertising Styles](/202603/13/2603.04925v1-detecting-rag-advertisements-across-advertising-styles)  
    标签：评分：7.0/10、query:rag
-   evidence：RAG系统中的漏洞与阻断攻击
-6. [Position: LLMs Must Use Functor-Based and RAG-Driven Bias Mitigation for Fairness](/202603/11/2603.07368v1-position-llms-must-use-functor-based-and-rag-driven-bias-mitigation-for-fairness)  
+   evidence：检测 RAG 系统响应中的广告
+6. [CLIPO: Contrastive Learning in Policy Optimization Generalizes RLVR](/202603/13/2603.10101v1-clipo-contrastive-learning-in-policy-optimization-generalizes-rlvr)  
    标签：评分：7.0/10、query:rag
-   evidence：RAG驱动的偏差缓解
-7. [RubiCap: Rubric-Guided Reinforcement Learning for Dense Image Captioning](/202603/11/2603.09160v1-rubicap-rubric-guided-reinforcement-learning-for-dense-image-captioning)  
+   evidence：针对大语言模型推理的带可验证奖励的强化学习
+7. [RAGPerf: An End-to-End Benchmarking Framework for Retrieval-Augmented Generation Systems](/202603/13/2603.10765v1-ragperf-an-end-to-end-benchmarking-framework-for-retrieval-augmented-generation-systems)  
    标签：评分：7.0/10、query:rag
-   evidence：LLM引导的强化学习奖励信号
-8. [UniRain: Unified Image Deraining with RAG-based Dataset Distillation and Multi-objective Reweighted Optimization](/202603/11/2603.03967v1-unirain-unified-image-deraining-with-rag-based-dataset-distillation-and-multi-objective-reweighted-optimization)  
+   evidence：RAG基准测试框架
+8. [Context Before Code: An Experience Report on Vibe Coding in Practice](/202603/13/2603.11073v1-context-before-code-an-experience-report-on-vibe-coding-in-practice)  
+   标签：评分：7.0/10、query:rag
+   evidence：学术RAG系统的实现
+9. [Causally Robust Reward Learning from Reason-Augmented Preference Feedback](/202603/13/2603.04861v1-causally-robust-reward-learning-from-reason-augmented-preference-feedback)  
    标签：评分：6.0/10、query:rag
-   evidence：基于RAG的图像去雨数据集蒸馏
-9. [Memex(RL): Scaling Long-Horizon LLM Agents via Indexed Experience Memory](/202603/11/2603.04257v1-memexrl-scaling-long-horizon-llm-agents-via-indexed-experience-memory)  
+   evidence：从偏好反馈中学习奖励以塑造代理行为
+10. [DiSCTT: Consensus-Guided Self-Curriculum for Efficient Test-Time Adaptation in Reasoning](/202603/13/2603.05357v1-disctt-consensus-guided-self-curriculum-for-efficient-test-time-adaptation-in-reasoning)  
    标签：评分：6.0/10、query:rag
-   evidence：使用强化学习的LLM智能体索引经验记忆
-10. [Reward-Conditioned Reinforcement Learning](/202603/11/2603.05066v1-reward-conditioned-reinforcement-learning)  
+   evidence：推理任务中测试时自适应的强化学习
+11. [ActiveUltraFeedback: Efficient Preference Data Generation using Active Learning](/202603/13/2603.09692v1-activeultrafeedback-efficient-preference-data-generation-using-active-learning)  
    标签：评分：6.0/10、query:rag
-   evidence：用于奖励优化的强化学习框架
-11. [Learning Adaptive LLM Decoding](/202603/11/2603.09065v1-learning-adaptive-llm-decoding)  
-   标签：评分：6.0/10、query:rag
-   evidence：使用强化学习训练的解码适配器
+   evidence：用于大语言模型对齐的人类反馈强化学习
 
 
 <div class="dpr-home-promo-card">

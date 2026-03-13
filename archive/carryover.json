@@ -1,6 +1,51 @@
 {
-  "generated_at": "2026-03-11T19:35:55.692007+00:00",
-  "updated_date": "20260311",
+  "generated_at": "2026-03-13T19:19:31.779197+00:00",
+  "updated_date": "20260313",
   "carryover_days": 9,
-  "items": []
+  "items": [
+    {
+      "id": "2603.11501v1",
+      "title": "KEPo: Knowledge Evolution Poison on Graph-based Retrieval-Augmented Generation",
+      "abstract": "Graph-based Retrieval-Augmented Generation (GraphRAG) constructs the Knowledge Graph (KG) from external databases to enhance the timeliness and accuracy of Large Language Model (LLM) generations.However,this reliance on external data introduces new attack surfaces.Attackers can inject poisoned texts into databases to manipulate LLMs into producing harmful target responses for attacker-chosen queries.Existing research primarily focuses on attacking conventional RAG systems.However,such methods are ineffective against GraphRAG.This robustness derives from the KG abstraction of GraphRAG,which reorganizes injected text into a graph before retrieval,thereby enabling the LLM to reason based on the restructured context instead of raw poisoned passages.To expose latent security vulnerabilities in GraphRAG,we propose Knowledge Evolution Poison (KEPo),a novel poisoning attack method specifically designed for GraphRAG.For each target query,KEPo first generates a toxic event containing poisoned knowledge based on the target answer.By fabricating event backgrounds and forging knowledge evolution paths from original facts to the toxic event,it then poisons the KG and misleads the LLM into treating the poisoned knowledge as the final result.In multi-target attack scenarios,KEPo further connects multiple attack corpora,enabling their poisoned knowledge to mutually reinforce while expanding the scale of poisoned communities,thereby amplifying attack effectiveness.Experimental results across multiple datasets demonstrate that KEPo achieves state-of-the-art attack success rates for both single-target and multi-target attacks,significantly outperforming previous methods.",
+      "authors": [
+        "Qizhi Chen",
+        "Chao Qi",
+        "Yihong Huang",
+        "Muquan Li",
+        "Rongzheng Wang",
+        "Dongyang Zhang",
+        "Ke Qin",
+        "Shuang Liang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CR"
+      ],
+      "published": "2026-03-12T03:40:30+00:00",
+      "link": "https://arxiv.org/pdf/2603.11501v1",
+      "tags": [
+        "keyword:RAG",
+        "query:RAG"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Security and poisoning attacks on Graph-based RAG",
+      "llm_evidence_cn": "针对图检索增强生成 (GraphRAG) 的安全与投毒攻击",
+      "llm_evidence": "针对图检索增强生成 (GraphRAG) 的安全与投毒攻击",
+      "canonical_evidence": "针对图检索增强生成 (GraphRAG) 的安全与投毒攻击",
+      "llm_tldr_en": "Investigates knowledge evolution poisoning attacks and robustness in GraphRAG systems.",
+      "llm_tldr_cn": "研究了GraphRAG系统中的知识演化投毒攻击及其鲁棒性问题。",
+      "llm_tldr": "研究了GraphRAG系统中的知识演化投毒攻击及其鲁棒性问题。",
+      "llm_tags": [
+        "query:rag"
+      ],
+      "matched_query_tag": "query:rag",
+      "matched_query_text": "R",
+      "matched_requirement_id": "req-1",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.11501v1",
+      "carry_days": 1
+    }
+  ]
 }

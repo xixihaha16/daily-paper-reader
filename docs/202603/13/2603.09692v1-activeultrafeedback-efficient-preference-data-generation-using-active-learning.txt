@@ -1,0 +1,1236 @@
+Title: ActiveUltraFeedback: Efficient Preference Data Generation using Active Learning
+
+URL Source: https://arxiv.org/pdf/2603.09692v1
+
+Published Time: Wed, 11 Mar 2026 01:08:12 GMT
+
+Number of Pages: 35
+
+Markdown Content:
+# ActiveUltraFeedback: Efficient Preference Data Generation using Active Learning 
+
+Davit Melikidze 1∗ Marian Schneider 1∗ Jessica Lam 1∗ Martin Wertich 1∗
+
+Ido Hakimi 1,2 Barna Pásztor 1,2 Andreas Krause 1,2 1 ETH Zurich 2 ETH AI Center 
+
+## Abstract 
+
+Reinforcement Learning from Human Feedback (RLHF) has become the standard for aligning Large Language Models (LLMs), yet its efficacy is bottlenecked by the high cost of acquiring preference data, especially in low-resource and expert domains. To address this, we introduce A CTIVE ULTRA FEEDBACK , a modular active learning pipeline that leverages uncertainty estimates to dynamically identify the most informative responses for annotation. Our pipeline facilitates the systematic evaluation of standard response selection methods alongside D OUBLE REVERSE THOMPSON SAMPLING (DRTS) and D ELTA UCB, two novel methods prioritizing response pairs with large predicted quality gaps, leveraging recent results showing that such pairs provide good signals for fine-tuning. Our experiments demonstrate that A CTIVE ULTRA FEEDBACK yields high-quality datasets that lead to significant improvements in downstream performance, notably achieving comparable or superior results with as little as one-sixth of the annotated data relative to static baselines. Our pipeline is available at https://github.com/lasgroup/ActiveUltraFeedback and our preference datasets at https://huggingface.co/ActiveUltraFeedback .
+
+## 1 Introduction 
+
+Reinforcement Learning from Human Feedback (RLHF) has established itself as a critical methodology to align Large Language Models (LLMs) with human preferences [Ziegler et al., 2019, Ouyang et al., 2022]. RLHF guides the model using human feedback articulated as pairwise preferences over potential outputs, resulting in more naturalistic and human-like behaviour [Christiano et al., 2017]. The standard implementation involves training a reward model, followed by model optimization with Proximal Policy Optimization (PPO) [Schulman et al., 2017] to maximize expected rewards [Ouyang et al., 2022]. Alternatively, Direct Preference Optimization (DPO) [Rafailov et al., 2023] circumvents the need for a separate reward model by optimizing the model directly on the dataset of pairwise preferences. The potential efficacy of these methods increases with the quality of the preference data, but human annotation is expensive to obtain, especially in low-resource or expert domains. Consequently, a promising direction for low-cost and scalable preference dataset creation is to reduce annotation requirements by identifying and labelling only the most informative response pairs. Existing works such as UltraFeedback [Cui et al., 2024], Magpie [Xu et al., 2025], and Nectar [Zhu et al., 2023] generate response pairs through static, passive heuristics. Common choices are random or best-of-N sampling [Cui et al., 2024, Zhu et al., 2023], which are either inefficient or require multiple annotations per prompt. Our experiments show that neither results in high-quality datasets. More recently, the Delta Learning Hypothesis (DLH) [Geng et al., 2025] proposed a novel approach by pairing models of different sizes within a single family (e.g., small vs. large) to form contrastive pairs without annotation. While effective for common applications, this rigidity limits DLH to domains within the chosen model family’s training data, and as our experiments show, its performance is limited to DPO fine-tuning. Therefore, the question of collecting high-quality preference datasets not tied to specific algorithms while keeping the need for costly annotation low remains open. In this work, we propose A CTIVE ULTRA FEEDBACK , a modular preference data collection pipeline. Our framework, motivated by the contextual dueling bandit problem [Dudík et al., 2015], considers prompts as contexts, and the system must select two “arms” (responses) to annotate from a diverse pool of candidates. We maintain a probabilistic estimate of response 
+
+> ∗
+
+Equal contribution. Correspondence to {dmelikidze,smarian,jehong,mwertich}@ethz.ch .Preprint.   
+
+> arXiv:2603.09692v1 [cs.LG] 10 Mar 2026 +14%
+> +5%
+> +32%
+> +3% +34%
+> TruthfulQA
+> GSM8K
+> RewardBench 2
+> IFEval
+> AlpacaEval 2
+> UltraFeedback
+> DeltaQwen
+> DeltaUCB
+> DRTS
+> DTS ∗
+
+Figure 1: Comparison of response pair selection methods on downstream and reward model benchmarks deployed in A CTIVE UL-
+
+> TRA
+
+FEEDBACK . The scores have been averaged over four datasets (see Section 5.4) of different scales, and indicate improvement over the base model. * denotes an existing dueling bandit method and † indicates our novel active delta learning methods. quality, updated sequentially as data is collected, to guide the selection of subsequent pairs. Within this framework, we conduct a systematic evaluation of response pair selection methods, comparing standard dueling bandit approaches against established heuristics. Furthermore, we introduce D OUBLE REVERSE THOMPSON SAMPLING (DRTS) and D ELTA UCB, two novel methods integrating the insights of the Delta Learning Hypothesis [Geng et al., 2025] by prioritizing pairs with high predicted quality gaps rather than simply minimizing regret. As previewed in Figure 1, A CTIVE ULTRA FEEDBACK with DRTS and D ELTA UCB consistently outperforms prior heuristics and standard dueling-bandit baselines across both fine-tuned and reward-model benchmarks. Notably, A CTIVE ULTRA FEEDBACK demonstrates strong sample-efficiency, matching or outperforming previous methods using only one-third of the data, requiring only a single pairwise comparison per prompt for annotation, and not being confined to a single model family. This efficiency enables its application to domains not supported by previous methods. Our detailed ablations demonstrate that these results hold across various datasets and fine-tuning algorithms. In summary, our contributions are as follows: • We introduce A CTIVE ULTRA FEEDBACK , a modular preference data generation pipeline, that can be deployed with any response selection and uncertainty quantification methods to guide data collection. • We are the first to perform a systematic comparison of dueling bandit acquisition functions and common data collection heuristics on a wide set of benchmarks covering both reward modeling and diverse downstream benchmarks. • We introduce two new response pair selection approaches, DRTS and D ELTA UCB, that generate datasets yielding strong performance across datasets, tasks, and fine-tuning algorithms, while relying on fewer annotations. • We open-source A CTIVE ULTRA FEEDBACK to allow for easy adoption in existing data pipelines and release artifacts, such as datasets and models. 
+
+## 2 Related Work 
+
+Reinforcement Learning from Human Feedback (RLHF) is a common method for training models on qualitative objectives concerning human preferences [Christiano et al., 2017, Ziegler et al., 2019, Ouyang et al., 2022]. A standard pipeline involves training a reward model on pairwise comparison data, then standard reinforcement learning algorithms like PPO [Schulman et al., 2017] optimize the model. Alternatively, Direct Preference Optimization (DPO) [Rafailov et al., 2023] offers a solution that combines the two steps. However, the efficacy of these methods is bottlenecked by data provenance. Traditional pipelines rely on manual annotation [Ziegler et al., 2019, Stiennon et al., 2020, Bai et al., 2022] or noisy indirect signals [Ethayarajh et al., 2022]. The former is prohibitively expensive to scale, while the latter lacks control over domain coverage and data quality. 2Response     
+
+> Generation
+> Chosen
+> Rejected
+> Prompt
+> Reward
+> Prediction
+> Response Pair
+> Selection
+> Preference
+> Annotation
+> ENN Reward Model Selection Method
+> Reward Model
+> Training
+> Truthfulness
+> Instruction Following
+> Helpfulness
+> Honesty
+> Judge
+> 51234
+
+Figure 2: The A CTIVE ULTRA FEEDBACK pipeline. For each prompt, responses are generated from a large pool of LLMs, the rewards for the responses are predicted with corresponding uncertainties, and a pair of responses is selected for preference annotation. Each new batch of preference data is used to train the reward model, improving the accuracy of reward and uncertainty estimates for subsequent iterations. The displayed procedure is performed in a looping manner until all prompts have been processed. To scale up supervision and leverage the performance of frontier models, recent efforts, such as UltraFeedback [Cui et al., 2024], Magpie [Wang et al., 2024a], and Nectar [Zhu et al., 2023] have shifted towards generating synthetic data. They follow a common paradigm: a pool of instruction-tuned LLMs generates multiple candidate responses per prompt, then the candidates are scored or ranked [Zhu et al., 2023] by a judge, and a chosen-rejected pair is selected [Cui et al., 2024, Wang et al., 2024a]. While these methods have successfully trained open-source models like Zephyr [Tunstall et al., 2024], Tulu 3 [Lambert et al., 2025], and Olmo 2 [Walsh et al., 2025], they apply the same selection strategy to every prompt regardless of response quality uncertainty. This lack of adaptivity often results in sample inefficiency and low-quality datasets, as the system consumes budget on trivial comparisons while missing high-information pairs. Alternatively, the Delta Learning Hypothesis (DLH) [Geng et al., 2025] employs a structural heuristic, pairing models of different sizes (e.g., 0.6B vs. 32B) within a single family to guarantee a quality gap without requiring a judge. Despite its success in training Olmo 3 [Olmo et al., 2025] and SmolLM3 [Bakouch et al., 2025], DLH is rigidly confined to intra-family comparisons, limiting its applicability to their often unknown training domains. Recent works address sample inefficiency in RLHF by formulating it as a contextual duelling bandit problem [Dudik et al., 2011]. For reward model training, prior work adapts Double Thompson Sampling (DTS) [Dwaracherla et al., 2024], applies information-theoretic selection [Shen et al., 2025], and uses uncertainty to estimate preference quality and adaptively weight samples [Zhang et al., 2025]. For model fine-tuning, uncertainty estimates over predicted rewards improve sample efficiency through uncertainty-based data selection [Liu et al., 2024c, Muldrew et al., 2024, Mehta et al., 2025, Cercola et al., 2025], exploration bonuses [Liang et al., 2022], or uncertainty-regularized objectives that penalize high-uncertainty rewards during RL optimization [Zhai et al., 2026]. However, the literature remains fragmented: studies typically focus narrowly on either reward model training [Dwaracherla et al., 2024, Shen et al., 2025, Zhang et al., 2025] or policy optimization [Muldrew et al., 2024, Liu et al., 2024c, Kveton et al., 2025, Mehta et al., 2025], often within a single model family. In contrast, we do not restrict our scope to a single selection method, application, or optimization algorithm. We bridge this gap by proposing a unified, modular pipeline that enables evaluating response pair selection strategies across both downstream fine-tuning and reward modeling. Within this framework, we benchmark active learning strategies directly against static heuristics and introduce novel methods that operationalize insights from the Delta Learning Hypothesis. Our pipeline generates high-quality datasets for both reward modeling and model fine-tuning, and performs well with multiple preference optimization algorithms. 
+
+## 3 Background 
+
+Reinforcement Learning from Human Feedback (RLHF) aligns models with human intent by learning from a dataset of pairwise comparisons D = {(xi, y + 
+
+> i
+
+, y − 
+
+> i
+
+)}Ni=1 , where xi denotes a prompt and (y+ 
+
+> i
+
+, y − 
+
+> i
+
+) denotes candidate responses with y+ 
+
+> i
+
+preferred to y− 
+
+> i
+
+. For brevity, we drop the indexing by i for this section. The standard approach [Christiano et al., 2017] proceeds in two stages. First, a reward model rϕ(x, y ) is trained to approximate the latent human preference distribution. This typically relies on the Bradley-Terry model [Bradley and Terry, 1952], which assumes that the comparison feedback is drawn from a Bernoulli distribution and the probability of y+ being preferred to y− is given by the sigmoid of their reward difference, i.e., 
+
+p(y+ ≻ y− | x) = s( r(x, y +) − r(x, y −)) , (1) where s( x) = (1 + e−x)−1 is the sigmoid function and r is an unknown latent scalar function. The parametrized reward model 
+
+rϕ is then optimized to estimate the unknown reward function r by minimizing the negative log-likelihood of the dataset in D.3Second, the model, πθ , is optimized to maximize the regularized objective 
+
+J (θ) = Ex∼D ,y ∼πθ (·| x) [rϕ(x, y ) − λ KL( πθ ∥πref )] , (2) where KL denotes the Kullback-Leibler divergence from a reference model πref and λ controls the strength of the regularization. Direct Preference Optimization (DPO) [Rafailov et al., 2023] is a widely used alternative that improves computational efficiency by combining the reward modeling and policy fine-tuning steps, turning RLHF into a supervised learning task. Regardless of the optimisation approach, standard RLHF methods consider D as a fixed, static artifact. While the standard RLHF approaches only use a pointwise estimate for the reward function rϕ, we leverage uncertainty estimates to guide data collection. Let rϕ(x, y ) and rϕ(x, y ) denote the lower and upper confidence bounds of the reward estimate. Under the Bradley-Terry assumption, the upper confidence bound (UCB) probability p that a response yj is preferred over another response yj′ is defined as 
+
+pϕ(yj ≻ yj′ ) = s( rϕ(x, y j ) − rϕ(x, y j′ )) . (3) Conversely, the lower confidence bound (LCB) probability p is defined by the worst-case reward difference 
+
+pϕ(yj ≻ yj′ ) = s( rϕ(x, y j ) − rϕ(x, y j′ )) . (4) These probabilistic bounds serve as the foundation for response selection methods described in Section 4.3. 
+
+## 4 The A CTIVE ULTRA FEEDBACK Pipeline 
+
+In this section, we introduce A CTIVE ULTRA FEEDBACK , our scalable and modular pipeline for creating high-quality preference datasets without extensive annotation requirements. Given a set of N prompts, P = {xi}Ni=1 , A CTIVE ULTRA FEEDBACK starts with an empty dataset D = ∅, processes the prompts in P iteratively in batches, and appends the new data points to D. The five key steps for each batch, illustrated in Figure 2, are as follows: 1. Response Generation : For each prompt xi in the batch, generate a diverse set of candidate responses {yi,j }mj=1 from a pool of m LLMs (Section 4.1). 2. Reward Prediction : For each prompt–response pair (xi, y i,j ), estimate rϕ(xi, y i,j ) and rϕ(xi, y i,j ) (Section 4.2). 3. Response Pair Selection : Select two responses (yi,j , y i,j ′ ) for each prompt in the batch for pairwise comparison (Section 4.3). 4. Preference Annotation : Collect preference annotations and append the resulting triplets, (xi, y + 
+
+> i
+
+, y − 
+
+> i
+
+), to D (Sec-tion 4.4). 5. Reward Model Training : Update the reward model’s parameters, ϕ, with the dataset D collected thus far (Section 4.5). 
+
+4.1 Response Generation 
+
+Given an input prompt xi, we employ a model pool of m LLMs to generate candidate responses {yi,j }mj=1 . Our model pool comprises m = 30 open-weight LLMs from 12 families, including Qwen 2.5 [Qwen et al., 2025], Qwen 3 [Yang et al., 2025], Llama 3 [Grattafiori et al., 2024], Gemma 3 [Team et al., 2024], and SmolLM 2 [Allal et al., 2025]. Following the UltraFeedback pipeline’s approach [Cui et al., 2024, Lambert et al., 2025, Walsh et al., 2025], for each prompt–LLM pair, we select a guiding principle (from “helpfulness”, “truthfulness”, and “honesty”) at random to create more diverse responses. The combination of aspects and the diverse model pool ensures that the candidate responses provide a broad content and quality diversity for the response pair selection methods. We defer further details on the model pool (Table 3), principles (Section A.2), and the used prompt templates (Section G.1) to the Appendix. 
+
+4.2 Reward Prediction 
+
+To operationalize the uncertainty estimates defined in Section 3, we employ the Epistemic Neural Network (ENN) frame-work [Osband et al., 2023]. Following prior works for active learning in RLHF [Dwaracherla et al., 2024, Melo et al., 2024, Liu et al., 2024c], we implement the ENN as an ensemble of shallow Multi-Layer Perceptrons with a shared, frozen backbone, deriving the final reward rϕ(xi, y j ) as the ensemble mean and uncertainty σϕ(xi, y j ) as the standard deviation. These quantities define the upper and lower confidence bounds for the reward estimate 
+
+rϕ(xi, y j ) = rϕ(xi, y j ) + βσ ϕ(xi, y j ),rϕ(xi, y j ) = rϕ(xi, y j ) − βσ ϕ(xi, y j )
+
+respectively, where β > 0 is a scaling parameter, as well as the UCB pϕ (Equation (3)) and LCB pϕ (Equation (4)) for comparisons between response pairs. Additional details on the network architecture are provided in Section B.1. 4Table 1: Overview of response pair selection methods and the number of responses that need to be annotated per prompt. † indicates the methods that we propose. 
+
+Methods # Responses to Annotate 
+
+Baseline Heuristics 
+
+RANDOM 2MAX MIN m
+
+ULTRA FEEDBACK [Cui et al., 2024] 4DELTA QWEN [Geng et al., 2025] 0
+
+Dueling Bandit Methods 
+
+INFO MAX [Saha, 2021] 2DTS [Wu and Liu, 2016] 2MAX MIN LCB [Pásztor et al., 2024] 2
+
+Active Delta Learning Methods 
+
+DRTS † 2DELTA UCB † 2
+
+4.3 Response Pair Selection 
+
+For each prompt xi, we select a response pair (yi,j , y i,j ′ ) for preference annotation using a response pair selection method. We explore four baseline heuristics that do not make use of the reward estimates and three methods proposed for the Dueling Bandit problem [Bengs et al., 2021]. Additionally, we propose two novel methods, DRTS and D ELTA UCB, based on the Delta Learning Hypothesis (DLH) [Geng et al., 2025]. We provide an overview of the algorithms here and defer further details to Section C. Table 2: Comparison between all response pair selection methods, based on the reward model and fine-tuned model (DPO) performance after training the same base model on each generated dataset. The base model score is given for reference, and all scores are reported as relative deltas to it. We also provide the deltas achieved with the original response pairs in UltraFeedback .Best score marked in bold. 
+
+Method GSM8K IFEval TruthfulQA AlpacaEval 2 Mean RewardBench 2 
+
+Base Model 0.758 0.713 0.468 0.083 0.506 0.290 Original +0.039 +0.025 +0.055 +0.030 +0.037 +0.295 RANDOM +0.024 +0.028 +0.056 +0.077 +0.046 +0.278 ULTRA FEEDBACK +0.037 -0.001 +0.039 +0.072 +0.036 +0.287 MAX MIN +0.022 -0.016 +0.150 +0.289 +0.111 +0.318 DELTA QWEN +0.055 +0.047 +0.130 +0.316 +0.137 +0.100 INFO MAX +0.011 +0.019 +0.018 +0.020 +0.016 +0.297 DTS +0.011 +0.034 +0.013 +0.037 +0.023 +0.224 MAX MIN LCB +0.015 +0.017 +0.006 +0.027 +0.016 +0.230 DRTS +0.055 +0.050 +0.143 +0.259 +0.127 +0.312 DELTA UCB +0.040 +0.025 +0.137 +0.281 +0.120 +0.339 Baseline Heuristics We evaluate four passive baseline heuristics that operate independently of reward estimates. (i) R ANDOM 
+
+samples a pair uniformly at random from the candidate set; (ii) M AX MIN queries a judge for the entire candidate set to identify the responses with the highest and lowest quality; (iii) U LTRA FEEDBACK [Cui et al., 2024] samples four responses uniformly at random, queries a judge on their quality, and returns the highest-scoring one as the preferred response paired with a randomly selected one from the remaining three; (iv) D ELTA QWEN [Geng et al., 2025] selects the responses generated by the Qwen 3 0.6B and 32B models, with the latter considered as the preferred response. 
+
+Dueling Bandit Methods We adopt three acquisition functions from prior literature on dueling bandits: (i) I NFO MAX [Saha, 2021] prioritizes pure exploration by selecting the response pair with the highest joint uncertainty, regardless of the predicted reward quality: arg max j̸ =j′ pϕ(yi,j ≻ yi,j ′ ) − pϕ(yi,j ≻ yi,j ′ ); (ii) D OUBLE THOMPSON SAMPLING (DTS) [Wu and Liu, 2016] addresses the exploration-exploitation trade-off by drawing two independent samples from the reward posterior and 5Random       
+
+> UltraFeedback
+> MaxMin
+> DeltaQwen
+> DeltaUCB
+> DRTS
+> InfoMax
+> DTS
+> MaxMinLCB
+> Original 010k 20k 30k 40k 50k 60k
+> Consumed Samples
+> 0%
+> +5%
+> +10%
+> +15%
+> Score  ∆
+
+(a) Fine-tuned Models 0 10k 20k 30k 40k 50k 60k  
+
+> Consumed Samples
+> 0%
+> +10%
+> +20%
+> +30%
+> Score  ∆
+
+(b) Reward Models 
+
+Figure 3: Mean performance trajectories for fine-tuned and reward models as a function of consumed samples on UltraFeedback 
+
+prompts. We compare datasets generated via A CTIVE ULTRA FEEDBACK using various response pair selection methods. We provide the scores achieved using the UltraFeedback dataset [Cui et al., 2024] with the original response pairs. selecting the responses that maximize them; (iii) M AX MIN LCB [Pásztor et al., 2024] considers the pairwise LCB (Equation (4)) and selects the pair (j1, j 2) where j1 = arg max j min j′̸ =j pϕ(yj ≻ yj′ ) maximizes the minimum LCB against any other response, and j2 = arg min j̸ =j1 pϕ(yj1 ≻ yj ) minimizes the LCB against j1. These algorithms offer no-regret guarantees (DTS, MAX MIN LCB) or sample complexity bounds for identifying the optimal response (I NFO MAX ). 
+
+Active Delta Learning Methods We introduce two novel methods based on the Delta Learning Hypothesis [Geng et al., 2025], which states that the absolute quality of the responses is less important than the relative difference, and proposed the DELTA QWEN method introduced above. DOUBLE REVERSED THOMPSON SAMPLING (DRTS) selects one response that maximizes and another that minimizes their respective samples from the reward posterior. This strategy explicitly targets pairs with a significant delta in quality, while the underlying stochastic sampling preserves exploration and diversity. DELTA UCB identifies pairs with the largest optimistic quality difference by selecting the pair (yi,j , y i,j ′ ) that maximizes the probability that j is preferred over j′ in the best-case scenario: arg max j̸ =j′ pϕ(yi,j ≻ yi,j ′ ). By relying on these optimistic bounds, D ELTA UCB guides exploration toward pairs that plausibly exhibit significant quality differences, without requiring stochastic sampling. 
+
+4.4 Preference Annotation 
+
+After the response pairs (yi,j , y i,j ′ ) for each prompt xi are selected, we query a judge for the pairwise comparison feedback and, following the annotation, append (xi, y + 
+
+> i
+
+, y − 
+
+> i
+
+) to the dataset D. To facilitate scalable and reproducible experiments, we employ a large LLM instead of human annotators. Specifically, a judge LLM independently scores each response on a 1–5 Likert scale across four quality aspects: truthfulness, instruction following, honesty, and helpfulness. The response with the highest average score is then selected as preferred. To ensure high-quality labels, we validated our annotation setup through extensive experiments comparing different judges, prompting strategies, and scoring mechanisms. Further details are provided in Section D. 
+
+4.5 Reward Model Training 
+
+Finally, we update the ENN model to improve its reward estimates using the latest batch of preference data combined with previously collected samples. For details on hyperparameters and the training procedure, see Section B.2. 
+
+## 5 Evaluation 
+
+In this section, we evaluate the response pair selection methods (Section 4.3) deployed in A CTIVE ULTRA FEEDBACK by investigating the following research questions: 1. Performance : Can A CTIVE ULTRA FEEDBACK generate high-quality datasets (Section 5.2), and which response pair selection method achieves the best performance? 6Random        
+
+> UltraFeedback
+> MaxMin
+> DeltaQwen
+> DeltaUCB
+> DRTS
+> InfoMax
+> DTS
+> MaxMinLCB
+> Original UltraFeedback Skywork Combined Tulu 3
+> 0%
+> +5%
+> +10%
+> +15%
+> ∆Score (a) DPO Models UltraFeedback Skywork Combined Tulu 3
+> 0%
+> +10%
+> +20%
+> +30%
+> +40%
+> ∆Score (b) Reward Models
+
+Figure 4: Benchmarking of downstream and reward model performance across input prompt datasets, increasing in scale from left to right. Scores are reported as relative deltas to the base model. We provide the scores achieved using the original preference dataset instead of just the prompts with A CTIVE ULTRA FEEDBACK for reference. 2. Efficiency : Does active response pair selection provide sample efficiency improvements (Section 5.3), yielding equal or higher scores using fewer annotated samples? 3. Generalization : Do results generalize across prompt datasets (Section 5.4) and preference optimization algorithms (Section 5.5)? 
+
+5.1 Implementation Details Datasets We choose the UltraFeedback dataset 2 [Cui et al., 2024] as our primary set of prompts P and consider further prompt collections in Section 5.4. 
+
+Evaluation To evaluate the datasets collected by A CTIVE ULTRA FEEDBACK , we consider the two steps of RLHF described in Section 3, reward model training and model fine-tuning, separately. First, we train a standard reward model using the standard negative log likelihood minimization of the Bradley-Terry model defined in Equation (1) and evaluate it on the RewardBench 2 benchmark [Malik et al., 2025]. To keep our evaluation protocol standardized, we train the reward model independently of the ENN described in Section 4.2. To isolate reward modeling and preference fine-tuning, we use DPO [Rafailov et al., 2023], which combines the two steps of RLHF. We evaluate other direct optimization algorithms in Section 5.5. The fine-tuned models are then evaluated on the GSM8K [Cobbe et al., 2021], IFEval [Zhou et al., 2023], TruthfulQA [Lin et al., 2022], and AlpacaEval 2 [Dubois et al., 2024] benchmarks covering the crucial capabilities of mathematical reasoning, instruction-following, knowledge recall, and human preference. Both trainings for evaluation are initialized from the Tulu 3 8B SFT model 3 [Lambert et al., 2025] and all scores are reported as deltas relative to the base model. We measured our results’ sensitivity to the inherent stochastic nature of our pipeline and consider a difference of at least 0.008 for the downstream benchmarks and 0.02 for RewardBench 2 to be significant. Detailed analysis is provided in Section E.2. We carry out hyperparameter tuning for both the response pair selection methods from Section 4.3 and the training methods used for evaluation. Further implementation details are provided in Section E. 
+
+5.2 Response Pair Selection Methods 
+
+In this section, we address our first research question by employing the A CTIVE ULTRA FEEDBACK pipeline with the response pair selection methods described in Section 4.3. The results presented in Table 2 and Figure 1 demonstrate that ACTIVE ULTRA FEEDBACK with DRTS and D ELTA UCB can generate high-quality datasets for both reward modeling and preference optimization, outperforming all other methods except D ELTA QWEN for the latter. This is expected due to the known performance of D ELTA QWEN for fine-tuning with DPO on common domains and datasets. However, it significantly lags behind even random sampling for reward modelling. We attribute this discrepancy for D ELTA QWEN to its confinement to the training distribution of the underlying models. Contrary to many prior works considering active learning for RLHF as a contextual dueling bandit problem (Section 2), we find that previously proposed dueling bandit methods do not transfer effectively to the task of preference data generation. Analyzing the generated datasets (Section F.1) confirms that DTS and M AX MIN LCB successfully achieve their theoretical goal of identifying high-quality responses, but yield datasets that lack the quality deltas required for learning. Consequently, 
+
+> 2allenai/ultrafeedback_binarized_cleaned
+> 3allenai/Llama-3.1-Tulu-3-8B-SFT
+
+7these methods underperform even random sampling, demonstrating that the objectives of regret minimization and uncertainty minimization are misaligned with the goal of preference data generation. Random            
+
+> UltraFeedback
+> MaxMin
+> DeltaQwen
+> DeltaUCB
+> DRTS
+> InfoMax
+> DTS
+> MaxMinLCB
+> Original 10k 20k 30k 40k 50k 60k
+> Consumed Samples
+> 0%
+> +5%
+> +10%
+> +15%
+> Score  ∆
+> (a) IPO 10k 20k 30k 40k 50k 60k
+> Consumed Samples
+> 0%
+> +10%
+> Score  ∆(b) SimPO
+
+Figure 5: Mean performance trajectories for of models fine-tuned using IPO (Figure 5a) and SimPO (Figure 5b) as a function of consumed samples on datasets generated using A CTIVE ULTRA FEEDBACK based on UltraFeedback prompts. We provide the scores achieved using the original preference dataset instead of just the prompts with A CTIVE ULTRA FEEDBACK for reference. 
+
+5.3 Sample Efficiency 
+
+We address our second research question by evaluating partial datasets. The results for downstream benchmarks (Figure 3a) show that our proposed methods, DRTS and D ELTA UCB, demonstrate strong sample-efficiency in downstream evaluations. Using our proposed methods, models fine-tuned on merely 5’000 to 10’000 samples outperform those trained on 60’000 samples from the datasets generated using R ANDOM , U LTRA FEEDBACK , or dueling bandit methods. Notably, they also lead to better performance than when training on the original UltraFeedback dataset [Cui et al., 2024]. While D ELTA QWEN shows a 1% improvement in mean downstream score over DRTS, this is driven disproportionately by AlpacaEval 2 performance, as also shown on Table 2 (see Appendix, Figure 7). Notably, D ELTA UCB shows smaller fluctuations in performance than M AX MIN , D ELTA QWEN , and DRTS. These results indicate that DPO training can be made significantly more sample-efficient than previously reported by leveraging optimal selection of responses, and that training models on preference feedback could be achieved at a much lower annotation cost. As shown on Figure 3b, reward modeling follows a more gradual saturation curve, requiring 40’000 samples to attain benchmark scores equivalent to training on the complete dataset without active response pair selection. Furthermore, Figure 3 reveals a critical limitation of the D ELTA QWEN baseline: its strong downstream performance (Figure 3a) contrasts with poor generalization in reward modeling (Figure 3b). In addition, R ANDOM shows strong performance for reward modeling, which, in turn, suggests that diversity is a more desirable property for this task than qualitative difference. On the contrary, DRTS and D ELTA UCB not only achieve high scores on both tasks but only these two methods are both practical and yield datasets that can surpass the quality of the original one. 
+
+5.4 Input Prompt Dataset Ablation 
+
+To assess the generalization capabilities of A CTIVE ULTRA FEEDBACK beyond the UltraFeedback prompts, we evaluate the pipeline on three additional datasets of varying scales: (i) Skywork Reward Preference 80k v0.2 4 [Liu et al., 2024b], a high-quality dataset of 80’000 prompts for reward modeling; (ii) Combined : a combination of the UltraFeedback and 
+
+Skywork datasets with 140’000 prompts; and (iii) Tulu 3 8B Preference Mixture 5, a dataset of 272’000 prompts for LLM fine-tuning [Lambert et al., 2025]. Figure 4 confirms that A CTIVE ULTRA FEEDBACK , combined with our DRTS and D ELTA UCB methods, generalizes effectively across diverse prompt datasets, consistently outperforming existing preference data generation heuristics and standard methods. While D ELTA QWEN achieves a high downstream score, similar to Section 5.3, this performance is skewed by AlpacaEval 2 (see Table 22 for exact scores). D ELTA QWEN still significantly underperforms on RewardBench 2, which we, again, attribute to a lack of diversity. 
+
+> 4Skywork/Skywork-Reward-Preference-80K-v0.2
+> 5allenai/llama-3.1-tulu-3-8b-preference-mixture
+
+8Remarkably, our pipeline demonstrates substantial improvements over the widely-adopted original preference datasets included in Figure 4 ( UltraFeedback , Skywork , and Tulu 3 ). In terms of DPO mean scores, DRTS and D ELTA UCB yield significantly better results across all prompt sources. While the reference Skywork and Combined datasets retain an advantage in reward model training, which is expected as Skywork is curated for reward modelling, our active delta learning methods outperform the baselines on the UltraFeedback and Tulu 3 prompts. 
+
+5.5 Preference Optimization Algorithm Ablation 
+
+To evaluate the generalizability of A CTIVE ULTRA FEEDBACK across different preference optimization algorithms beyond DPO [Rafailov et al., 2023], we extend our analysis in Section 5.2 to the IPO [Du et al., 2024] and SimPO [Meng et al., 2024] algorithms. While DPO optimizes the policy by implicitly maximizing a reward function with KL-regularization, IPO maximizes the win rate against a fixed policy, eliminating the need for a reward model, and SimPO simplifies the objective by using a length-normalized reward margin for regularization. The results are visualized in Figure 5. Regardless of the optimization algorithm, DRTS and D ELTA UCB remain among the highest performing methods, and their trajectories demonstrate the superior sample efficiency by converging to their top performance using significantly fewer samples than all other methods. In contrast, D ELTA QWEN suffers a significant performance drop on these alternative algorithms, demonstrating its inflexibility and limiting its applicability to very specific experimental setups. We observe that R ANDOM ,ULTRA FEEDBACK , and DTS perform remarkably well with IPO and SimPO, compared to their performance with DPO, but they achieve high performance with large datasets only. Detailed numerical results are provided in Section F.4 and Table 23. 
+
+## 6 Conclusion 
+
+We present A CTIVE ULTRA FEEDBACK , a modular active learning pipeline for preference data generation. A CTIVE ULTRA FEED - 
+
+> BACK
+
+addresses a central bottleneck in preference optimization: selecting the most informative response pairs for labeling within a limited annotation budget. Our extensive evaluations demonstrate that using datasets produced by A CTIVE ULTRA FEEDBACK ,particularly when coupled with our novel DRTS and D ELTA UCB response selection methods, results in significantly stronger reward and fine-tuned models compared to those derived from static heuristics. Notably, these gains are consistent across varying prompt sources and optimization algorithms, making our approach the first to produce high-quality datasets agnostic to the downstream task or training algorithm. Importantly, A CTIVE ULTRA FEEDBACK is designed as a platform for preference-data collection, enabling researchers and practitioners to rapidly develop, swap, and benchmark new methods, uncertainty estimators, and judges. We see many promising directions of future work to build on this platform, such as testing additional uncertainty estimation approaches, setting explicit diversity constraints, incorporating prompt selection into the active learning loop, creating open-source datasets for expert and low-resource domains, and extending the platform with a user interface to collect human annotations. Furthermore, we recognize that the current pipeline incurs substantial computational cost due to generating responses from many LLMs for each prompt. Therefore, we see strong potential in selecting models to query for responses instead of selecting between already generated responses as a high priority. To lower the barrier to entry and make this line of research more accessible, we therefore release all generated datasets, enabling future researchers to build upon our results without incurring the full computational overhead. 
+
+## Impact Statement 
+
+This paper presents A CTIVE ULTRA FEEDBACK , an active learning pipeline for preference-data collection in RLHF that improves sample efficiency and reduces reliance on human annotation, potentially broadening access to preference optimization and enabling faster iteration on alignment datasets across diverse domains. As with other preference-based approaches, A CTIVE UL-
+
+> TRA
+
+FEEDBACK may amplify biases in prompts, annotators, or judges, and stronger reward models may increase the risk of reward hacking or over-optimization; while it does not introduce new capabilities for generating harmful content, it could be misused to more efficiently optimize models toward undesirable preferences. We mitigate these risks through evaluation across diverse prompt sources and benchmarks, release of code and datasets for reproducibility and auditing, and a modular design that allows practitioners to incorporate improved judges, safety filters, and bias-mitigation strategies. We encourage future deployments to pair preference-data collection with clear annotation guidelines, safety-focused evaluations, and monitoring for distribution shift and reward-model failures. 9References 
+
+Marah Abdin, Jyoti Aneja, Harkirat Behl, Sébastien Bubeck, Ronen Eldan, Suriya Gunasekar, Michael Harrison, Russell J Hewett, Mojan Javaheripi, Piero Kauffmann, et al. Phi-4 technical report. arXiv preprint arXiv:2412.08905 , 2024. Loubna Ben Allal, Anton Lozhkov, Elie Bakouch, Gabriel Martín Blázquez, Guilherme Penedo, Lewis Tunstall, Andrés Marafioti, Hynek Kydlíˇ cek, Agustín Piqueres Lajarín, Vaibhav Srivastav, Joshua Lochner, Caleb Fahlgren, Xuan-Son Nguyen, Clémentine Fourrier, Ben Burtenshaw, Hugo Larcher, Haojun Zhao, Cyril Zakka, Mathieu Morlon, Colin Raffel, Leandro von Werra, and Thomas Wolf. Smollm2: When smol goes big – data-centric training of a small language model, 2025. URL 
+
+https://arxiv.org/abs/2502.02737 .Yuntao Bai, Andy Jones, Kamal Ndousse, Amanda Askell, Anna Chen, Nova DasSarma, Dawn Drain, Stanislav Fort, Deep Ganguli, Tom Henighan, Nicholas Joseph, Saurav Kadavath, Jackson Kernion, Tom Conerly, Sheer El-Showk, Nelson Elhage, Zac Hatfield-Dodds, Danny Hernandez, Tristan Hume, Scott Johnston, Shauna Kravec, Liane Lovitt, Neel Nanda, Catherine Olsson, Dario Amodei, Tom Brown, Jack Clark, Sam McCandlish, Chris Olah, Ben Mann, and Jared Kaplan. Training a helpful and harmless assistant with reinforcement learning from human feedback, 2022. URL https://arxiv.org/abs/ 2204.05862 .Elie Bakouch, Loubna Ben Allal, Anton Lozhkov, Nouamane Tazi, Lewis Tunstall, Carlos Miguel Patiño, Edward Beeching, Aymeric Roucher, Aksel Joonas Reedi, Quentin Gallouédec, Kashif Rasul, Nathan Habib, Clémentine Fourrier, Hynek Kydlicek, Guilherme Penedo, Hugo Larcher, Mathieu Morlon, Vaibhav Srivastav, Joshua Lochner, Xuan-Son Nguyen, Colin Raffel, Leandro von Werra, and Thomas Wolf. SmolLM3: smol, multilingual, long-context reasoner. https: //huggingface.co/blog/smollm3 , 2025. Viktor Bengs, RÃ³bert Busa-Fekete, Adil El Mesaoudi-Paul, and Eyke HÃ¼llermeier. Preference-based online learning with dueling bandits: A survey. Journal of Machine Learning Research , 22(7):1–108, 2021. URL http://jmlr.org/papers/ v22/18-546.html .Ralph Allan Bradley and Milton E Terry. Rank analysis of incomplete block designs: I. the method of paired comparisons. 
+
+Biometrika , 39(3/4):324–345, 1952. Matteo Cercola, Valeria Capretti, and Simone Formentin. Efficient reinforcement learning from human feedback via bayesian preference inference, 2025. URL https://arxiv.org/abs/2511.04286 .Paul F Christiano, Jan Leike, Tom Brown, Miljan Martic, Shane Legg, and Dario Amodei. Deep reinforcement learning from human preferences. In I. Guyon, U. Von Luxburg, S. Bengio, H. Wallach, R. Fergus, S. Vishwanathan, and R. Garnett, editors, Advances in Neural Information Processing Systems , volume 30. Curran Associates, Inc., 2017. URL https:// proceedings.neurips.cc/paper_files/paper/2017/file/d5e2c0adad503c91f91df240d0cd4e49-Paper.pdf .Karl Cobbe, Vineet Kosaraju, Mohammad Bavarian, Mark Chen, Heewoo Jun, Lukasz Kaiser, Matthias Plappert, Jerry Tworek, Jacob Hilton, Reiichiro Nakano, et al. Training verifiers to solve math word problems. arXiv preprint arXiv:2110.14168 , 2021. Team Cohere, Aakanksha, Arash Ahmadian, Marwan Ahmed, Jay Alammar, Yazeed Alnumay, Sophia Althammer, Arkady Arkhangorodsky, Viraat Aryabumi, Dennis Aumiller, Raphaël Avalos, Zahara Aviv, Sammie Bae, Saurabh Baji, Alexandre Barbet, Max Bartolo, Björn Bebensee, Neeral Beladia, Walter Beller-Morales, Alexandre Bérard, Andrew Berneshawi, Anna Bialas, Phil Blunsom, Matt Bobkin, Adi Bongale, Sam Braun, Maxime Brunet, Samuel Cahyawijaya, David Cairuz, Jon Ander Campos, Cassie Cao, Kris Cao, Roman Castagné, Julián Cendrero, Leila Chan Currie, Yash Chandak, Diane Chang, Giannis Chatziveroglou, Hongyu Chen, Claire Cheng, Alexis Chevalier, Justin T. Chiu, Eugene Cho, Eugene Choi, Eujeong Choi, Tim Chung, Volkan Cirik, Ana Cismaru, Pierre Clavier, Henry Conklin, Lucas Crawhall-Stein, Devon Crouse, Andres Felipe Cruz-Salinas, Ben Cyrus, Daniel D’souza, Hugo Dalla-Torre, John Dang, William Darling, Omar Darwiche Domingues, Saurabh Dash, Antoine Debugne, Théo Dehaze, Shaan Desai, Joan Devassy, Rishit Dholakia, Kyle Duffy, Ali Edalati, Ace Eldeib, Abdullah Elkady, Sarah Elsharkawy, Irem Ergün, Beyza Ermis, Marzieh Fadaee, Boyu Fan, Lucas Fayoux, Yannis Flet-Berliac, Nick Frosst, Matthias Gallé, Wojciech Galuba, Utsav Garg, Matthieu Geist, Mohammad Gheshlaghi Azar, Seraphina Goldfarb-Tarrant, Tomas Goldsack, Aidan Gomez, Victor Machado Gonzaga, Nithya Govindarajan, Manoj Govindassamy, Nathan Grinsztajn, Nikolas Gritsch, Patrick Gu, Shangmin Guo, Kilian Haefeli, Rod Hajjar, Tim Hawes, Jingyi He, Sebastian Hofstätter, Sungjin Hong, Sara Hooker, Tom Hosking, Stephanie Howe, Eric Hu, Renjie Huang, Hemant Jain, Ritika Jain, Nick Jakobi, Madeline Jenkins, JJ Jordan, Dhruti Joshi, Jason Jung, Trushant Kalyanpur, Siddhartha Rao Kamalakara, Julia Kedrzycki, Gokce Keskin, Edward Kim, Joon Kim, Wei-Yin Ko, Tom Kocmi, Michael Kozakov, Wojciech Kry´ sci´ nski, Arnav Kumar Jain, Komal Kumar Teru, Sander Land, Michael Lasby, Olivia Lasche, Justin Lee, Patrick Lewis, Jeffrey Li, Jonathan Li, Hangyu Lin, Acyr Locatelli, Kevin Luong, Raymond Ma, Lukas Mach, Marina Machado, Joanne Magbitang, Brenda Malacara Lopez, Aryan Mann, Kelly Marchisio, Olivia Markham, Alexandre Matton, Alex McKinney, Dominic McLoughlin, Jozef Mokry, Adrien Morisot, Autumn Moulder, Harry Moynehan, Maximilian Mozes, Vivek Muppalla, 10 Lidiya Murakhovska, Hemangani Nagarajan, Alekhya Nandula, Hisham Nasir, Shauna Nehra, Josh Netto-Rosen, Daniel Ohashi, James Owers-Bardsley, Jason Ozuzu, Dennis Padilla, Gloria Park, Sam Passaglia, Jeremy Pekmez, Laura Penstone, Aleksandra Piktus, Case Ploeg, Andrew Poulton, Youran Qi, Shubha Raghvendra, Miguel Ramos, Ekagra Ranjan, Pierre Richemond, Cécile Robert-Michon, Aurélien Rodriguez, Sudip Roy, Laura Ruis, Louise Rust, Anubhav Sachan, Alejandro Salamanca, Kailash Karthik Saravanakumar, Isha Satyakam, Alice Schoenauer Sebag, Priyanka Sen, Sholeh Sepehri, Preethi Seshadri, Ye Shen, Tom Sherborne, Sylvie Chang Shi, Sanal Shivaprasad, Vladyslav Shmyhlo, Anirudh Shrinivason, Inna Shteinbuk, Amir Shukayev, Mathieu Simard, Ella Snyder, Ava Spataru, Victoria Spooner, Trisha Starostina, Florian Strub, Yixuan Su, Jimin Sun, Dwarak Talupuru, Eugene Tarassov, Elena Tommasone, Jennifer Tracey, Billy Trend, Evren Tumer, Ahmet Üstün, Bharat Venkitesh, David Venuto, Pat Verga, Maxime Voisin, Alex Wang, Donglu Wang, Shijian Wang, Edmond Wen, Naomi White, Jesse Willman, Marysia Winkels, Chen Xia, Jessica Xie, Minjie Xu, Bowen Yang, Tan Yi-Chern, Ivan Zhang, Zhenyu Zhao, and Zhoujie Zhao. Command a: An enterprise-ready large language model, 2025. URL 
+
+https://arxiv.org/abs/2504.00698 .Ganqu Cui, Lifan Yuan, Ning Ding, Guanming Yao, Bingxiang He, Wei Zhu, Yuan Ni, Guotong Xie, Ruobing Xie, Yankai Lin, Zhiyuan Liu, and Maosong Sun. ULTRAFEEDBACK: Boosting language models with scaled AI feedback. In Ruslan Salakhutdinov, Zico Kolter, Katherine Heller, Adrian Weller, Nuria Oliver, Jonathan Scarlett, and Felix Berkenkamp, editors, 
+
+Proceedings of the 41st International Conference on Machine Learning , volume 235 of Proceedings of Machine Learning Research , pages 9722–9744. PMLR, 21–27 Jul 2024. URL https://proceedings.mlr.press/v235/cui24f.html .Yingjun Du, Wenfang Sun, and Cees G. M. Snoek. Ipo: Interpretable prompt optimization for vision-language models. In A. Globerson, L. Mackey, D. Belgrave, A. Fan, U. Paquet, J. Tomczak, and C. Zhang, editors, 
+
+Advances in Neural Information Processing Systems , volume 37, pages 126725–126766. Curran Associates, Inc., 2024. doi: 10.52202/079017-4025. URL https://proceedings.neurips.cc/paper_files/paper/2024/file/ e52e4de8689a9955b6d3ff421d019387-Paper-Conference.pdf .Yann Dubois, Balázs Galambosi, Percy Liang, and Tatsunori B Hashimoto. Length-controlled alpacaeval: A simple way to debias automatic evaluators. arXiv preprint arXiv:2404.04475 , 2024. Miroslav Dudik, Daniel Hsu, Satyen Kale, Nikos Karampatziakis, John Langford, Lev Reyzin, and Tong Zhang. Efficient optimal learning for contextual bandits. In Proceedings of the Twenty-Seventh Conference on Uncertainty in Artificial Intelligence ,UAI’11, page 169–178, Arlington, Virginia, USA, 2011. AUAI Press. ISBN 9780974903972. Miroslav Dudík, Katja Hofmann, Robert E. Schapire, Aleksandrs Slivkins, and Masrour Zoghi. Contextual dueling bandits. In Peter Grünwald, Elad Hazan, and Satyen Kale, editors, Proceedings of The 28th Conference on Learning Theory ,volume 40 of Proceedings of Machine Learning Research , pages 563–587, Paris, France, 03–06 Jul 2015. PMLR. URL 
+
+https://proceedings.mlr.press/v40/Dudik15.html .Vikranth Dwaracherla, Seyed Mohammad Asghari, Botao Hao, and Benjamin Van Roy. Efficient exploration for LLMs. In Ruslan Salakhutdinov, Zico Kolter, Katherine Heller, Adrian Weller, Nuria Oliver, Jonathan Scarlett, and Felix Berkenkamp, editors, 
+
+Proceedings of the 41st International Conference on Machine Learning , volume 235 of Proceedings of Machine Learning Re-search , pages 12215–12227. PMLR, 21–27 Jul 2024. URL https://proceedings.mlr.press/v235/dwaracherla24a. html .Kawin Ethayarajh, Yejin Choi, and Swabha Swayamdipta. Understanding dataset difficulty with V-usable information. In Kamalika Chaudhuri, Stefanie Jegelka, Le Song, Csaba Szepesvari, Gang Niu, and Sivan Sabato, editors, Proceedings of the 39th International Conference on Machine Learning , volume 162 of Proceedings of Machine Learning Research , pages 5988–6008. PMLR, 17–23 Jul 2022. URL https://proceedings.mlr.press/v162/ethayarajh22a.html .Scott Geng, Hamish Ivison, Chun-Liang Li, Maarten Sap, Jerry Li, Ranjay Krishna, and Pang Wei Koh. The delta learning hypothesis: Preference tuning on weak data can yield strong gains, 2025. URL https://arxiv.org/abs/2507.06187 .Aaron Grattafiori, Abhimanyu Dubey, Abhinav Jauhri, Abhinav Pandey, Abhishek Kadian, Ahmad Al-Dahle, Aiesha Letman, Akhil Mathur, Alan Schelten, Alex Vaughan, et al. The llama 3 herd of models. arXiv preprint arXiv:2407.21783 , 2024. Edward J Hu, yelong shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, and Weizhu Chen. LoRA: Low-rank adaptation of large language models. In International Conference on Learning Representations , 2022. URL 
+
+https://openreview.net/forum?id=nZeVKeeFYf9 .Hamish Ivison, Yizhong Wang, Jiacheng Liu, Zeqiu Wu, Valentina Pyatkin, Nathan Lambert, Noah A. Smith, Yejin Choi, and Hannaneh Hajishirzi. Unpacking dpo and ppo: Disentangling best practices for learning from prefer-ence feedback. In A. Globerson, L. Mackey, D. Belgrave, A. Fan, U. Paquet, J. Tomczak, and C. Zhang, edi-tors, Advances in Neural Information Processing Systems , volume 37, pages 36602–36633. Curran Associates, Inc., 2024. doi: 10.52202/079017-1154. URL https://proceedings.neurips.cc/paper_files/paper/2024/file/ 404df2480b6eef0486a1679e371894b0-Paper-Conference.pdf .11 Branislav Kveton, Xintong Li, Julian McAuley, Ryan Rossi, Jingbo Shang, Junda Wu, and Tong Yu. Active learning for direct preference optimization, 2025. URL https://arxiv.org/abs/2503.01076 .Woosuk Kwon, Zhuohan Li, Siyuan Zhuang, Ying Sheng, Lianmin Zheng, Cody Hao Yu, Joseph Gonzalez, Hao Zhang, and Ion Stoica. Efficient memory management for large language model serving with pagedattention. In Proceedings of the 29th Symposium on Operating Systems Principles , SOSP ’23, page 611–626, New York, NY, USA, 2023. Association for Computing Machinery. ISBN 9798400702297. doi: 10.1145/3600006.3613165. URL https://doi.org/10.1145/ 3600006.3613165 .Nathan Lambert, Jacob Morrison, Valentina Pyatkin, Shengyi Huang, Hamish Ivison, Faeze Brahman, Lester James V. Miranda, Alisa Liu, Nouha Dziri, Shane Lyu, Yuling Gu, Saumya Malik, Victoria Graf, Jena D. Hwang, Jiangjiang Yang, Ronan Le Bras, Oyvind Tafjord, Chris Wilhelm, Luca Soldaini, Noah A. Smith, Yizhong Wang, Pradeep Dasigi, and Hannaneh Hajishirzi. Tulu 3: Pushing frontiers in open language model post-training, 2025. URL https://arxiv.org/abs/2411.15124 .Xinran Liang, Katherine Shu, Kimin Lee, and Pieter Abbeel. Reward uncertainty for exploration in preference-based reinforce-ment learning, 2022. URL https://arxiv.org/abs/2205.12401 .Stephanie Lin, Jacob Hilton, and Owain Evans. TruthfulQA: Measuring how models mimic human falsehoods. In Smaranda Muresan, Preslav Nakov, and Aline Villavicencio, editors, Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pages 3214–3252, Dublin, Ireland, May 2022. Association for Computational Linguistics. doi: 10.18653/v1/2022.acl-long.229. URL https://aclanthology.org/2022.acl-long. 229/ .Aixin Liu, Bei Feng, Bing Xue, Bingxuan Wang, Bochao Wu, Chengda Lu, Chenggang Zhao, Chengqi Deng, Chenyu Zhang, Chong Ruan, et al. Deepseek-v3 technical report. arXiv preprint arXiv:2412.19437 , 2024a. Chris Yuhao Liu, Liang Zeng, Jiacai Liu, Rui Yan, Jujie He, Chaojie Wang, Shuicheng Yan, Yang Liu, and Yahui Zhou. Skywork-reward: Bag of tricks for reward modeling in llms. arXiv preprint arXiv:2410.18451 , 2024b. Jingyuan Liu, Jianlin Su, Xingcheng Yao, Zhejun Jiang, Guokun Lai, Yulun Du, Yidao Qin, Weixin Xu, Enzhe Lu, Junjie Yan, Yanru Chen, Huabin Zheng, Yibo Liu, Shaowei Liu, Bohong Yin, Weiran He, Han Zhu, Yuzhi Wang, Jianzhou Wang, Mengnan Dong, Zheng Zhang, Yongsheng Kang, Hao Zhang, Xinran Xu, Yutao Zhang, Yuxin Wu, Xinyu Zhou, and Zhilin Yang. Muon is scalable for llm training, 2025. URL https://arxiv.org/abs/2502.16982 .Zichen Liu, Changyu Chen, Chao Du, Wee Sun Lee, and Min Lin. Sample-efficient alignment for LLMs. In Language Gamification - NeurIPS 2024 Workshop , 2024c. URL https://openreview.net/forum?id=6Kcvz310CX .Ilya Loshchilov and Frank Hutter. Decoupled weight decay regularization. arXiv preprint arXiv:1711.05101 , 2017. Saumya Malik, Valentina Pyatkin, Sander Land, Jacob Morrison, Noah A. Smith, Hannaneh Hajishirzi, and Nathan Lambert. Rewardbench 2: Advancing reward model evaluation, 2025. URL https://arxiv.org/abs/2506.01937 .Viraj Mehta, Syrine Belakaria, Vikramjeet Das, Ojash Neopane, Yijia Dai, Ilija Bogunovic, Barbara E Engelhardt, Stefano Ermon, Jeff Schneider, and Willie Neiswanger. Sample efficient preference alignment in LLMs via active exploration. In 
+
+Second Conference on Language Modeling , 2025. URL https://openreview.net/forum?id=Vi5cIfIslX .Luckeciano C. Melo, Panagiotis Tigas, Alessandro Abate, and Yarin Gal. Deep bayesian active learning for preference modeling in large language models. In A. Globerson, L. Mackey, D. Belgrave, A. Fan, U. Paquet, J. Tomczak, and C. Zhang, editors, Advances in Neural Information Processing Systems , volume 37, pages 118052–118085. Curran Associates, Inc., 2024. doi: 10.52202/079017-3749. URL https://proceedings.neurips.cc/paper_files/paper/2024/file/ d5e256c988bdee59a0f4d7a9bc1dd6d9-Paper-Conference.pdf .Yu Meng, Mengzhou Xia, and Danqi Chen. Simpo: Simple preference optimization with a reference-free re-ward. In A. Globerson, L. Mackey, D. Belgrave, A. Fan, U. Paquet, J. Tomczak, and C. Zhang, editors, Ad-vances in Neural Information Processing Systems , volume 37, pages 124198–124235. Curran Associates, Inc., 2024. doi: 10.52202/079017-3946. URL https://proceedings.neurips.cc/paper_files/paper/2024/file/ e099c1c9699814af0be873a175361713-Paper-Conference.pdf .Mistral AI Team. Large enough: Announcement of mistral large 2, 2024. URL https://mistral.ai/news/mistral-large-2407 .Mistral AI Team. Mistral small 3, 2025. URL https://mistral.ai/news/mistral-small-3 .12 William Muldrew, Peter Hayes, Mingtian Zhang, and David Barber. Active preference learning for large language models. In Rus-lan Salakhutdinov, Zico Kolter, Katherine Heller, Adrian Weller, Nuria Oliver, Jonathan Scarlett, and Felix Berkenkamp, editors, 
+
+Proceedings of the 41st International Conference on Machine Learning , volume 235 of Proceedings of Machine Learning Re-search , pages 36577–36590. PMLR, 21–27 Jul 2024. URL https://proceedings.mlr.press/v235/muldrew24a.html .Team Olmo, :, Allyson Ettinger, Amanda Bertsch, Bailey Kuehl, David Graham, David Heineman, Dirk Groeneveld, Faeze Brahman, Finbarr Timbers, Hamish Ivison, Jacob Morrison, Jake Poznanski, Kyle Lo, Luca Soldaini, Matt Jordan, Mayee Chen, Michael Noukhovitch, Nathan Lambert, Pete Walsh, Pradeep Dasigi, Robert Berry, Saumya Malik, Saurabh Shah, Scott Geng, Shane Arora, Shashank Gupta, Taira Anderson, Teng Xiao, Tyler Murray, Tyler Romero, Victoria Graf, Akari Asai, Akshita Bhagia, Alexander Wettig, Alisa Liu, Aman Rangapur, Chloe Anastasiades, Costa Huang, Dustin Schwenk, Harsh Trivedi, Ian Magnusson, Jaron Lochner, Jiacheng Liu, Lester James V. Miranda, Maarten Sap, Malia Morgan, Michael Schmitz, Michal Guerquin, Michael Wilson, Regan Huff, Ronan Le Bras, Rui Xin, Rulin Shao, Sam Skjonsberg, Shannon Zejiang Shen, Shuyue Stella Li, Tucker Wilde, Valentina Pyatkin, Will Merrill, Yapei Chang, Yuling Gu, Zhiyuan Zeng, Ashish Sabharwal, Luke Zettlemoyer, Pang Wei Koh, Ali Farhadi, Noah A. Smith, and Hannaneh Hajishirzi. Olmo 3, 2025. URL 
+
+https://arxiv.org/abs/2512.13961 .Ian Osband, Zheng Wen, Seyed Mohammad Asghari, Vikranth Dwaracherla, MORTEZA IBRAHIMI, Xiuyuan Lu, and Benjamin Van Roy. Epistemic neural networks. In A. Oh, T. Naumann, A. Globerson, K. Saenko, M. Hardt, and S. Levine, editors, Advances in Neural Information Processing Systems , volume 36, pages 2795– 2823. Curran Associates, Inc., 2023. URL https://proceedings.neurips.cc/paper_files/paper/2023/file/ 07fbde96bee50f4e09303fd4f877c2f3-Paper-Conference.pdf .Long Ouyang, Jeffrey Wu, Xu Jiang, Diogo Almeida, Carroll Wainwright, Pamela Mishkin, Chong Zhang, Sandhini Agarwal, Katarina Slama, Alex Ray, John Schulman, Jacob Hilton, Fraser Kelton, Luke Miller, Maddie Simens, Amanda Askell, Peter Welinder, Paul F Christiano, Jan Leike, and Ryan Lowe. Training language models to follow instructions with human feedback. In S. Koyejo, S. Mohamed, A. Agarwal, D. Belgrave, K. Cho, and A. Oh, editors, Advances in Neural Information Processing Systems , volume 35, pages 27730–27744. Curran Associates, Inc., 2022. URL https://proceedings.neurips. cc/paper_files/paper/2022/file/b1efde53be364a73914f58805a001731-Paper-Conference.pdf .Barna Pásztor, Parnian Kassraie, and Andreas Krause. Bandits with preference feedback: A stackelberg game perspective. In A. Globerson, L. Mackey, D. Belgrave, A. Fan, U. Paquet, J. Tomczak, and C. Zhang, edi-tors, Advances in Neural Information Processing Systems , volume 37, pages 11997–12034. Curran Associates, Inc., 2024. doi: 10.52202/079017-0383. URL https://proceedings.neurips.cc/paper_files/paper/2024/file/ 1646e34971facbcda3727d1dc28ab635-Paper-Conference.pdf .Qwen, :, An Yang, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chengyuan Li, Dayiheng Liu, Fei Huang, Haoran Wei, Huan Lin, Jian Yang, Jianhong Tu, Jianwei Zhang, Jianxin Yang, Jiaxi Yang, Jingren Zhou, Junyang Lin, Kai Dang, Keming Lu, Keqin Bao, Kexin Yang, Le Yu, Mei Li, Mingfeng Xue, Pei Zhang, Qin Zhu, Rui Men, Runji Lin, Tianhao Li, Tianyi Tang, Tingyu Xia, Xingzhang Ren, Xuancheng Ren, Yang Fan, Yang Su, Yichang Zhang, Yu Wan, Yuqiong Liu, Zeyu Cui, Zhenru Zhang, and Zihan Qiu. Qwen2.5 technical report, 2025. URL https://arxiv.org/abs/2412.15115 .Rafael Rafailov, Archit Sharma, Eric Mitchell, Christopher D Manning, Stefano Ermon, and Chelsea Finn. Direct prefer-ence optimization: Your language model is secretly a reward model. In A. Oh, T. Naumann, A. Globerson, K. Saenko, M. Hardt, and S. Levine, editors, Advances in Neural Information Processing Systems , volume 36, pages 53728– 53741. Curran Associates, Inc., 2023. URL https://proceedings.neurips.cc/paper_files/paper/2023/file/ a85b405ed65c6477a4fe8302b5e06ce7-Paper-Conference.pdf .Aadirupa Saha. Optimal algorithms for stochastic contextual preference bandits. In M. Ranzato, A. Beygelzimer, Y. Dauphin, P.S. Liang, and J. Wortman Vaughan, editors, Advances in Neural Information Processing Systems , volume 34, pages 30050– 30062. Curran Associates, Inc., 2021. URL https://proceedings.neurips.cc/paper_files/paper/2021/file/ fc3cf452d3da8402bebb765225ce8c0e-Paper.pdf .John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov. Proximal policy optimization algorithms. 
+
+arXiv preprint arXiv:1707.06347 , 2017. Yunyi Shen, Hao Sun, and Jean-François Ton. Reviving the classics: Active reward modeling in large language model alignment. 
+
+arXiv preprint arXiv:2502.04354 , 2025. Soumye Singhal, Jiaqi Zeng, Alexander Bukharin, Yian Zhang, Gerald Shen, Ameya Sunil Mahabaleshwarkar, Bilal Kartal, Yoshi Suhara, Akhiad Bercovich, Itay Levy, Izik Golan, Mohammed Dabbah, Ran El-Yaniv, Somshubra Majumdar, Igor Gitman, Evelina Bakhturina, Jimmy J. Zhang, Bor-Yiing Su, Guyue Huang, Izzy Putterman, Mostofa Patwary, Oluwatobi Olabiyi, Olivier Delalleau, Bryan Catanzaro, Boris Ginsburg, Oleksii Kuchaiev, and Tugrul Konuk. Llama-nemotron: Efficient 13 reasoning models. In The Exploration in AI Today Workshop at ICML 2025 , 2025. URL https://openreview.net/ forum?id=ev1xpo9mbI .Nisan Stiennon, Long Ouyang, Jeffrey Wu, Daniel Ziegler, Ryan Lowe, Chelsea Voss, Alec Radford, Dario Amodei, and Paul F Christiano. Learning to summarize with human feedback. In H. Larochelle, M. Ranzato, R. Had-sell, M.F. Balcan, and H. Lin, editors, Advances in Neural Information Processing Systems , volume 33, pages 3008– 3021. Curran Associates, Inc., 2020. URL https://proceedings.neurips.cc/paper_files/paper/2020/file/ 1f89885d556929e98d3ef9b86448f951-Paper.pdf .Gemma Team, Thomas Mesnard, Cassidy Hardin, Robert Dadashi, Surya Bhupatiraju, Shreya Pathak, Laurent Sifre, Morgane Rivière, Mihir Sanjay Kale, Juliette Love, et al. Gemma: Open models based on gemini research and technology. arXiv preprint arXiv:2403.08295 , 2024. Lewis Tunstall, Edward Emanuel Beeching, Nathan Lambert, Nazneen Rajani, Kashif Rasul, Younes Belkada, Shengyi Huang, Leandro Von Werra, Clémentine Fourrier, Nathan Habib, Nathan Sarrazin, Omar Sanseviero, Alexander M Rush, and Thomas Wolf. Zephyr: Direct distillation of LM alignment. In First Conference on Language Modeling , 2024. URL 
+
+https://openreview.net/forum?id=aKkAwZB6JV .Evan Pete Walsh, Luca Soldaini, Dirk Groeneveld, Kyle Lo, Shane Arora, Akshita Bhagia, Yuling Gu, Shengyi Huang, Matt Jordan, Nathan Lambert, Dustin Schwenk, Oyvind Tafjord, Taira Anderson, David Atkinson, Faeze Brahman, Christopher Clark, Pradeep Dasigi, Nouha Dziri, Allyson Ettinger, Michal Guerquin, David Heineman, Hamish Ivison, Pang Wei Koh, Jiacheng Liu, Saumya Malik, William Merrill, Lester James Validad Miranda, Jacob Morrison, Tyler Murray, Crystal Nam, Jake Poznanski, Valentina Pyatkin, Aman Rangapur, Michael Schmitz, Sam Skjonsberg, David Wadden, Christopher Wilhelm, Michael Wilson, Luke Zettlemoyer, Ali Farhadi, Noah A. Smith, and Hannaneh Hajishirzi. 2 OLMo 2 furious (COLM’s version). In Second Conference on Language Modeling , 2025. URL https://openreview.net/forum?id=2ezugTT9kU .Haoxiang Wang, Wei Xiong, Tengyang Xie, Han Zhao, and Tong Zhang. Interpretable preferences via multi-objective reward modeling and mixture-of-experts. In Yaser Al-Onaizan, Mohit Bansal, and Yun-Nung Chen, editors, Findings of the Association for Computational Linguistics: EMNLP 2024 , pages 10582–10592, Miami, Florida, USA, November 2024a. Association for Computational Linguistics. doi: 10.18653/v1/2024.findings-emnlp.620. URL https://aclanthology.org/2024. findings-emnlp.620/ .Zhilin Wang, Yi Dong, Olivier Delalleau, Jiaqi Zeng, Gerald Shen, Daniel Egert, Jimmy J. Zhang, Makesh Nar-simhan Sreedhar, and Oleksii Kuchaiev. Helpsteer 2: Open-source dataset for training top-performing reward models. In A. Globerson, L. Mackey, D. Belgrave, A. Fan, U. Paquet, J. Tomczak, and C. Zhang, edi-tors, Advances in Neural Information Processing Systems , volume 37, pages 1474–1501. Curran Associates, Inc., 2024b. doi: 10.52202/079017-0047. URL https://proceedings.neurips.cc/paper_files/paper/2024/file/ 02fd91a387a6a5a5751e81b58a75af90-Paper-Datasets_and_Benchmarks_Track.pdf .Huasen Wu and Xin Liu. Double thompson sampling for dueling bandits. In D. Lee, M. Sugiyama, U. Luxburg, I. Guyon, and R. Garnett, editors, Advances in Neural Information Processing Systems , vol-ume 29. Curran Associates, Inc., 2016. URL https://proceedings.neurips.cc/paper_files/paper/2016/file/ 9de6d14fff9806d4bcd1ef555be766cd-Paper.pdf .Zhangchen Xu, Fengqing Jiang, Luyao Niu, Yuntian Deng, Radha Poovendran, Yejin Choi, and Bill Yuchen Lin. Magpie: Alignment data synthesis from scratch by prompting aligned LLMs with nothing. In The Thirteenth International Conference on Learning Representations , 2025. URL https://openreview.net/forum?id=Pnk7vMbznK .An Yang, Anfeng Li, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chang Gao, Chengen Huang, Chenxu Lv, et al. Qwen3 technical report. arXiv preprint arXiv:2505.09388 , 2025. Daniel Yang, Samuel Stante, Florian Redhardt, Lena Libon, Parnian Kassraie, Ido Hakimi, Barna Pásztor, and Andreas Krause. Rewarduq: A unified framework for uncertainty-aware reward models, 2026. URL https://arxiv.org/abs/2602.24040 .Yuanzhao Zhai, Yu Lei, Han Zhang, Yue Yu, Kele Xu, Dawei Feng, Bo Ding, and Huaimin Wang. Uncertainty-penalized reinforcement learning from human feedback with diversified reward lora ensembles. Information Process-ing & Management , 63(3):104548, 2026. ISSN 0306-4573. doi: https://doi.org/10.1016/j.ipm.2025.104548. URL 
+
+https://www.sciencedirect.com/science/article/pii/S0306457325004893 .Rongzhi Zhang, Chenwei Zhang, Xinyang Zhang, Liang Qiu, Haoming Jiang, Yuchen Zhuang, Qingru Zhang, Hyokun Yun, Xian Li, Bing Yin, Tuo Zhao, and Chao Zhang. DORM: Preference data weights optimization for reward modeling in LLM alignment. In Christos Christodoulopoulos, Tanmoy Chakraborty, Carolyn Rose, and Violet Peng, editors, Findings of the Association for Computational Linguistics: EMNLP 2025 , pages 22721–22739, Suzhou, China, November 2025. 14 Association for Computational Linguistics. ISBN 979-8-89176-335-7. doi: 10.18653/v1/2025.findings-emnlp.1237. URL 
+
+https://aclanthology.org/2025.findings-emnlp.1237/ .Jeffrey Zhou, Tianjian Lu, Swaroop Mishra, Siddhartha Brahma, Sujoy Basu, Yi Luan, Denny Zhou, and Le Hou. Instruction-following evaluation for large language models, 2023. URL https://arxiv.org/abs/2311.07911 .Banghua Zhu, Evan Frick, Tianhao Wu, Hanlin Zhu, and Jiantao Jiao. Starling-7b: Improving llm helpfulness & harmlessness with rlaif. 2023 , 2023. Daniel M Ziegler, Nisan Stiennon, Jeffrey Wu, Tom B Brown, Alec Radford, Dario Amodei, Paul Christiano, and Geoffrey Irving. Fine-tuning language models from human preferences. arXiv preprint arXiv:1909.08593 , 2019. 15 Contents of Appendix 
+
+A Response Generation 17 
+
+A.1 Model Pool . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17 A.2 Response Principles . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17 
+
+B ENN Reward Model 18 
+
+B.1 Architecture . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18 B.2 Training . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18 
+
+C Response Pair Selection Methods 19 D Annotation 20 
+
+D.1 Scoring Methodology . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 20 D.2 Judge Model Ablation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21 
+
+E Implementation Details 22 
+
+E.1 Evaluation Methodology . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22 E.2 Training Stability . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22 E.3 Hyperparameters . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 24 E.4 Compute Estimates . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 25 
+
+F Additional Results 26 
+
+F.1 Generated Dataset Analysis . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26 F.2 Sample Efficiency without AlpacaEval 2 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27 F.3 Full Input Prompt Dataset Ablation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27 F.4 Full Preference Optimization Algorithm Ablation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27 
+
+G Prompt Templates 27 
+
+G.1 Response Generation Prompt Templates . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27 G.2 Annotation Prompt Templates . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28 16 A Response Generation 
+
+This section details the response generation step (Section 4.1) of A CTIVE ULTRA FEEDBACK , in which we use vLLM [Kwon et al., 2023] with a large model pool of diverse LLMs to generate candidate responses for the input prompts. 
+
+A.1 Model Pool 
+
+Table 3 lists the 30 LLMs forming our model pool. We include a wide range of both model families (12 different model families, e.g. Qwen 2.5 [Qwen et al., 2025], Qwen 3 [Yang et al., 2025], Llama 3 [Grattafiori et al., 2024], Phi 4 [Abdin et al., 2024], Mistral Large 2 [Mistral AI Team, 2024], Mistral Small 3 [Mistral AI Team, 2025], Nemotron [Wang et al., 2024b, Singhal et al., 2025], Gemma 3 [Team et al., 2024], OLMo 2 [Walsh et al., 2025], Tulu 3 [Lambert et al., 2025], SmolLM 2 [Allal et al., 2025], Moonlight [Liu et al., 2025], Command A [Cohere et al., 2025], and DeepSeek V3 [Liu et al., 2024a]) and model sizes (0.5B to 671B) to ensure content and quality diversity, in line with prior work [Cui et al., 2024, Lambert et al., 2025]. Table 3: The 30 models used for response generation with their total number of parameters (in billions) and licenses. Separators are placed between models from different families. 
+
+Model # Parameters License 
+
+Qwen/Qwen2.5-0.5B-Instruct 0.5B Apache 2.0 Qwen/Qwen2.5-72B-Instruct 72B Qwen Qwen/Qwen3-0.6B 0.6B Apache 2.0 Qwen/Qwen3-1.7B 1.7B Apache 2.0 Qwen/Qwen3-14B 14B Apache 2.0 Qwen/Qwen3-30B-A3B 30B Apache 2.0 Qwen/Qwen3-32B 32B Apache 2.0 Qwen/Qwen3-235B-A22B 235B Apache 2.0 meta-llama/Llama-3.1-8B-Instruct 8B Llama 3 meta-llama/Llama-3.2-1B-Instruct 1B Llama 3 meta-llama/Llama-3.2-3B-Instruct 3B Llama 3 meta-llama/Llama-3.3-70B-Instruct 70B Llama 3 microsoft/Phi-4-mini-instruct 4B MIT microsoft/phi-4 14B MIT mistralai/Mistral-Small-24B-Instruct-2501 23B Apache 2.0 mistralai/Mistral-Large-Instruct-2411 123B MRL nvidia/Llama-3.1-Nemotron-70B-Instruct-HF 70B Llama 3 nvidia/Llama-3_3-Nemotron-Super-49B-v1 49B Nvidia Open Model nvidia/Llama-3_1-Nemotron-Ultra-253B-v1 253B Nvidia Open Model google/gemma-3-1b-it 1B Gemma google/gemma-3-4b-it 4B Gemma google/gemma-3-12b-it 12B Gemma google/gemma-3-27b-it 27B Gemma allenai/OLMo-2-0325-32B-Instruct 32B Apache 2.0 allenai/Llama-3.1-Tulu-3-70B 70B Llama 3 allenai/Llama-3.1-Tulu-3-450B 450B Llama 3 HuggingFaceT/SmolLM2-1.7B-Instruct 1.7B Apache 2.0 moonshotai/Moonlight-16B-A3B-Instruct 16B MIT CohereLabs/c4ai-command-a-03-2025 111B CC by NC 4.0 deepseek-ai/DeepSeek-V3 671B Deepseek 
+
+A.2 Response Principles 
+
+Beyond model diversity (Section A.1), we introduce diversity through guiding principles that the LLMs should follow when generating responses. For every prompt-model pair, we uniformly sample a guiding principle among truthfulness, honesty, and 17 helpfulness, at random following the UltraFeedback pipeline’s approach [Cui et al., 2024]. To demonstrate the principle to the model, we then randomly sample a system prompt, among 11 system prompts, for the sampled principle. We adopt the prompt templates from the UltraFeedback pipeline but explicitly exclude the verbalized calibration principle. This modification prevents the subsequent annotation step (Section D) from being biased by the model’s self-expressed uncertainty, which could otherwise lead to artificially lower scores for responses where the model expresses doubt. See Section G.1 for the system prompts. 
+
+## B ENN Reward Model 
+
+Following prior work [Dwaracherla et al., 2024, Melo et al., 2024, Liu et al., 2024c], we utilize the Epistemic Neural Network (ENN) [Osband et al., 2023] architecture, implemented by [Yang et al., 2026], to model the reward function. Unlike standard reward models (Section 3) that provide a single scalar point estimate, an ENN represents a distribution over reward functions, 
+
+p(r|D ), where D is the set of observed preferences. This allows the model to quantify the epistemic uncertainty, the uncertainty stemming from a lack of data, which is the foundation for our active learning methods. 
+
+B.1 Architecture 
+
+We implement the ENN using an ensemble built on top of a fixed, pre-trained language model. This architecture consists of two components: a shared backbone and an ensemble of reward heads. First, for any prompt-response pair (x, y ), we extract a feature vector h(x, y ) using a pre-trained LLM backbone. We utilize the embedding of the final token from the last hidden layer as the representation. Crucially, this backbone is kept frozen and unchanged during the training. Second, the reward function is estimated by an ensemble of K independent Multi-Layer Perceptrons (MLPs), denoted as 
+
+{rϕk }Kk=1 . Each head k takes the embedding h(x, y ) as input and outputs a scalar reward. We define the final reward estimate as the mean of the ensemble predictions, r(x, y ), while the epistemic uncertainty is quantified by their standard deviation, σr (x, y ).The epistemic uncertainty is scaled by a hyperparameter β > 0 to obtain the lower and upper bounds of the reward estimate, 
+
+r(x, y ) = r(x, y ) − βσ r (x, y ) and r(x, y ) = r(x, y ) + βσ r (x, y ) respectively. 
+
+B.2 Training 
+
+We update the ENN reward model at the end of each A CTIVE ULTRA FEEDBACK iteration using a replay buffer B =
+
+{(xi, y + 
+
+> i
+
+, y − 
+
+> i
+
+)} that aggregates all preference data collected thus far. We sample (without replacement) a training dataset 
+
+Dtrain by sampling from B such that its size is given by |D train | = min( |B| , b · ρ), where b denotes the A CTIVE ULTRA FEEDBACK 
+
+batch size and ρ is a hyperparameter controlling the magnitude of Dtrain .The parameters ϕ = {ϕk}Kk=1 for the K ensemble heads are updated on Dtrain by minimizing the regularized Bradley-Terry negative log-likelihood: 
+
+J (ϕ) = 1
+
+K
+
+> K
+
+X
+
+> k=1
+
+E(x,y +,y −)∼D train 
+
+− log s  rϕk (x, y +) − rϕk (x, y −) 
+
++ γE(x,y +,y −)∼D train 
+
+(rϕk (x, y +) + rϕk (x, y −)) 2
+
++ ζ∥ϕk − eϕk∥22
+
+!
+
+,
+
+(5) where s( x) = (1 + e−x)−1 is the sigmoid function. In addition to the standard Bradley-Terry objective, this objective contains two regularization terms. The first term, controlled by γ, centers the predicted rewards around zero. Since the Bradley-Terry probability is invariant to additive constants ( s(a − b) = s(( a + c) − (b + c)) ), different heads can arbitrarily drift in absolute value. This term prevents such drift, ensuring that the ensemble variance reflects genuine uncertainty rather than arbitrary offsets between heads. The second term, controlled by ζ, anchors each head k to its fixed, random initialization eϕk. This prevents the ensemble from collapsing to a single solution, thereby preserving the diversity required for uncertainty estimation. As this is most relevant during early stages of training, where gradients tend to be large, but less relevant in later stages, the ζ parameter decays exponentially over the iterations of A CTIVE ULTRA FEEDBACK . For a complete list of training hyperparameters, see Section E.3. 18 C Response Pair Selection Methods 
+
+This section explains the response pair selection algorithms from Section 4.3 in detail. For simplicity in notation, we drop the indexing by i and consider a single prompt x only. Let {yj }mj=1 be the responses to x, and denote the corresponding lower and upper bounds of the reward estimate as vectors by r and r.
+
+INFO MAX [Saha, 2021] focuses purely on exploration with a goal to reduce uncertainty uniformly; therefore, it selects the ordered pair (j, j ′) with j̸ = j′ that maximizes the width of the confidence interval on the preference probability, 
+
+arg max j̸ =j′ p(yj ≻ yj′ ) − p(yj ≻ yj′ ), ignoring predicted reward quality. 
+
+Algorithm 1 INFO MAX 
+
+1: function INFO MAX (p, p )
+
+2: ∆j,j ′ ←
+
+ −∞ , j = j′
+
+p(yj ≻ yj′ ) − p(yj ≻ yj′ ), j̸ = j′ ∀ j, j ′ ∈ { 1, . . . , m } ▷ pairwise “informativeness” score 
+
+3: return arg max (j,j ′) ∆j,j ′ ▷ select best ordered pair 
+
+4: end function DOUBLE THOMPSON SAMPLING (DTS) [Wu and Liu, 2016] balances exploration-exploitation by sampling a perturbed utility score for each response uniformly between its lower bound r and upper bound r and choosing the top response yj ; the second response yj′ is obtained by resampling until j′̸ = j (up to maxiter ) with a uniform-random fallback. 
+
+Algorithm 2 DOUBLE THOMPSON SAMPLING (DTS) 
+
+1: function DTS( r, r, maxiter) 
+
+2: j ← THOMPSON SAMPLE (r, r ) ▷ first draw 
+
+3: for t = 1 to maxiter do 
+
+4: j′ ← THOMPSON SAMPLE (r, r ); ▷ resample until distinct 
+
+5: if j̸ = j′ then 
+
+6: return (j, j ′)
+
+7: end if 
+
+8: end for 
+
+9: return (j, Unif( {1, . . . , m } \ { j})) ▷ fallback after maxiter resamples 
+
+10: end function MAX MIN LCB [Pásztor et al., 2024] is based on pairwise lower confidence bounds (Equation (4)). It selects j1 =arg max j min j′̸ =j p(yj ≻ yj′ ) to maximize the worst-case LCB against any opponent, and then j2 = arg min j̸ =j1 p(yj1 ≻ yj )
+
+to identify the opponent with the smallest LCB against j1. We use ϵ for random tie-breaking among near-equal values (within ϵ). 
+
+Algorithm 3 MAX MIN LCB 
+
+1: function MAX MIN LCB( p, p, ϵ )
+
+2: Lj,j ′ ←
+
+ −∞ , j = j′
+
+p(yj ≻ y′ 
+
+> j
+
+), j̸ = j′ ∀ j, j ′ ∈ { 1, . . . , m } ▷ ignore self/filtered pairs 
+
+3: mj ← min j̸ =j′ Lj,j ′ ∀j ▷ worst-case LCB for each j
+
+4: j1 ← RANDOM TIE BREAK {j : |mj − max j′ mj′ | < ϵ } ▷ ϵ -ties on maximin 
+
+5: j2 ← RANDOM TIE BREAK {j̸ = j1 : |Lj1,j − min j′̸ =j1 Lj1,j ′ | < ϵ } ▷ ϵ -ties on argmin 
+
+6: return (j1, j 2) ▷ (chosen, rejected) 
+
+7: end function DOUBLE REVERSED THOMPSON SAMPLING (DRTS) extends DTS by drawing two independent Thompson samples, uniformly between the lower bound r and upper bound r for each response, and selecting the best and worst responses under these samples, respectively. This targets response pairs with a large expected quality gap while preserving the exploration benefits of Thompson sampling-based methods (e.g., occasionally selecting uncertain options). The parameter maxiter is the maximum number of resamples used to obtain j′̸ = j before falling back to a uniform draw over {1, . . . , m }.19 Algorithm 4 DOUBLE REVERSED THOMPSON SAMPLING (DRTS)  
+
+> 1:
+
+function DRTS( r, r, maxiter)  
+
+> 2:
+
+j ← THOMPSON SAMPLE (r, r ) ▷ sampled best  
+
+> 3:
+
+for t = 1 to maxiter do  
+
+> 4:
+
+j′ ← THOMPSON SAMPLE (−r, −r) ▷ sampled worst via reward reversal  
+
+> 5:
+
+if j′̸ = j then  
+
+> 6:
+
+return (j, j ′) 
+
+> 7:
+
+end if ▷ try to ensure a distinct pair  
+
+> 8:
+
+end for  
+
+> 9:
+
+return (j, Unif( {1, . . . , m } \ { j})) ▷ fallback after maxiter resamples  
+
+> 10:
+
+end function DELTA UCB selects an ordered response pair by maximizing the upper confidence bound on the preference probability. Thus, DELTA UCB deterministically targets the most optimistically likely win under the current confidence intervals. By relying on optimistic bounds rather than stochastic sampling, D ELTA UCB steers exploration toward pairs that could plausibly exhibit substantial quality differences under uncertainty, while remaining fully deterministic given the current confidence intervals. 
+
+Algorithm 5 DELTA UCB  
+
+> 1:
+
+function DELTA UCB( p) 
+
+> 2:
+
+∆j,j ←
+
+ −∞ , j = j′
+
+p(yi,j ≻ yi,j ′ ), j̸ = j′ ∀ j, j ′ ∈ { 1, . . . , m } ▷ optimistic gap; forbid self-pairs  
+
+> 3:
+
+return arg max (j,j ′) ∆j,j ′ ▷ most optimistic win probability  
+
+> 4:
+
+end function 
+
+## D Annotation 
+
+Given the high cost and latency of human annotation at the scale required for our experiments, we opted to use an LLM-as-a-Judge approach. Specifically, we utilize Qwen 3 235B A22B 6 to score each response. In the following, we describe how we use the LLM to score each response (Section D.1) and ablate on the choice of Qwen 3 235B A22B, comparing it to models of different scales (Section D.2). 
+
+D.1 Scoring Methodology 
+
+Following recent findings [Ivison et al., 2024] that per-aspect annotation is most effective for synthetic data, we utilize the aspect-wise annotation proposed in UltraFeedback [Cui et al., 2024], using the aspects: A =
+
+{helpfulness, truthfulness, honesty, instruction following }. Specifically, we prompt our LLM-as-a-Judge for each of these aspects, using varying system prompts to guide the model to score the response for this aspect. For the full prompt templates for each aspect, we refer the reader to Section G.2. We explicitly instruct the LLM judge to output only the raw score as a single integer between 1 and 5, strictly suppressing any reasoning or chain-of-thought text. This strict output constraint allows us to calculate the aspect score saspect by computing a softmax exclusively over the logits corresponding to the tokens for the digits 1 through 5. Given a prompt x, a response y, and the judging prompt zx,y, aspect , the score is computed as: 
+
+saspect (y | x) = 
+
+> 5
+
+X
+
+> k=1
+
+k · exp ( ℓk(zx,y, aspect )) 
+
+P5 
+
+> j=1
+
+exp ( ℓj (zx,y, aspect )) 
+
+where ℓk(zx,y, aspect ) denotes the logit output by the judge for the token corresponding to integer k when given the input prompt 
+
+zx,y, aspect .The final scalar quality score for the response is then obtained by averaging over the set of aspects: 
+
+soverall (y | x) = 1
+
+|A| 
+
+X
+
+> aspect ∈A
+
+saspect (y | x).
+
+> 6Qwen/Qwen3-235B-A22B
+
+20 Crucially, this continuous scoring mechanism addresses the issue of score saturation. We attribute such saturation to the inherent numeric bias of LLMs, where models disproportionately favor higher integers (e.g., 5). This tendency renders competitive responses indistinguishable when using discrete labels. By utilizing the expected value over token probabilities, we capture the judge’s underlying confidence, enabling fine-grained ranking even among responses with identical discrete scores. Table 4: Comparison of the four experimental judging configurations using the Qwen/Qwen3-235B-A22B model on the 
+
+UltraFeedback dataset ( N = 60 ′829 ). Win Rate measures the percentage of samples where the judge assigned a strictly higher overall score to the preferred response. Ties occur when the calculated overall score is identical for both responses. The Probabilistic Scoring configuration (without reasoning) was selected for the final annotation pipeline due to its superior alignment, reliability, and speed. 
+
+Configuration Win Rate Tie Rate Parse Errors Probabilistic Scoring 76.70% 0.0% 0
+
+Discrete Generation 75.36% 14.7% 275 Probabilistic Scoring + Explicit Reasoning 73.54% 11.3% 120 Discrete Generation + Explicit Reasoning 73.37% 12.1% 20,181 This necessity for a distributed signal drove the decision to suppress the model’s explicit reasoning capabilities. As shown in Table 4, our experiments on the UltraFeedback prompts in combination with responses from our model pool (Section A.1) reveal that enabling reasoning degrades performance across both scoring methods. We observed that when the judge reasons, it becomes overly certain, collapsing the probability distribution over score tokens into a single peak (score saturation). In fact, the analysis confirms that with reasoning enabled, approximately 88.4% (53’763/60’829) of the prompts resulted in a strict probability of 1.0 assigned to a single integer token for every aspect of both responses 7. This effectively reverts the continuous signal to a discrete integer, lowering the win rate to 73.54%. In contrast, the Probabilistic Scoring configuration consistently maintained a distributed probability mass, avoiding collapse entirely. This preservation of uncertainty allowed this method to distinguish between competitive responses, eliminating ties and achieving a superior win rate of 76.70%, effectively outperforming the 75.36% achieved by the discrete generation variant. Finally, the Probabilistic Scoring strategy encourages validity. While the Discrete Generation + Explicit Reasoning setup suffered over 20’000 parsing failures (out of ∼486’000 total inference calls) due to format deviations, the selected probabilistic approach yielded zero errors across all samples. Additionally, suppressing the reasoning step resulted in a massive gain in inference throughput, operating at approximately 15 × the speed of the reasoning-enabled configurations ( ∼12’000 vs. ∼800 samples/hr). 
+
+D.2 Judge Model Ablation 
+
+To evaluate the effectiveness of our LLM-as-a-Judge design, we evaluate our LLM-as-a-Judge and score extraction method, using different models on RewardBench 2 Malik et al. [2025]. The results can be seen in Table 5. Table 5: Rewardbench 2 scores for our judge using different models as judge models. With this comparison, we aim to cover a wide range of model sizes to examine how model size affects annotation quality. We also added Skywork-Reward-V2-Llama-3.1-8B, the current rank 1 on RewardBench 2, as a reference. 
+
+Model Factuality Focus Math Precise IF Safety Ties Mean 
+
+Qwen3-32B 0.787 0.840 0.710 0.343 0.844 0.863 0.731 Qwen3-235B-A22B 0.851 0.792 0.689 0.369 0.931 0.833 0.744 Llama-3.3-70B-Instruct 0.692 0.753 0.683 0.437 0.806 0.866 0.706 Skywork-Reward-V2-Llama-3.1-8B 0.844 0.983 0.770 0.656 0.967 0.812 0.839 Our judge approach performs similarly for all models, yielding accurate scores. It is important to note that while Skywork-Reward-V2-Llama-3.1-8B achieves a superior score on RewardBench 2, using its rewards as annotation scores resulted in significant degradation of the fine-tuned models in our early experiments, motivating us to opt for our judge instead. Because of this, we opted to use Qwen 3 235B A22B throughout our experiments, for its strong performance for reward modeling and general fine-tuning. 
+
+> 7We utilized vLLM [Kwon et al., 2023] for inference, configured to return the top-20 log probabilities. In these instances, only one of the target integer tokens ( 1–5) appeared within the top-20 candidates. This implies that the logits for the remaining score tokens were negligible, resulting in a renormalized probability of 1.0 for the top token.
+
+21 E Implementation Details 
+
+E.1 Evaluation Methodology 
+
+To assess the quality of the datasets generated by A CTIVE ULTRA FEEDBACK , we conduct experiments targeting both stages of the standard RLHF pipeline (Section 3): reward modeling and policy optimization. By evaluating these components in isolation, we can disentangle the data’s impact on both stages. It is important to note that the models trained for evaluation are distinct from the ENN reward model utilized within the A CTIVE ULTRA FEEDBACK acquisition loop. For both reward modeling and fine-tuning experiments, we utilize Llama-3.1-Tulu-3-8B-SFT 8 [Lambert et al., 2025] as the base model and use parameter-efficient fine-tuning via LoRA adapters [Hu et al., 2022] and the AdamW optimizer [Loshchilov and Hutter, 2017] for all training runs. The objectives for both trainings follow standard procedures, using the Bradley-Terry objective (Equation (1)) for reward modeling and direct preference optimization (DPO) [Rafailov et al., 2023] for fine-tuning. 
+
+E.2 Training Stability 
+
+In this section, we analyze the stability of A CTIVE ULTRA FEEDBACK and our evaluation setup. In order to analyse the stability of ACTIVE ULTRA FEEDBACK , we keep the responses and annotation scores fixed, to conserve computational resources (Section E.4), and evaluate the stability of the response pair acquisition and ENN training in A CTIVE ULTRA FEEDBACK . For this, we consider two response pair selection methods. One deterministic method (D ELTA UCB) and one sampling-based method (DRTS) to also evaluate the stability of sampling-based methods. The results can be seen in Table 6. Table 6: Stability of A CTIVE ULTRA FEEDBACK across 5 different random seeds with two response pair selection methods. We report the mean and standard deviation for each benchmark. Scores are reported as relative deltas to the base model. 
+
+Method GSM8K IFEval TruthfulQA AlpacaEval 2 Mean RewardBench 2 
+
+DRTS +0 .057 ±0.009 +0 .025 ±0.017 +0 .132 ±0.010 +0 .246 ±0.007 +0 .114 ±0.006 +0 .277 ±0.025 
+
+DELTA UCB +0 .058 ±0.009 +0 .017 ±0.009 +0 .103 ±0.007 +0 .230 ±0.012 +0 .101 ±0.006 +0 .282 ±0.011 
+
+We observe that, for downstream evaluations, both deterministic and sampling-based methods are very stable, only having a standard deviation of 0.006 in their mean downstream score. For reward modelling, the sampling-based methods experience slightly higher standard deviation (0.025) than the deterministic methods (0.011), which is to be expected when introducing more stochasticity through sampling. Now we analyse the stability of our evaluation setup, starting with the DPO training. We utilize the decontaminated version of the UltraFeedback dataset 9 [Cui et al., 2024] for these experiments. First, we examine the sensitivity to initialization by training with 5 different random seeds while keeping all other hyperparameters fixed. We ensure reproducibility by fixing the random seed and explicitly shuffling the dataset according to the seed before training. As shown in Table 7, the standard deviation across seeds is minimal ( ≈ 0.003 for the overall score), with TruthfulQA exhibiting the highest stability ( 0.001 ) and AlpacaEval 2 showing slightly higher variance ( 0.006 ), likely due to the inherent noise in generation-based evaluation. Table 7: Training stability across 5 different random seeds. We report the mean and standard deviation for each benchmark. Scores are reported as relative deltas to the base model. 
+
+Metric GSM8K IFEval TruthfulQA AlpacaEval 2 Mean 
+
+Mean +0.039 +0.020 +0.056 +0.028 +0.035 Std. Dev. 0.005 0.006 0.001 0.006 0.003 Next, to assess the inherent randomness caused by system-level non-determinism (e.g., PyTorch non-determinism, and non-associativity of rounding operations for floating-point numbers in multi-GPU setups), we performed 5 independent training runs using a fixed seed of 42. The results in Table 8 confirm that system-level noise produces deviations comparable to seed variation (≈ 0.004 overall). IFEval shows slightly higher variance here ( 0.011 ), while TruthfulQA remains perfectly stable. 
+
+> 8allenai/Llama-3.1-Tulu-3-8B-SFT
+> 9allenai/ultrafeedback_binarized_cleaned
+
+22 Table 8: Training stability across 5 runs with a fixed seed (Seed 42), assessing system-level non-determinism. Scores are reported as relative deltas to the base model. 
+
+Metric GSM8K IFEval TruthfulQA AlpacaEval 2 Mean 
+
+Mean +0.044 +0.020 +0.054 +0.030 +0.035 Std. Dev. 0.003 0.011 0.000 0.008 0.004 We performed the same stability analysis for our Reward Model training using RewardBench 2. First, examining initialization sensitivity across 5 random seeds (Table 9), we observe moderate stability overall ( ≈ 0.011 ). However, the Ties metric exhibits significant variance ( 0.072 ), indicating that the model’s ability to resolve subtle preference differences is highly sensitive to random initialization conditions. Table 9: Reward Model training stability across 5 different random seeds. Scores are reported as relative deltas to the base model. 
+
+Metric Factuality Focus Math Precise IF Safety Ties Mean 
+
+Mean +0.344 +0.495 +0.145 +0.095 +0.453 +0.253 +0.298 Std. Dev. 0.019 0.029 0.030 0.031 0.036 0.072 0.011 Second, we performed 5 independent training runs using a fixed seed of 42. The results in Table 10 reveal negligible noise (≈ 0.004 ). Notably, the Ties variance drops to 0.008, confirming that the higher instability observed previously stems from algorithmic randomness (e.g., weight initialization, data permutation) rather than hardware-level non-determinism. Table 10: Reward Model stability across 5 runs with a fixed seed (Seed 42). Scores are reported as relative deltas to the base model. 
+
+Metric Factuality Focus Math Precise IF Safety Ties Mean 
+
+Mean +0.363 +0.444 +0.145 +0.128 +0.546 +0.252 +0.292 Std. Dev. 0.005 0.006 0.007 0.007 0.006 0.008 0.004 Finally, we extend our stability analysis to the optimization algorithms themselves. To ensure that our performance gains are robust and not artifacts of initialization, we trained both IPO and SimPO models using 5 different random seeds. As detailed in Tables 11 and 12, our setup proves to be highly stable across different preference optimization algorithms. Both methods demonstrate minimal variance across key benchmarks (e.g., standard deviations of ≈ 0.004 –0.011 on GSM8K and 
+
+≈ 0.005 –0.006 on TruthfulQA). These results, reflected in the low variance of the aggregated mean scores ( 0.015 for SimPO and 0.011 for IPO), confirm that the improvements over the baseline are reliable and consistent. Table 11: Stability analysis of our SimPO algorithms setup. We report the Mean and Standard Deviation across 5 different random seeds. Scores are reported as relative deltas to the base model. 
+
+Benchmark GSM8K IFEval TruthfulQA AlpacaEval Mean 
+
+Mean Delta +0.033 +0.019 +0.058 +0.273 +0.095 Std. Dev. 0.011 0.009 0.006 0.036 0.015 Table 12: Stability analysis of our IPO algorithms setup. We report the Mean and Standard Deviation across 5 different random seeds. Scores are reported as relative deltas to the base model. 
+
+Benchmark GSM8K IFEval TruthfulQA AlpacaEval Mean 
+
+Mean Delta +0.048 +0.035 +0.040 +0.304 +0.106 Std. Dev. 0.004 0.005 0.005 0.036 0.011 23 E.3 Hyperparameters 
+
+Throughout our work, we have conducted extensive experiments for identifying well-performing and robust hyperparameters for different modules of our pipeline, including: response generation, annotation pipeline, ENN reward model, several direct preference optimization algorithms, and reward model training. In this section, we detail all hyperparameters along with their final values, and, if applicable, the sweep range we used to identify the final values. 
+
+Batch Size The number of prompts per iteration of A CTIVE ULTRA FEEDBACK is fixed at 64 for all experiments. 
+
+Response Generation and Annotation We use vLLM [Kwon et al., 2023] for prompting LLMs in two stages of the ACTIVE ULTRA FEEDBACK pipeline: Response Generation (Section 4.1) and Preference Annotation (Section 4.4). The sampling parameters used for each stage are listed in Table 13. Table 13: Sampling parameters for Response Generation and Preference Annotation in A CTIVE ULTRA FEEDBACK .
+
+Hyperparameter Response Generation Preference Annotation 
+
+Temperature 1.0 0.0 Top-p 1.0 –Max Response Tokens 4096 16 
+
+ENN Reward Model The hyperparameters for the ENN reward model in the Reward Prediction stage of A CTIVE ULTRA -FEEDBACK (Section 4.2) are listed in Table 14. Most values are adopted from prior work [Dwaracherla et al., 2024]. As a base model for the ENN reward model, we use Skywork Reward V2 Qwen3 4B 10 for its strong reward modelling performance, and train the MLP head ensemble on the last-layer embedding of the last token in the sequence. Table 14: Hyperparameters for the ENN architecture. 
+
+Hyperparameter Value 
+
+Number of MLP heads 20 Number of layers per MLP head 2Hidden size of each MLP head 128 
+
+ENN Training The Reward Model Training component of A CTIVE ULTRA FEEDBACK (Section 4.5) involves many hyperpa-rameters. We list the ones that are fixed across all experiments in Table 15. Table 15: Fixed hyperparameters used across experiments for ENN training. 
+
+Hyperparameter Value 
+
+Max Length (Prompt + Response) 4096 Batch Size, |B| 64 Train Steps 100 Initial Regularization, ζ 1.0 Reward Centering Coefficient, γ 0.01 Learning Rate 5 × 10 −5
+
+For certain hyperparameters, the optimal value differs based on the active response pair selection method, as well as between DPO fine-tuning and reward modeling. We report the sweep performed and the optimal configuration we found in Table 16. 
+
+Preference Optimization (DPO, IPO, SimPO) To establish the optimal configuration for preference fine-tuning, we utilized the UltraFeedback dataset 11 [Cui et al., 2024]. We conducted a hyperparameter sweep for DPO, IPO, and SimPO and selected based on best performance in our evaluation framework (Section E.1), are presented in Table 17. We fixed the batch size to 32, used a linear learning rate schedule with a warmup ratio of 0.1, and used a max length (prompt + completion) of 2048 for all three preference optimization algorithms. 
+
+> 10 Skywork/Skywork-Reward-V2-Qwen3-4B
+> 11 allenai/ultrafeedback_binarized_cleaned
+
+24 Table 16: ENN training hyperparameters and sweep ranges for each active response pair selection method. Separate optimal values were chosen based on performance after DPO fine-tuning and on RewardBench 2. 
+
+Hyperparameter Grid Values INFO MAX DTS MAX MIN LCB DRTS DELTA UCB 
+
+Optimal for DPO Fine-Tuning 
+
+Beta β [1, 2] 2 1 1 1 2Regularization Decay [0.9, 0.99, 0.999] 0.99 0.99 0.99 0.999 0.999 Replay Buffer Size Factor, ρ [100, 1000] 1000 1000 1000 1000 1000 
+
+Optimal for Reward Modeling 
+
+Beta β [1, 2] 2 1 2 1 1Regularization Decay [0.9, 0.99, 0.999] 0.99 0.999 0.9 0.9 0.99 Replay Buffer Size Factor, ρ [100, 1000] 1000 1000 1000 1000 100 Table 17: Optimal hyperparameters for our DPO, IPO, and SimPO fine-tuning, selected based on evaluation performance. 
+
+Hyperparameter Grid Values Chosen Value For DPO 
+
+Learning Rate [1 × 10 −6, 2 × 10 −5, 5 × 10 −4] 2 × 10 −5
+
+Lambda λ [0.1, 0.01] 0.1 Epochs [1, 3] 3
+
+For IPO 
+
+Learning Rate [5 × 10 −6, 1 × 10 −5, 2 × 10 −5, 5 × 10 −5] 5 × 10 −6
+
+Lambda λ [0.01, 0.1, 0.5, 1.0] 0.01 Epochs [1, 3] 1
+
+For SimPO 
+
+Learning Rate [5 × 10 −6, 1 × 10 −5, 2 × 10 −5, 5 × 10 −5] 5 × 10 −6
+
+Gamma [0.3, 0.5, 1.0, 1.2, 1.4, 1.6] 1.2 Lambda λ [2.0, 2.5] 2.0 Epochs [1, 3] 1
+
+Reward Modeling The hyperparameter sweep and final values for reward model training, selected based on the highest mean score on RewardBench 2, are listed in Table 18. We fixed the B ATCH SIZE to 128 , used a constant learning rate, and used a max length (prompt + completion) of 4096 .Table 18: Optimal hyperparameters for reward model training, selected based on RewardBench 2 performance. 
+
+Hyperparameter Grid Values Chosen Value 
+
+Learning Rate [3 × 10 −6, 5 × 10 −6, 2 × 10 −5] 2 × 10 −5
+
+Epochs [1, 2, 3] 2
+
+LoRA We use the hyperparameters in Table 19 for LoRA when fine-tuning (DPO, IPO, SimPO) and reward modeling. 
+
+E.4 Compute Estimates 
+
+All experiments were conducted on 8 NVIDIA GH200 Grace Hopper Superchips. To facilitate extensive ablation studies and rapid iteration, we decoupled the computationally expensive generation and annotation phases from the active learning loop. Specifically, we pre-computed the candidate responses and their corresponding judge annotations for the entire dataset prior to simulating the acquisition process. Table 20 provides a breakdown of the estimated GPU hours required for each stage of the pipeline on the UltraFeedback dataset. As shown, the computational budget is roughly evenly distributed between response generation and the pre-computation of judge 25 Table 19: Hyperparameters for our LoRA setup. 
+
+Hyperparameters Chosen Value 
+
+Rank 64 Alpha 16 Dropout 0.1 Target Modules all-linear 
+
+Step Estimated GPU Hours 
+
+Response Generation 600 Annotation 600 Active Learning Loop 32 Table 20: Compute estimates for each step of A CTIVE ULTRA FEEDBACK , estimated in GPU hours. scores. In practical use of A CTIVE ULTRA FEEDBACK , the annotation cost would be drastically reduced, as the pipeline only requires annotations for the selected responses, rather than the entire candidate pool. It is important to note that our implementation prioritized experimental flexibility and reproducibility over maximum computa-tional efficiency. Consequently, further reductions in runtime could likely be achieved through further optimized distributed inference and training configurations. In total, all experiments, including model fine-tuning, reward model training, ablations, stability analyses, failed experiments, and preliminary experiments, consumed approximately 200’000 GPU hours. 
+
+## F Additional Results 
+
+F.1 Generated Dataset Analysis 
+
+To understand the selection dynamics of different response pair acquisition methods, we analyze the distributions of the generated datasets by examining how often each model from our pool was selected, how often it was annotated as chosen and rejected (Figure 6) and the mean scores for the chosen and rejected responses for different response pair selection methods (Table 21). We find that methods aiming at regret minimization, such as DTS (Figure 6e) and M AX MIN LCB (Figure 6f), successfully identify high-quality models, with high judge scores (Table 21), resulting in distributions heavily skewed towards recent, large-scale models. In contrast, as expected, R ANDOM (Figure 6a) exhibits a nearly uniform distribution, while U LTRA FEEDBACK 
+
+(Figure 6b) displays a slight skew towards higher-quality models due to its "best-of-N " heuristic. Conversely, the entropy-minimizing I NFO MAX (Figure 6d) disproportionately selects smaller, older models. We attribute this to the fact that recent, large-scale models consistently achieve near-perfect scores, leading to high certainty in their high quality. In contrast, smaller models exhibit erratic behaviour, occasionally producing high-scoring responses but frequently failing. This unpredictability results in higher epistemic uncertainty, driving the method to sample from them more frequently. Finally, our proposed quality delta maximization methods, DRTS (Figure 6g) and D ELTA UCB, produce distributions closely mirroring the high-scoring, but inefficient M AX MIN baseline (Figure 6c), prioritizing the best and worst responses, yet achieve this efficiently by requiring only two annotations per prompt compared to M AX MIN ’s annotation of the full candidate set. 26 Table 21: Mean score of the chosen, rejected, and overall responses from different response pair selection methods on the 
+
+UltraFeedback prompts. 
+
+Method Mean Chosen Score Mean Rejected Score Mean Score 
+
+RANDOM 4.522 3.564 4.043 ULTRA FEEDBACK 4.747 3.810 4.279 MAX MIN 4.925 1.605 3.625 DELTA QWEN 4.549 2.924 3.736 INFO MAX 3.666 3.156 3.411 DTS 4.855 4.584 4.720 MAX MIN LCB 4.864 4.683 4.773 DRTS 4.752 1.968 3.360 DELTA UCB 4.705 2.113 3.409 
+
+F.2 Sample Efficiency without AlpacaEval 2 
+
+The score deltas in AlpacaEval 2 are an order of magnitude larger than those in our other benchmarks. Consequently, the mean score delta is disproportionately influenced by AlpacaEval 2, obscuring performance trends in the wider suite. To provide a clearer visualization of our sample efficiency experiment (Section 5.3), Figure 7 presents the mean performance trajectories both with and without the inclusion of AlpacaEval 2. 
+
+F.3 Full Input Prompt Dataset Ablation 
+
+In this section, we provide the detailed scores for our prompt dataset ablation (Section 5.4). The detailed results, for each individual benchmark and response pair selection method, can be seen in Table 22. 
+
+F.4 Full Preference Optimization Algorithm Ablation 
+
+In this section, we provide the detailed scores for our preference optimization algorithm ablation (Section 5.5). The detailed results, for each individual benchmark and response pair selection method, can be seen in Table 23. 
+
+## G Prompt Templates 
+
+In this section, we provide the prompt templates used in our pipeline for both the response generation (Section 4.1) and preference annotation (Section 4.4). All of the prompts used have been originally taken from UltraFeedback [Cui et al., 2024]. 
+
+G.1 Response Generation Prompt Templates 
+
+For each response, we randomly sample a principle among “helpfulness”, “truthfulness”, and “honesty”. For each of these principles we use 11 different system prompts and provide one representative system prompt here. You can find all prompts in our open-sourced code. 
+
+Response Generation Prompt Template Examples 
+
+Helpfulness : The assistant should provide users with accurate, relevant, and up-to-date information, ensuring that the content is positive, interesting, engaging, educational, and helpful. 
+
+Truthfulness : The assistant should be honest about whether it knows the answer and express its uncertainty explicitly. Be confident on questions it knows well and be modest on those it is unfamiliar with. Use weakeners such as ’I guess’, ’I suppose’, ’probably’, and ’perhaps’ to express uncertainty, and feel free to answer ’I don’t know’ if necessary. 
+
+Honesty : The assistant should answer truthfully and be faithful to factual knowledge as well as given contexts, never making up any new facts that aren’t true or cannot be grounded in the instruction. 27 G.2 Annotation Prompt Templates 
+
+Our annotation setup utilizes a single shared system prompt for all annotations to enforce the role of an impartial judge and strict output formatting. The following system prompt is used for all aspects to ensure the judge outputs only a single integer score. 
+
+Judge System Prompt 
+
+You are an impartial judge. Your role is to critically evaluate the quality of an AI assistant response based on a given criteria. You’ll receive an input with two sections, enclosed in tags: <INSTRUCTIONS>...</INSTRUCTIONS> for the instructions, and <TEXT>...</TEXT> for the AI assistant response. Carefully read and interpret the instructions to assess how well the text fulfills the criteria requirements. You will be given a scoring rubric below, based on which you should provide a rating from 1 to 5. Your output should only be an integer from 1 to 5. Do not output any additional text or explanations. For the user prompt, we construct a specific rubric based on the aspect being evaluated (“instruction following”, “honesty”, “truthfulness”, or “helpfulness”). The final user prompt is constructed by using these rubrics and injecting the original prompt ({prompt} ) and the response to be evaluated by the LLM judge ( {response} ). 
+
+Instruction Following Annotation Prompt Template 
+
+You will be doing an Instruction Following Assessment of an AI assistant response. Carefully read and interpret instructions to assess how well the text fulfills the task requirements. 
+
+Scoring : Rate the text on a scale of 1 to 5: 1. Irrelevant : No alignment. 2. Partial Focus : Addresses one aspect poorly. 3. Partial Compliance :• (1) Meets goal or restrictions, neglecting other. • (2) Acknowledges both but slight deviations. 4. Almost There : Near alignment, minor deviations. 5. Comprehensive Compliance : Fully aligns, meets all requirements. Here are the instructions and the AI assistant response: 
+
+<INSTRUCTIONS>{prompt}</INSTRUCTIONS> <TEXT>{response}</TEXT> 
+
+28 Honesty Annotation Prompt Template 
+
+You will be doing a Honesty and Uncertainty Expression Assessment of an AI assistant response. Assess how well the text conveys honesty and uncertainty. Evaluate if the text’s confidence aligns with response correctness. • Indicators of Uncertainty :1. Weakeners: e.g., ’I guess,’ ’probably.’ 2. Refusal to answer. 3. Verbalized confidence scores: [0, 20] low; (20, 40] uncertain; (40, 60] moderate; (60, 80] leaning confident; (80, 100] high. • No uncertainty expression indicate confidence. 
+
+• Response Correctness : Align with ground truth, or provide accurate content without fabrication. 
+
+Scoring : Rate outputs on a scale of 1 to 5: 1. Confidently Incorrect : Confident but entirely wrong. 2. Confident with Significant Mistakes / Unconfident Incorrect :• Confident but contains major errors. • Unconfident and entirely wrong. 3. Uncertain / ’I Don’t Know’ / Subtle Mistakes :• ’I don’t know’ or declines. • Confident but contains minor errors. • Unconfident and contains significant mistakes. 4. Correct but Uncertain / Expressed Subtle Mistakes :• Correct but unconfident. • Makes subtle mistakes but expresses uncertainty without specifying the exact area of doubt. 5. Correct and Confident / Precisely Express Uncertainty :• Correct and confident. • Makes mistakes, but precisely acknowledges minor errors and indicates uncertainty on potential mistakes. Here are the instructions and the AI assistant response: 
+
+<INSTRUCTIONS>{prompt}</INSTRUCTIONS> <TEXT>{response}</TEXT> 
+
+29 Truthfulness Annotation Prompt Template 
+
+You will be doing a Truthfulness and Hallucination Assessment of an AI assistant response. Evaluate the text’s accuracy in providing information without introducing misleading or fabricated details. When evaluating truthfulness, consider the following types of hallucination: 1. Contradictory with the World (Factual Error) : Entities, locations, concepts, or events that conflict with established knowledge. 2. Contradictory with Instruction and Input : Responses diverge, introducing new facts not aligned with instructions or inputs. 3. Self-Contradictory / Logical Error : Responses contain internal contradictions or logical errors within each independent text. Reflect on whether any of these hallucination types are present in the response, and take them into account when assigning your rating. 
+
+Scoring : Rate outputs on a scale of 1 to 5 based on extent of hallucination: 1. Completely Hallucinated : Entirely unreliable due to hallucinations. 2. Severe Hallucination : Nearly half contains hallucinations, severe deviation from main points. 3. Partial Hallucination / Misunderstanding : Overall truthful, partial misunderstanding due to hallucinations. 4. Insignificant Hallucination : Mostly truthful, slight hallucination not affecting main points. 5. No Hallucination : Free of hallucinations. Here are the instructions and the AI assistant response: 
+
+<INSTRUCTIONS>{prompt}</INSTRUCTIONS> <TEXT>{response}</TEXT> 
+
+Helpfulness Annotation Prompt Template 
+
+You will be doing an Informativeness / Helpfulness Assessment of an AI assistant response. Evaluate if the text fulfills task objectives and provides high-quality, correct, and, informative content. Helpfulness assessment emphasizes Overall Quality regarding correctness and informativeness. 
+
+Correctness : Accurate computation, reasoning steps, and outputs without misunderstandings or fabrication. When assessing informativeness, consider the following aspects: 1. Clarity and Relevance : Does the response relate to the task and seek clarifications if needed? 2. Useful and Comprehensive Information : Does it provide relevant background, reasoning steps, or detailed description? 3. Not Lengthy, No Repetition : Is the response concise, avoiding verbosity or repetition? Score on a scale of 1 to 5 based on extent of helpfulness, regarding both informativeness and correctness: 1. Severely Incorrect : Contains significant inaccuracies or fabricated content, even if comprehensive information is provided. 2. Partially Incorrect : Contains errors that may cause confusion, even though comprehensive information is present. 3. Correct : Accurate and provides useful information that meets the task’s requirements. 4. Highly Informative : Accurate and extensive, providing valuable insights and detailed information. 5. Outstandingly Helpful : Both accurate and in-depth, offering profound insights and comprehensive information. Here are the instructions and the AI assistant response: 
+
+<INSTRUCTIONS>{prompt}</INSTRUCTIONS> <TEXT>{response}</TEXT> 
+
+30 Qwen 3 235B A22B 
+
+> Command A
+> DeepSeek V3
+> Nemotron Super 49B
+> Nemotron 70B
+> Nemotron Ultra 253B
+> Qwen 3 32B
+> Qwen 2.5 72B
+> Gemma 3 27B
+> Qwen 3 14B
+> Qwen 3 30B A3B
+> Phi 4
+> Mistral Large
+> Gemma 3 12B
+> Llama 3.3 70B
+> Tulu 70B
+> Tulu 405B
+> Gemma 3 4B
+> Mistral Small
+> Moonlight 16B A3B
+> OLMo 2 32B
+> Qwen 3 1.7B
+> Llama 3.1 8B
+> Phi 4 Mini
+> Llama 3.2 3B
+> Gemma 3 1B
+> Qwen 3 0.6B
+> SmolLM2 1.7B
+> Llama 3.2 1B
+> Qwen 2.5 0.5B
+> 0
+> 1000
+> 2000
+> 3000
+> 4000
+> Counts
+
+(a) RANDOM : Model distribution of how often each model in our model pool has been selected by the R ANDOM response pair selection method. We further split this data into the number of times each model has been annotated as chosen (green) and rejected (red). Models are sorted based on the number of times they have been annotated as chosen. Qwen 3 235B A22B 
+
+> Command A
+> DeepSeek V3
+> Nemotron Ultra 253B
+> Nemotron Super 49B
+> Nemotron 70B
+> Qwen 3 32B
+> Qwen 3 14B
+> Gemma 3 27B
+> Qwen 2.5 72B
+> Qwen 3 30B A3B
+> Mistral Large
+> Phi 4
+> Gemma 3 12B
+> Llama 3.3 70B
+> Tulu 70B
+> Tulu 405B
+> Gemma 3 4B
+> Mistral Small
+> Moonlight 16B A3B
+> Qwen 3 1.7B
+> OLMo 2 32B
+> Llama 3.1 8B
+> Phi 4 Mini
+> Llama 3.2 3B
+> Gemma 3 1B
+> Qwen 3 0.6B
+> SmolLM2 1.7B
+> Llama 3.2 1B
+> Qwen 2.5 0.5B
+> 0
+> 1000
+> 2000
+> 3000
+> 4000
+> 5000
+> Counts
+
+(b) ULTRA FEEDBACK : Model distribution of how often each model in our model pool has been selected by the U LTRA FEEDBACK response pair selection method. We further split this data into the number of times each model has been annotated as chosen (green) and rejected (red). Models are sorted based on the number of times they have been annotated as chosen. Qwen 3 235B A22B 
+
+> Command A
+> Nemotron Super 49B
+> DeepSeek V3
+> Nemotron Ultra 253B
+> Nemotron 70B
+> Gemma 3 27B
+> Qwen 3 32B
+> Qwen 3 14B
+> Qwen 3 30B A3B
+> Qwen 2.5 72B
+> Mistral Large
+> Phi 4
+> Gemma 3 12B
+> Llama 3.3 70B
+> Tulu 70B
+> Tulu 405B
+> Mistral Small
+> Qwen 3 1.7B
+> Gemma 3 4B
+> Moonlight 16B A3B
+> OLMo 2 32B
+> Llama 3.1 8B
+> Phi 4 Mini
+> Llama 3.2 3B
+> Gemma 3 1B
+> Qwen 3 0.6B
+> Qwen 2.5 0.5B
+> SmolLM2 1.7B
+> Llama 3.2 1B
+> 0
+> 5000
+> 10000
+> 15000
+> 20000
+> Counts
+
+(c) MAX MIN : Model distribution of how often each model in our model pool has been selected by the M AX MIN response pair selection method. We further split this data into the number of times each model has been annotated as chosen (green) and rejected (red). Models are sorted based on the number of times they have been annotated as chosen. 
+
+Figure 6: Comparison between the number of times each model from our model pool (Section A.1) has been selected as chosen and rejected model on the UltraFeedback prompts for all response pair selection methods we consider. 31 Qwen 2.5 0.5B 
+
+> Llama 3.2 1B
+> SmolLM2 1.7B
+> Nemotron Ultra 253B
+> Nemotron 70B
+> Llama 3.2 3B
+> Phi 4 Mini
+> Gemma 3 27B
+> Qwen 3 0.6B
+> Llama 3.3 70B
+> Command A
+> Llama 3.1 8B
+> Qwen 3 235B A22B
+> Gemma 3 1B
+> DeepSeek V3
+> Nemotron Super 49B
+> Gemma 3 12B
+> Tulu 405B
+> OLMo 2 32B
+> Mistral Small
+> Tulu 70B
+> Moonlight 16B A3B
+> Mistral Large
+> Qwen 3 32B
+> Qwen 3 30B A3B
+> Qwen 3 14B
+> Qwen 3 1.7B
+> Qwen 2.5 72B
+> Gemma 3 4B
+> Phi 4
+> 0
+> 2000
+> 4000
+> 6000
+> 8000
+> 10000
+> Counts
+
+(d) INFO MAX : Model distribution of how often each model in our model pool has been selected by the I NFO MAX response pair selection method. We further split this data into the number of times each model has been annotated as chosen (green) and rejected (red). Models are sorted based on the number of times they have been annotated as chosen. Qwen 3 235B A22B 
+
+> Command A
+> DeepSeek V3
+> Nemotron Super 49B
+> Nemotron 70B
+> Nemotron Ultra 253B
+> Qwen 3 32B
+> Gemma 3 27B
+> Qwen 3 14B
+> Qwen 3 30B A3B
+> Phi 4
+> Gemma 3 12B
+> Qwen 2.5 72B
+> Mistral Large
+> Llama 3.3 70B
+> Qwen 3 1.7B
+> Tulu 70B
+> Tulu 405B
+> Gemma 3 4B
+> Mistral Small
+> Moonlight 16B A3B
+> OLMo 2 32B
+> Llama 3.1 8B
+> Llama 3.2 3B
+> Phi 4 Mini
+> Qwen 3 0.6B
+> Gemma 3 1B
+> Qwen 2.5 0.5B
+> Llama 3.2 1B
+> SmolLM2 1.7B
+> 0
+> 2500
+> 5000
+> 7500
+> 10000
+> 12500
+> 15000
+> 17500
+> Counts
+
+(e) DTS : Model distribution of how often each model in our model pool has been selected by the DTS response pair selection method. We further split this data into the number of times each model has been annotated as chosen (green) and rejected (red). Models are sorted based on the number of times they have been annotated as chosen. Qwen 3 235B A22B 
+
+> Command A
+> DeepSeek V3
+> Nemotron Super 49B
+> Nemotron 70B
+> Nemotron Ultra 253B
+> Qwen 3 32B
+> Gemma 3 27B
+> Qwen 3 14B
+> Qwen 3 30B A3B
+> Phi 4
+> Gemma 3 12B
+> Mistral Large
+> Qwen 2.5 72B
+> Llama 3.3 70B
+> Qwen 3 1.7B
+> Tulu 70B
+> Tulu 405B
+> Gemma 3 4B
+> Mistral Small
+> Moonlight 16B A3B
+> OLMo 2 32B
+> Llama 3.1 8B
+> Phi 4 Mini
+> Gemma 3 1B
+> Qwen 3 0.6B
+> Llama 3.2 3B
+> SmolLM2 1.7B
+> Llama 3.2 1B
+> Qwen 2.5 0.5B
+> 0
+> 5000
+> 10000
+> 15000
+> 20000
+> Counts
+
+(f) MAX MIN LCB : Model distribution of how often each model in our model pool has been selected by the M AX MIN LCB response pair selection method. We further split this data into the number of times each model has been annotated as chosen (green) and rejected (red). Models are sorted based on the number of times they have been annotated as chosen. 
+
+Figure 6: Comparison between the number of times each model from our model pool (Section A.1) has been selected as chosen and rejected model on the UltraFeedback prompts for all response pair selection methods we consider. 32 Command A 
+
+> Qwen 3 235B A22B
+> Nemotron Ultra 253B
+> Nemotron 70B
+> Nemotron Super 49B
+> DeepSeek V3
+> Gemma 3 27B
+> Qwen 3 14B
+> Qwen 3 30B A3B
+> Qwen 3 32B
+> Gemma 3 12B
+> Llama 3.3 70B
+> Mistral Large
+> Qwen 2.5 72B
+> Phi 4
+> Qwen 3 1.7B
+> Mistral Small
+> Gemma 3 4B
+> Tulu 70B
+> Tulu 405B
+> Llama 3.1 8B
+> Moonlight 16B A3B
+> Llama 3.2 3B
+> OLMo 2 32B
+> Phi 4 Mini
+> Gemma 3 1B
+> Qwen 3 0.6B
+> Qwen 2.5 0.5B
+> Llama 3.2 1B
+> SmolLM2 1.7B
+> 0
+> 5000
+> 10000
+> 15000
+> 20000
+> Counts
+
+(g) DRTS : Model distribution of how often each model in our model pool has been selected by the DRTS response pair selection method. We further split this data into the number of times each model has been annotated as chosen (green) and rejected (red). Models are sorted based on the number of times they have been annotated as chosen. Command A 
+
+> DeepSeek V3
+> Qwen 3 235B A22B
+> Nemotron Ultra 253B
+> Nemotron Super 49B
+> Nemotron 70B
+> Qwen 3 14B
+> Qwen 3 32B
+> Phi 4
+> Qwen 3 30B A3B
+> Qwen 2.5 72B
+> Mistral Large
+> Gemma 3 27B
+> Tulu 405B
+> Llama 3.3 70B
+> Tulu 70B
+> Mistral Small
+> Qwen 3 1.7B
+> Gemma 3 12B
+> Moonlight 16B A3B
+> Llama 3.1 8B
+> OLMo 2 32B
+> Gemma 3 4B
+> Llama 3.2 3B
+> Phi 4 Mini
+> Gemma 3 1B
+> Qwen 3 0.6B
+> Llama 3.2 1B
+> SmolLM2 1.7B
+> Qwen 2.5 0.5B
+> 0
+> 2500
+> 5000
+> 7500
+> 10000
+> 12500
+> 15000
+> 17500
+> Counts
+
+(h) DELTA UCB : Model distribution of how often each model in our model pool has been selected by the D ELTA UCB response pair selection method. We further split this data into the number of times each model has been annotated as chosen (green) and rejected (red). Models are sorted based on the number of times they have been annotated as chosen. 
+
+Figure 6: Comparison between the number of times each model from our model pool (Section A.1) has been selected as chosen and rejected model on the UltraFeedback prompts for all response pair selection methods we consider. Random 
+
+UltraFeedback 
+
+MaxMin 
+
+DeltaQwen 
+
+DeltaUCB 
+
+DRTS 
+
+InfoMax 
+
+DTS 
+
+MaxMinLCB 
+
+Original 0 10k 20k 30k 40k 50k 60k 
+
+Consumed Samples 
+
+> 0%
+> +5%
+> +10%
+> +15%
+> Score  ∆
+
+(a) With AlpacaEval 2 0 10k 20k 30k 40k 50k 60k 
+
+Consumed Samples  
+
+> 0%
+> +5%
+> Score  ∆
+
+(b) Without AlpacaEval 2 
+
+Figure 7: Results for the sample efficiency experiment (Section 5.3). We compare the aggregate scores with and without AlpacaEval 2 to demonstrate how its larger magnitude dominates the mean across all benchmarks. 33 Table 22: Results of A CTIVE ULTRA FEEDBACK on downstream and reward model benchmarks using different prompt input datasets and response pair selection methods. All scores are given as relative deltas to the base model’s scores for readability. Best scores are in bold. We furthermore show the scores obtained by training on the actual UltraFeedback , Skywork , and Tulu 3 preference mixture datasets. 
+
+Method GSM8K IFEval TruthfulQA AlpacaEval 2 Mean RewardBench 2 
+
+Base Model 0.758 0.713 0.468 0.083 0.506 0.290 
+
+UltraFeedback Prompts 
+
+Original +0.039 +0.025 +0.055 +0.030 +0.037 +0.295 RANDOM +0.024 +0.028 +0.056 +0.077 +0.046 +0.278 ULTRA FEEDBACK +0.037 -0.001 +0.039 +0.072 +0.036 +0.287 MAX MIN +0.022 -0.016 +0.150 +0.289 +0.111 +0.318 DELTA QWEN +0.055 +0.047 +0.130 +0.316 +0.137 +0.100 INFO MAX +0.011 +0.019 +0.018 +0.020 +0.016 +0.297 DTS +0.011 +0.034 +0.013 +0.037 +0.023 +0.224 MAX MIN LCB +0.015 +0.017 +0.006 +0.027 +0.016 +0.230 DRTS +0.055 +0.050 +0.143 +0.259 +0.127 +0.312 DELTA UCB +0.040 +0.025 +0.137 +0.281 +0.120 +0.339 Skywork Prompts 
+
+Original +0.008 +0.052 +0.048 +0.066 +0.044 +0.377 
+
+RANDOM +0.012 +0.015 +0.045 +0.063 +0.033 +0.223 ULTRA FEEDBACK +0.027 +0.054 +0.043 +0.071 +0.048 +0.234 MAX MIN +0.049 -0.011 +0.128 +0.270 +0.108 +0.325 DELTA QWEN +0.058 +0.002 +0.152 +0.384 +0.149 +0.129 INFO MAX +0.021 +0.002 +0.011 +0.013 +0.012 +0.244 DTS +0.008 +0.002 +0.011 +0.021 +0.010 +0.219 MAX MIN LCB +0.003 +0.010 +0.004 +0.018 +0.008 +0.184 DRTS +0.052 +0.012 +0.114 +0.229 +0.101 +0.256 DELTA UCB +0.055 +0.013 +0.077 +0.238 +0.095 +0.262 
+
+Combined Prompts 
+
+Original +0.035 +0.049 +0.051 +0.030 +0.041 +0.378 
+
+RANDOM +0.043 +0.012 +0.074 +0.036 +0.041 +0.269 ULTRA FEEDBACK +0.043 +0.032 +0.056 +0.086 +0.054 +0.240 MAX MIN +0.027 +0.023 +0.149 +0.304 +0.125 +0.325 DELTA QWEN +0.048 +0.000 +0.149 +0.386 +0.145 +0.153 INFO MAX +0.011 +0.021 +0.014 +0.018 +0.015 +0.300 DTS +0.009 +0.002 +0.014 +0.029 +0.013 +0.247 MAX MIN LCB -0.010 +0.019 +0.010 +0.021 +0.009 +0.219 DRTS +0.055 +0.015 +0.108 +0.177 +0.088 +0.309 DELTA UCB +0.049 +0.039 +0.117 +0.217 +0.105 +0.292 
+
+Tulu 3 Prompts 
+
+Original +0.037 +0.069 +0.046 +0.020 +0.043 +0.297 RANDOM +0.055 +0.041 +0.069 +0.046 +0.052 +0.360 ULTRA FEEDBACK +0.043 +0.052 +0.056 +0.057 +0.051 +0.343 MAX MIN +0.022 +0.067 +0.188 +0.279 +0.138 +0.344 DELTA QWEN +0.049 +0.034 +0.124 +0.291 +0.124 +0.085 INFO MAX +0.021 +0.008 +0.039 +0.012 +0.020 +0.306 DTS +0.015 +0.012 +0.018 +0.024 +0.017 +0.243 MAX MIN LCB +0.013 -0.014 +0.012 +0.019 +0.008 +0.264 DRTS +0.050 +0.058 +0.118 +0.203 +0.107 +0.348 DELTA UCB +0.028 +0.060 +0.134 +0.235 +0.114 +0.383 
+
+34 Table 23: Results of A CTIVE ULTRA FEEDBACK on downstream benchmarks using different preference tuning algorithms and response pair selection methods. All scores are given as relative deltas to the base model’s scores for readability. Best score highlighted in bold. 
+
+Algorithm Method GSM8K IFEval TruthfulQA AlpacaEval 2 Mean 
+
+– Base Model 0.758 0.713 0.468 0.083 0.506 DPO RANDOM +0.024 +0.028 +0.056 +0.077 +0.046 ULTRA FEEDBACK +0.037 -0.001 +0.039 +0.072 +0.036 MAX MIN +0.022 -0.016 +0.150 +0.289 +0.111 DELTA QWEN +0.055 +0.047 +0.130 +0.316 +0.137 
+
+INFO MAX +0.011 +0.019 +0.018 +0.020 +0.016 DTS +0.011 +0.034 +0.013 +0.037 +0.023 MAX MIN LCB +0.015 +0.017 +0.006 +0.027 +0.016 DRTS +0.055 +0.050 +0.143 +0.259 +0.127 DELTA UCB +0.040 +0.025 +0.137 +0.281 +0.120 IPO RANDOM +0.066 -0.099 +0.113 +0.415 +0.123 ULTRA FEEDBACK +0.074 +0.000 +0.050 +0.415 +0.135 MAX MIN +0.069 -0.007 +0.127 +0.416 +0.151 DELTA QWEN +0.057 +0.039 +0.025 +0.275 +0.098 INFO MAX -0.757 -0.312 +0.097 -0.082 -0.264 DTS +0.059 -0.070 +0.046 +0.480 +0.128 MAX MIN LCB +0.005 +0.013 -0.002 +0.013 +0.007 DRTS +0.051 +0.030 +0.111 +0.441 +0.158 
+
+DELTA UCB +0.060 +0.010 +0.101 +0.333 +0.126 SimPO RANDOM +0.046 -0.007 +0.133 +0.496 +0.166 ULTRA FEEDBACK +0.038 -0.042 +0.163 +0.568 +0.181 
+
+MAX MIN +0.007 -0.059 +0.185 +0.460 +0.148 DELTA QWEN +0.063 +0.019 +0.065 +0.435 +0.145 INFO MAX -0.004 -0.024 +0.042 +0.037 +0.013 DTS -0.058 -0.147 +0.083 +0.536 +0.103 MAX MIN LCB -0.006 -0.022 +0.038 +0.020 +0.007 DRTS +0.054 -0.005 +0.162 +0.514 +0.181 
+
+DELTA UCB +0.044 -0.029 +0.177 +0.509 +0.175 35
