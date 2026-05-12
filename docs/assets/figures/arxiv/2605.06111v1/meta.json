@@ -1,0 +1,86 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2605.06111v1/fig-001.webp",
+      "caption": "Figure 1: Performance of task-specific RL models across four coding tasks. STL models perform well on their own tasks but degrade when transferred to others.",
+      "page": 2,
+      "index": 1,
+      "width": 826,
+      "height": 505
+    },
+    {
+      "url": "assets/figures/arxiv/2605.06111v1/fig-002.webp",
+      "caption": "Table 1: Performance comparison of ASTOR and baselines across four coding tasks. The abbreviation of “STL” denotes Single-Task Learning. Bolded values mark the best per row; underscored values mark the second best.",
+      "page": 7,
+      "index": 2,
+      "width": 822,
+      "height": 465
+    },
+    {
+      "url": "assets/figures/arxiv/2605.06111v1/fig-003.webp",
+      "caption": "Table 5: Comparison of Input Prediction. Baseline answer in red; ASTOR answer in green.",
+      "page": 22,
+      "index": 3,
+      "width": 829,
+      "height": 433
+    },
+    {
+      "url": "assets/figures/arxiv/2605.06111v1/fig-004.webp",
+      "caption": "Table 6: Comparison of Output Prediction. Baseline answer in red; ASTOR answer in green.",
+      "page": 22,
+      "index": 4,
+      "width": 829,
+      "height": 499
+    },
+    {
+      "url": "assets/figures/arxiv/2605.06111v1/fig-005.webp",
+      "caption": "Figure 2: Overview of ASTOR. (I) hierarchically schedules training data at task and prompt levels based on estimated task utilities; and (II) updates the shared policy with task-adaptive KL regularization conditioned on task utilities.",
+      "page": 3,
+      "index": 5,
+      "width": 816,
+      "height": 354
+    },
+    {
+      "url": "assets/figures/arxiv/2605.06111v1/fig-006.webp",
+      "caption": "Table 7: Comparison of Code Generation. Baseline answer in red; ASTOR answer in green.",
+      "page": 23,
+      "index": 6,
+      "width": 829,
+      "height": 611
+    },
+    {
+      "url": "assets/figures/arxiv/2605.06111v1/fig-007.webp",
+      "caption": "Table 3: Sensitivity analysis of (a) softmax temperature τ in task allocation and (b) KL adjustment rate λ in dynamic regularization, evaluated on Qwen2.5-Coder-7B.",
+      "page": 8,
+      "index": 7,
+      "width": 822,
+      "height": 221
+    },
+    {
+      "url": "assets/figures/arxiv/2605.06111v1/fig-008.webp",
+      "caption": "Table 2: Ablation results of ASTOR.",
+      "page": 8,
+      "index": 8,
+      "width": 822,
+      "height": 398
+    },
+    {
+      "url": "assets/figures/arxiv/2605.06111v1/fig-009.webp",
+      "caption": "Table 8: Comparison of Commit Message Generation. Baseline answer in red; ASTOR answer in green.",
+      "page": 24,
+      "index": 9,
+      "width": 829,
+      "height": 417
+    },
+    {
+      "url": "assets/figures/arxiv/2605.06111v1/fig-010.webp",
+      "caption": "Figure 3: Training dynamics of ASTOR on Qwen2.5-Coder-7B.",
+      "page": 9,
+      "index": 10,
+      "width": 325,
+      "height": 555
+    }
+  ]
+}

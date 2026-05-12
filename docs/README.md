@@ -6,100 +6,71 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-04-13 ~ 2026-05-12
-- 运行时间：2026-05-12 04:22:39 UTC
+- 最新运行日期：2026-05-03 ~ 2026-05-12
+- 运行时间：2026-05-12 04:36:30 UTC
 - 运行状态：成功
-- 本次总论文数：26
-- 精读区：23
-- 速读区：3
+- 本次总论文数：17
+- 精读区：6
+- 速读区：11
 
 ### 今日简报（AI）
-今日深挖 26 篇 AI 论文，重点聚焦强化学习在长文档视觉问答与 RAG 架构中的突破性应用。
-满分论文 MM-Doc-R1 与 UniDoc-RL 揭示了多轮 RL 和层级动作在处理复杂视觉文档检索中的核心价值。
-建议优先探索如何通过密集奖励与模型蒸馏，实现检索器与大模型效能的深度对齐。
-- 详情：[/20260413-20260512/README](/20260413-20260512/README)
+本期深度研读 17 篇 RAG 领域前沿论文，重点聚焦检索可靠性验证与模型内在检索能力的挖掘
+- 详情：[/20260503-20260512/README](/20260503-20260512/README)
 
 ### 精读区论文标签
-1. [MM-Doc-R1: Training Agents for Long Document Visual Question Answering through Multi-turn Reinforcement Learning](/20260413-20260512/2604.13579v1-mm-doc-r1-training-agents-for-long-document-visual-question-answering-through-multi-turn-reinforcement-learning)  
-   标签：评分：10.0/10、query:rag
-   evidence：用于智能体RAG工作流的多轮强化学习
-2. [UniDoc-RL: Coarse-to-Fine Visual RAG with Hierarchical Actions and Dense Rewards](/20260413-20260512/2604.14967v2-unidoc-rl-coarse-to-fine-visual-rag-with-hierarchical-actions-and-dense-rewards)  
-   标签：评分：10.0/10、query:rag
-   evidence：用于视觉RAG的统一强化学习框架
-3. [AutoSearch: Adaptive Search Depth for Efficient Agentic RAG via Reinforcement Learning](/20260413-20260512/2604.17337v1-autosearch-adaptive-search-depth-for-efficient-agentic-rag-via-reinforcement-learning)  
-   标签：评分：10.0/10、query:rag
-   evidence：通过强化学习实现RAG的自适应搜索深度
-4. [CroSearch-R1: Better Leveraging Cross-lingual Knowledge for Retrieval-Augmented Generation](/20260413-20260512/2604.25182v1-crosearch-r1-better-leveraging-cross-lingual-knowledge-for-retrieval-augmented-generation)  
-   标签：评分：10.0/10、query:rag
-   evidence：用于RAG的搜索增强强化学习
-5. [VRAG-DFD: Verifiable Retrieval-Augmentation for MLLM-based Deepfake Detection](/20260413-20260512/2604.13660v1-vrag-dfd-verifiable-retrieval-augmentation-for-mllm-based-deepfake-detection)  
-   标签：评分：9.5/10、query:rag
-   evidence：结合RAG与强化学习
-6. [VRAG-DFD: Verifiable Retrieval-Augmentation for MLLM-based Deepfake Detection](/20260413-20260512/2604.13660v2-vrag-dfd-verifiable-retrieval-augmentation-for-mllm-based-deepfake-detection)  
-   标签：评分：9.5/10、query:rag
-   evidence：结合RAG与强化学习
-7. [VRAG-DFD: Verifiable Retrieval-Augmentation for MLLM-based Deepfake Detection](/20260413-20260512/2604.13660v3-vrag-dfd-verifiable-retrieval-augmentation-for-mllm-based-deepfake-detection)  
-   标签：评分：9.5/10、query:rag
-   evidence：结合RAG与强化学习
-8. [UniDoc-RL: Coarse-to-Fine Visual RAG with Hierarchical Actions and Dense Rewards](/20260413-20260512/2604.14967v1-unidoc-rl-coarse-to-fine-visual-rag-with-hierarchical-actions-and-dense-rewards)  
-   标签：评分：9.5/10、query:rag
-   evidence：用于视觉RAG的统一强化学习框架
-9. [Retrieval as Generation: A Unified Framework with Self-Triggered Information Planning](/20260413-20260512/2604.11407v1-retrieval-as-generation-a-unified-framework-with-self-triggered-information-planning)  
+1. [SURE-RAG: Sufficiency and Uncertainty-Aware Evidence Verification for Selective Retrieval-Augmented Generation](/20260503-20260512/2605.03534v1-sure-rag-sufficiency-and-uncertainty-aware-evidence-verification-for-selective-retrieval-augmented-generation)  
    标签：评分：9.0/10、query:rag
-   evidence：将检索控制嵌入生成的统一框架
-10. [Retrieval as Generation: A Unified Framework with Self-Triggered Information Planning](/20260413-20260512/2604.11407v2-retrieval-as-generation-a-unified-framework-with-self-triggered-information-planning)  
+   evidence：选择性RAG的证据验证
+2. [Retrieval from Within: An Intrinsic Capability of Attention-Based Models](/20260503-20260512/2605.05806v2-retrieval-from-within-an-intrinsic-capability-of-attention-based-models)  
    标签：评分：9.0/10、query:rag
-   evidence：将检索控制嵌入生成的统一框架
-11. [Transforming External Knowledge into Triplets for Enhanced Retrieval in RAG of LLMs](/20260413-20260512/2604.12610v1-transforming-external-knowledge-into-triplets-for-enhanced-retrieval-in-rag-of-llms)  
+   evidence：统一RAG流水线中的检索与生成
+3. [Superintelligent Retrieval Agent: The Next Frontier of Information Retrieval](/20260503-20260512/2605.06647v1-superintelligent-retrieval-agent-the-next-frontier-of-information-retrieval)  
    标签：评分：9.0/10、query:rag
-   evidence：用于增强RAG检索的三元组
-12. [NaviRAG: Towards Active Knowledge Navigation for Retrieval-Augmented Generation](/20260413-20260512/2604.12766v1-navirag-towards-active-knowledge-navigation-for-retrieval-augmented-generation)  
+   evidence：用于RAG的超智能检索代理
+4. [LARAG: Link-Aware Retrieval Strategy for RAG Systems in Hyperlinked Technical Documentation](/20260503-20260512/2605.07517v1-larag-link-aware-retrieval-strategy-for-rag-systems-in-hyperlinked-technical-documentation)  
    标签：评分：9.0/10、query:rag
-   evidence：RAG的主动知识导航
-13. [CHOP: Chunkwise Context-Preserving Framework for RAG on Multi Documents](/20260413-20260512/2604.15802v1-chop-chunkwise-context-preserving-framework-for-rag-on-multi-documents)  
-   标签：评分：9.0/10、query:rag
-   evidence：RAG的块级上下文保留框架
-14. [Latent Abstraction for Retrieval-Augmented Generation](/20260413-20260512/2604.17866v1-latent-abstraction-for-retrieval-augmented-generation)  
-   标签：评分：9.0/10、query:rag
-   evidence：潜空间内的统一RAG框架
-15. [Evaluating Multi-Hop Reasoning in RAG Systems: A Comparison of LLM-Based Retriever Evaluation Strategies](/20260413-20260512/2604.18234v1-evaluating-multi-hop-reasoning-in-rag-systems-a-comparison-of-llm-based-retriever-evaluation-strategies)  
-   标签：评分：9.0/10、query:rag
-   evidence：RAG系统中的多跳推理评估
-16. [Structure Guided Retrieval-Augmented Generation for Factual Queries](/20260413-20260512/2604.22843v1-structure-guided-retrieval-augmented-generation-for-factual-queries)  
-   标签：评分：9.0/10、query:rag
-   evidence：在事实查询的RAG中引入结构化信息
-17. [R$^3$AG: Retriever Routing for Retrieval-Augmented Generation](/20260413-20260512/2604.22849v1-r3ag-retriever-routing-for-retrieval-augmented-generation)  
-   标签：评分：9.0/10、query:rag
-   evidence：用于RAG的检索器路由框架
-18. [S2G-RAG: Structured Sufficiency and Gap Judging for Iterative Retrieval-Augmented QA](/20260413-20260512/2604.23783v1-s2g-rag-structured-sufficiency-and-gap-judging-for-iterative-retrieval-augmented-qa)  
-   标签：评分：9.0/10、query:rag
-   evidence：带有显式控制器的迭代RAG框架
-19. [Beyond Semantic Relevance: Counterfactual Risk Minimization for Robust Retrieval-Augmented Generation](/20260413-20260512/2605.01302v1-beyond-semantic-relevance-counterfactual-risk-minimization-for-robust-retrieval-augmented-generation)  
-   标签：评分：9.0/10、query:rag
-   evidence：用于鲁棒RAG的反事实风险最小化
-20. [Feedback-Normalized Developer Memory for Reinforcement-Learning Coding Agents: A Safety-Gated MCP Architecture](/20260413-20260512/2605.01567v1-feedback-normalized-developer-memory-for-reinforcement-learning-coding-agents-a-safety-gated-mcp-architecture)  
-   标签：评分：9.0/10、query:rag
-   evidence：基于RAG的编程智能体中使用强化学习进行记忆选择
-21. [CAR: Query-Guided Confidence-Aware Reranking for Retrieval-Augmented Generation](/20260413-20260512/2605.04495v1-car-query-guided-confidence-aware-reranking-for-retrieval-augmented-generation)  
-   标签：评分：9.0/10、query:rag
-   evidence：针对RAG效用的置信度感知重排序
-22. [AdaGATE: Adaptive Gap-Aware Token-Efficient Evidence Assembly for Multi-Hop Retrieval-Augmented Generation](/20260413-20260512/2605.05245v1-adagate-adaptive-gap-aware-token-efficient-evidence-assembly-for-multi-hop-retrieval-augmented-generation)  
-   标签：评分：9.0/10、query:rag
-   evidence：针对多跳RAG的自适应证据组装
-23. [Text-Graph Synergy: A Bidirectional Verification and Completion Framework for RAG](/20260413-20260512/2605.05643v1-text-graph-synergy-a-bidirectional-verification-and-completion-framework-for-rag)  
-   标签：评分：9.0/10、query:rag
-   evidence：文本-图谱协同增强RAG
+   evidence：RAG系统的链接感知检索策略
+5. [An Agent-Oriented Pluggable Experience-RAG Skill for Experience-Driven Retrieval Strategy Orchestration](/20260503-20260512/2605.03989v1-an-agent-oriented-pluggable-experience-rag-skill-for-experience-driven-retrieval-strategy-orchestration)  
+   标签：评分：8.5/10、query:rag
+   evidence：面向智能体的检索策略编排
+6. [An Agent-Oriented Pluggable Experience-RAG Skill for Experience-Driven Retrieval Strategy Orchestration](/20260503-20260512/2605.03989v2-an-agent-oriented-pluggable-experience-rag-skill-for-experience-driven-retrieval-strategy-orchestration)  
+   标签：评分：8.5/10、query:rag
+   evidence：RAG的经验驱动检索策略编排
 
 ### 速读区论文标签
-1. [Aligning Dense Retrievers with LLM Utility via DistillationAligning Dense Retrievers with LLM Utility via Distillation](/20260413-20260512/2604.22722v1-aligning-dense-retrievers-with-llm-utility-via-distillationaligning-dense-retrievers-with-llm-utility-via-distillation)  
+1. [LatentRAG: Latent Reasoning and Retrieval for Efficient Agentic RAG](/20260503-20260512/2605.06285v1-latentrag-latent-reasoning-and-retrieval-for-efficient-agentic-rag)  
    标签：评分：8.5/10、query:rag
-   evidence：针对RAG效用优化稠密检索
-2. [ragR: Retrieval-Augmented Generation and RAG Assessment in R](/20260413-20260512/2604.23515v1-ragr-retrieval-augmented-generation-and-rag-assessment-in-r)  
+   evidence：智能体RAG的潜空间推理与检索
+2. [AutoRAGTuner: A Declarative Framework for Automatic Optimization of RAG Pipelines](/20260503-20260512/2605.02967v1-autoragtuner-a-declarative-framework-for-automatic-optimization-of-rag-pipelines)  
    标签：评分：8.0/10、query:rag
-   evidence：RAG工作流与评估框架
-3. [A Survey of Reinforcement Learning for Large Language Models under Data Scarcity: Challenges and Solutions](/20260413-20260512/2604.17312v1-a-survey-of-reinforcement-learning-for-large-language-models-under-data-scarcity-challenges-and-solutions)  
+   evidence：RAG流水线的自动优化
+3. [RAG over Thinking Traces Can Improve Reasoning Tasks](/20260503-20260512/2605.03344v1-rag-over-thinking-traces-can-improve-reasoning-tasks)  
+   标签：评分：8.0/10、query:rag
+   evidence：检索思维轨迹以优化推理任务
+4. [Towards Dependable Retrieval-Augmented Generation Using Factual Confidence Prediction](/20260503-20260512/2605.05244v1-towards-dependable-retrieval-augmented-generation-using-factual-confidence-prediction)  
+   标签：评分：8.0/10、query:rag
+   evidence：可靠RAG的事实置信度预测
+5. [Benchmarking Retrieval Strategies for Biomedical Retrieval-Augmented Generation: A Controlled Empirical Study](/20260503-20260512/2605.02520v1-benchmarking-retrieval-strategies-for-biomedical-retrieval-augmented-generation-a-controlled-empirical-study)  
+   标签：评分：7.5/10、query:rag
+   evidence：RAG检索策略基准测试
+6. [Architecture Matters: Comparing RAG Systems under Knowledge Base Poisoning](/20260503-20260512/2605.05632v1-architecture-matters-comparing-rag-systems-under-knowledge-base-poisoning)  
+   标签：评分：7.5/10、query:rag
+   evidence：评估了智能体和递归模型等高级RAG架构
+7. [Retrieval from Within: An Intrinsic Capability of Attention-Based Models](/20260503-20260512/2605.05806v1-retrieval-from-within-an-intrinsic-capability-of-attention-based-models)  
+   标签：评分：7.5/10、query:rag
+   evidence：通过注意力机制实现内在检索
+8. [A Hybrid Retrieval and Reranking Framework for Evidence-Grounded Retrieval-Augmented Generation](/20260503-20260512/2605.01664v1-a-hybrid-retrieval-and-reranking-framework-for-evidence-grounded-retrieval-augmented-generation)  
+   标签：评分：7.0/10、query:rag
+   evidence：混合检索与重排序框架
+9. [From Clouds to Hallucinations: Atmospheric Retrieval Hijacking in Remote Sensing Vision-Language RAG](/20260503-20260512/2605.07273v1-from-clouds-to-hallucinations-atmospheric-retrieval-hijacking-in-remote-sensing-vision-language-rag)  
+   标签：评分：6.5/10、query:rag
+   evidence：具有视觉语言检索劫持的多模态RAG系统
+10. [Reinforcement Learning for Compositional Generalization with Outcome-Level Optimization](/20260503-20260512/2605.04920v1-reinforcement-learning-for-compositional-generalization-with-outcome-level-optimization)  
    标签：评分：6.0/10、query:rag
-   evidence：LLM强化学习综述
+   evidence：用于泛化的结果级强化学习
+11. [Schedule-and-Calibrate: Utility-Guided Multi-Task Reinforcement Learning for Code LLMs](/20260503-20260512/2605.06111v1-schedule-and-calibrate-utility-guided-multi-task-reinforcement-learning-for-code-llms)  
+   标签：评分：6.0/10、query:rag
+   evidence：大语言模型的多任务强化学习
 
 
 <div class="dpr-home-promo-card">
