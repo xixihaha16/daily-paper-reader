@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2605.04477v1/fig-001.webp",
+      "caption": "Figure 1: Ablation on the bonus scale cb. A moderate choice cb = 2e−2 yields the strongest overall trend.",
+      "page": 11,
+      "index": 1,
+      "width": 1004,
+      "height": 311
+    },
+    {
+      "url": "assets/figures/arxiv/2605.04477v1/fig-002.webp",
+      "caption": "Table 1: Main comparison across three online RLHF iterations. DEPO achieves the strongest overall performance at iter3, with consistent gains on AE/MT and improved win rates on both IID and Alpaca.",
+      "page": 9,
+      "index": 2,
+      "width": 864,
+      "height": 387
+    },
+    {
+      "url": "assets/figures/arxiv/2605.04477v1/fig-003.webp",
+      "caption": "Table 3: Performance across β ∈ {1e−1, 3e−2, 1e−2}. A moderate choice β = 3e−2 achieves the best overall results, especially at iteration 3.",
+      "page": 12,
+      "index": 3,
+      "width": 604,
+      "height": 371
+    }
+  ]
+}

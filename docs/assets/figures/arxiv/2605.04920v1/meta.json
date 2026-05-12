@@ -1,0 +1,46 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2605.04920v1/fig-001.webp",
+      "caption": "Figure 1: Illustration of compositional generalization and training paradigms. Top: Example of compositional generalization where the model must correctly compose previously seen primitives (e.g., jump twice and turn left) to produce the correct action sequence for a novel instruction. Bottom: Comparison of training signals. Token-level optimization relies on supervised targets and cross-entropy loss, whereas outcomelevel optimization samples multiple responses and optimizes them using reward signals.",
+      "page": 1,
+      "index": 1,
+      "width": 428,
+      "height": 346
+    },
+    {
+      "url": "assets/figures/arxiv/2605.04920v1/fig-002.webp",
+      "caption": "Table 1: Results of SFT and GRPO on four compositional generalization benchmarks across various settings. We report exact matching accuracy for all evaluations. All results are averaged over three runs and reported as mean accuracy.",
+      "page": 6,
+      "index": 2,
+      "width": 943,
+      "height": 319
+    },
+    {
+      "url": "assets/figures/arxiv/2605.04920v1/fig-003.webp",
+      "caption": "Figure 2: Overview of Compositional Group Relative Policy Optimization. The LLM samples a group of candidate label sequences (y1, y2, . . . , yK) based on inputs. Each candidate is then evaluated using two complementary reward signals: (i) a binary reward that measures exact match with the gold sequence, and (ii) a compositional reward that assesses primitive correctness and structural composition patterns. Rewards are normalized within the sampled group to compute relative advantages, which are then used to update the policy via group-relative optimization.",
+      "page": 4,
+      "index": 3,
+      "width": 906,
+      "height": 317
+    },
+    {
+      "url": "assets/figures/arxiv/2605.04920v1/fig-004.webp",
+      "caption": "Table 4: Examples from SCAN, COGS, GeoQuery, and CFQ illustrating primitive–composition decomposition. For each dataset, we show the original input–output pair and its decomposition into primitives and abstract composition structures. This formulation separates lexical primitives from structural composition, enabling compositional-level reward. We abstract primitives into entities/actions and relations, and represent compositional structures using unified predicate templates N(x), R(x, y), and V (x).",
+      "page": 12,
+      "index": 4,
+      "width": 943,
+      "height": 584
+    },
+    {
+      "url": "assets/figures/arxiv/2605.04920v1/fig-005.webp",
+      "caption": "Table 5: Statistics of datasets and splits used in our experiments.",
+      "page": 12,
+      "index": 5,
+      "width": 475,
+      "height": 315
+    }
+  ]
+}
