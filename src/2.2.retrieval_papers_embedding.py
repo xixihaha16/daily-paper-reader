@@ -9,16 +9,28 @@
 import argparse
 import json
 import os
+import math
+import hashlib
 from datetime import datetime, timedelta, timezone
 from dataclasses import dataclass, field
-from typing import Dict, List, Set, Any, Optional
+from typing import Dict, List, Set, Any, Optional, Callable
 import re
 
 import numpy as np
 
-from filter import EmbeddingCoarseFilter, encode_queries
+from filter import E5_QUERY_PREFIX, EmbeddingCoarseFilter, encode_queries
+try:
+  from source_backend_router import group_queries_by_source, merge_pipeline_results
+  from source_config import ARXIV_SOURCE_KEY, get_source_backend, load_config_with_source_migration, normalize_source_list
+except Exception:  # pragma: no cover - 兼容 package 导入路径
+  from src.source_backend_router import group_queries_by_source, merge_pipeline_results
+  from src.source_config import ARXIV_SOURCE_KEY, get_source_backend, load_config_with_source_migration, normalize_source_list
 from subscription_plan import build_pipeline_inputs
-from supabase_source import get_supabase_read_config, match_papers_by_embedding
+from supabase_source import (
+  count_papers_by_date_range,
+  get_supabase_read_config,
+  match_papers_by_embedding,
+)
 
 
 # 当前脚本位于 src/ 下，config.yaml 在上一级目录
@@ -32,10 +44,65 @@ FILTERED_DIR = os.path.join(ARCHIVE_DIR, "filtered")
 DATE_RE_DAY = re.compile(r"^\d{8}$")
 DATE_RE_RANGE = re.compile(r"^\d{8}-\d{8}$")
 SUPABASE_TIME_FIELDS = ("published",)
+SUPABASE_VECTOR_SHARD_DAYS = 7
+EMBEDDING_CACHE_VERSION = 1
+EMBEDDING_CACHE_FIELD = "embedding_cache"
+LEGACY_EMBEDDING_CACHE_KEY = "embedding_cache"
 
 def log(message: str) -> None:
   ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
   print(f"[{ts}] {message}", flush=True)
+
+
+def multi_source_rpc_enabled() -> bool:
+  return str(os.getenv("DPR_ENABLE_MULTI_SOURCE_RPC") or "").strip().lower() in ("1", "true", "yes", "on")
+
+
+def resolve_multi_source_vector_backend(config: Dict[str, Any], queries: List[dict]) -> Dict[str, Any] | None:
+  all_sources: List[str] = []
+  for query in queries or []:
+    all_sources.extend(normalize_source_list(query.get("paper_sources")))
+  all_sources = normalize_source_list(all_sources)
+  if len(all_sources) <= 1:
+    return None
+
+  backends = []
+  for source_key in all_sources:
+    backend = get_source_backend(config, source_key)
+    if not backend:
+      return None
+    backends.append(backend)
+  if not backends:
+    return None
+
+  first = backends[0]
+  first_key = (
+    str(first.get("url") or "").strip(),
+    str(first.get("anon_key") or "").strip(),
+    str(first.get("schema") or "public").strip(),
+  )
+  if not all(
+    (
+      str(item.get("url") or "").strip(),
+      str(item.get("anon_key") or "").strip(),
+      str(item.get("schema") or "public").strip(),
+    ) == first_key
+    for item in backends[1:]
+  ):
+    return None
+  if not all(bool(item.get("use_vector_rpc")) for item in backends):
+    return None
+
+  rpc_name = str(os.getenv("DPR_MULTI_SOURCE_VECTOR_RPC_EXACT") or "match_multi_source_papers_exact").strip()
+  return {
+    "enabled": True,
+    "use_vector_rpc": True,
+    "url": first_key[0],
+    "anon_key": first_key[1],
+    "schema": first_key[2],
+    "vector_rpc": rpc_name,
+    "vector_rpc_exact": rpc_name,
+  }
 
 
 def resolve_supabase_recall_window(config: Dict[str, Any], end_dt: datetime | None = None) -> tuple[datetime, datetime]:
@@ -113,6 +180,7 @@ class Paper:
     """转换为可 JSON 序列化的字典"""
     return {
       "id": self.id,
+      "source": self.source,
       "title": self.title,
       "abstract": self.abstract,
       "authors": self.authors,
@@ -135,21 +203,241 @@ def load_config() -> dict:
     return {}
 
   try:
-    import yaml  # type: ignore
-  except Exception:
-    log("[WARN] 未安装 PyYAML，无法解析 config.yaml。")
+    data = load_config_with_source_migration(CONFIG_FILE, write_back=False)
+    if isinstance(data, dict):
+      return data
+    log("[WARN] config.yaml 顶层结构不是字典，将忽略该配置文件。")
     return {}
-
-  try:
-    with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-      data = yaml.safe_load(f) or {}
-      if isinstance(data, dict):
-        return data
-      log("[WARN] config.yaml 顶层结构不是字典，将忽略该配置文件。")
-      return {}
   except Exception as e:
     log(f"[WARN] 读取 config.yaml 失败：{e}")
     return {}
+
+
+def build_prefixed_query_text(text: str) -> str:
+  value = str(text or "").strip()
+  if not value:
+    return ""
+  return f"{E5_QUERY_PREFIX}{value}"
+
+
+def build_query_embedding_hash(model_name: str, query_text: str) -> str:
+  payload = f"v1|{str(model_name or '').strip().lower()}|{build_prefixed_query_text(query_text)}"
+  return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _remove_legacy_embedding_cache(config: Dict[str, Any]) -> None:
+  if not isinstance(config, dict):
+    return
+  subs = config.get("subscriptions")
+  if not isinstance(subs, dict):
+    return
+  legacy = subs.get(LEGACY_EMBEDDING_CACHE_KEY)
+  if isinstance(legacy, dict) and "query_vectors" in legacy:
+    subs.pop(LEGACY_EMBEDDING_CACHE_KEY, None)
+
+
+def _parse_cached_query_embedding(entry: Dict[str, Any], expected_model: str, expected_text: str) -> Optional[np.ndarray]:
+  if not isinstance(entry, dict):
+    return None
+  stored_model = str(entry.get("model") or "").strip().lower()
+  if stored_model and stored_model != str(expected_model or "").strip().lower():
+    return None
+  stored_text = str(entry.get("prefixed_text") or "").strip()
+  if stored_text and stored_text != expected_text:
+    return None
+
+  raw_embedding = entry.get("embedding_json")
+  if isinstance(raw_embedding, str) and raw_embedding.strip():
+    try:
+      loaded = json.loads(raw_embedding)
+      if isinstance(loaded, list):
+        raw_embedding = loaded
+    except Exception:
+      return None
+
+  if not isinstance(raw_embedding, list) or not raw_embedding:
+    raw_embedding = entry.get("embedding")
+  if not isinstance(raw_embedding, list) or not raw_embedding:
+    return None
+  try:
+    vec = np.asarray([float(x) for x in raw_embedding], dtype=np.float32)
+  except Exception:
+    return None
+  if vec.ndim != 1 or vec.shape[0] <= 0:
+    return None
+  return vec
+
+
+def save_config_with_embedding_cache(config: Dict[str, Any], path: str = CONFIG_FILE) -> bool:
+  try:
+    import yaml  # type: ignore
+  except Exception:
+    log("[WARN] 未安装 PyYAML，跳过 embedding cache 写回 config.yaml。")
+    return False
+
+  with open(path, "w", encoding="utf-8") as f:
+    yaml.safe_dump(config, f, allow_unicode=True, sort_keys=False, width=10**9)
+  return True
+
+
+def _build_query_cache_payload(model_name: str, query_text: str, vec: np.ndarray, now_iso: str) -> Dict[str, Any]:
+  cache_hash = build_query_embedding_hash(model_name, query_text)
+  rounded = [float(f"{float(x):.6f}") for x in vec.tolist()]
+  return {
+    "version": EMBEDDING_CACHE_VERSION,
+    "hash": cache_hash,
+    "model": model_name,
+    "query_text": query_text,
+    "prefixed_text": build_prefixed_query_text(query_text),
+    "embedding_json": json.dumps(rounded, ensure_ascii=False, separators=(",", ":")),
+    "updated_at": now_iso,
+  }
+
+
+def _ensure_query_cache_target(config: Dict[str, Any], cache_ref: Dict[str, Any], query: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+  if not isinstance(config, dict) or not isinstance(cache_ref, dict):
+    return None
+  subs = config.get("subscriptions")
+  if not isinstance(subs, dict):
+    return None
+  profiles = subs.get("intent_profiles")
+  if not isinstance(profiles, list):
+    return None
+
+  try:
+    profile_index = int(cache_ref.get("profile_index"))
+    item_index = int(cache_ref.get("item_index"))
+  except Exception:
+    return None
+  item_kind = str(cache_ref.get("item_kind") or "").strip()
+  if item_kind not in {"keywords", "intent_queries"}:
+    return None
+  if profile_index < 0 or profile_index >= len(profiles):
+    return None
+  profile = profiles[profile_index]
+  if not isinstance(profile, dict):
+    return None
+  items = profile.get(item_kind)
+  if not isinstance(items, list):
+    return None
+  if item_index < 0 or item_index >= len(items):
+    return None
+
+  current = items[item_index]
+  if isinstance(current, str):
+    if item_kind == "keywords":
+      items[item_index] = {
+        "keyword": str(current or "").strip(),
+        "query": str(query.get("query_text") or current or "").strip(),
+      }
+    else:
+      items[item_index] = {
+        "query": str(query.get("query_text") or current or "").strip(),
+      }
+    current = items[item_index]
+  if not isinstance(current, dict):
+    return None
+  return current
+
+
+def _cache_entry_matches_query(entry: Dict[str, Any], model_name: str, query_text: str) -> bool:
+  return _parse_cached_query_embedding(entry, expected_model=model_name, expected_text=build_prefixed_query_text(query_text)) is not None
+
+
+def hydrate_query_embeddings_from_config(
+  *,
+  config: Dict[str, Any],
+  queries: List[dict],
+  model_name: str,
+  model_provider: Callable[[], Any],
+  batch_size: int,
+  max_length: int | None,
+  config_path: str = CONFIG_FILE,
+) -> Dict[str, int]:
+  if not queries:
+    return {"hits": 0, "misses": 0, "written": 0}
+
+  prepared_vectors: Dict[str, np.ndarray] = {}
+  prepared_payloads: Dict[str, Dict[str, Any]] = {}
+  misses_by_hash: Dict[str, str] = {}
+  hits = 0
+
+  for q in queries:
+    q_text = str(q.get("query_text") or "").strip()
+    if not q_text:
+      continue
+    cache_hash = build_query_embedding_hash(model_name, q_text)
+    prefixed_text = build_prefixed_query_text(q_text)
+    q["query_embedding_hash"] = cache_hash
+    q["prefixed_query_text"] = prefixed_text
+
+    if cache_hash in prepared_vectors:
+      q["query_embedding"] = prepared_vectors[cache_hash]
+      continue
+
+    cached_entry = q.get(EMBEDDING_CACHE_FIELD) if isinstance(q.get(EMBEDDING_CACHE_FIELD), dict) else {}
+    cached_vec = _parse_cached_query_embedding(
+      cached_entry,
+      expected_model=model_name,
+      expected_text=prefixed_text,
+    )
+    if cached_vec is not None:
+      prepared_vectors[cache_hash] = cached_vec
+      prepared_payloads[cache_hash] = dict(cached_entry)
+      q["query_embedding"] = cached_vec
+      hits += 1
+      continue
+
+    if cache_hash not in misses_by_hash:
+      misses_by_hash[cache_hash] = q_text
+
+  written = 0
+  if misses_by_hash:
+    model = model_provider()
+    miss_hashes = list(misses_by_hash.keys())
+    miss_texts = [misses_by_hash[h] for h in miss_hashes]
+    miss_vectors = encode_queries(
+      model,
+      miss_texts,
+      batch_size=max(int(batch_size or 1), 1),
+      max_length=max_length,
+    )
+    now_iso = datetime.now(timezone.utc).isoformat()
+    for idx, cache_hash in enumerate(miss_hashes):
+      vec = np.asarray(miss_vectors[idx], dtype=np.float32)
+      prepared_vectors[cache_hash] = vec
+      q_text = misses_by_hash[cache_hash]
+      prepared_payloads[cache_hash] = _build_query_cache_payload(model_name, q_text, vec, now_iso)
+
+  changed = False
+  for q in queries:
+    cache_hash = str(q.get("query_embedding_hash") or "").strip()
+    q_text = str(q.get("query_text") or "").strip()
+    if not cache_hash or cache_hash not in prepared_vectors or not q_text:
+      continue
+    payload = prepared_payloads.get(cache_hash) or {}
+    q["query_embedding"] = prepared_vectors[cache_hash]
+    q[EMBEDDING_CACHE_FIELD] = dict(payload) if isinstance(payload, dict) else None
+    current_entry = q.get(EMBEDDING_CACHE_FIELD) if isinstance(q.get(EMBEDDING_CACHE_FIELD), dict) else {}
+    target = _ensure_query_cache_target(config, q.get("cache_ref") or {}, q)
+    if target is None:
+      continue
+    existing_entry = target.get(EMBEDDING_CACHE_FIELD) if isinstance(target.get(EMBEDDING_CACHE_FIELD), dict) else {}
+    if _cache_entry_matches_query(existing_entry, model_name, q_text):
+      continue
+    target[EMBEDDING_CACHE_FIELD] = dict(payload)
+    written += 1
+    changed = True
+
+  if changed:
+    _remove_legacy_embedding_cache(config)
+    save_config_with_embedding_cache(config, config_path)
+
+  return {
+    "hits": hits,
+    "misses": len(misses_by_hash),
+    "written": written,
+  }
 
 
 def load_paper_pool(path: str) -> List[Paper]:
@@ -203,6 +491,294 @@ def _format_supabase_window_for_log(
     published = window if "published" in safe_fields else "N/A"
     updated = window if "updated_at" in safe_fields else "N/A"
   return published, updated, ",".join(sorted(safe_fields))
+
+
+def _normalize_utc_datetime(value: datetime | None) -> datetime | None:
+  if not isinstance(value, datetime):
+    return None
+  if value.tzinfo is None:
+    return value.replace(tzinfo=timezone.utc)
+  return value.astimezone(timezone.utc)
+
+
+def split_supabase_time_window(
+  start_dt: datetime | None,
+  end_dt: datetime | None,
+  *,
+  shard_days: int = SUPABASE_VECTOR_SHARD_DAYS,
+) -> list[tuple[datetime, datetime]]:
+  safe_start = _normalize_utc_datetime(start_dt)
+  safe_end = _normalize_utc_datetime(end_dt)
+  if safe_start is None or safe_end is None or safe_end <= safe_start:
+    return []
+
+  safe_shard_days = max(int(shard_days or 1), 1)
+  step = timedelta(days=safe_shard_days)
+  if safe_end - safe_start <= step:
+    return [(safe_start, safe_end)]
+
+  shards: list[tuple[datetime, datetime]] = []
+  cursor = safe_start
+  while cursor < safe_end:
+    next_dt = min(cursor + step, safe_end)
+    shards.append((cursor, next_dt))
+    cursor = next_dt
+  return shards
+
+
+def _resolve_supabase_similarity(row: Dict[str, Any]) -> float:
+  score_raw = row.get("similarity")
+  if score_raw is None:
+    score_raw = row.get("score")
+  try:
+    return float(score_raw)
+  except Exception:
+    return 0.0
+
+
+def merge_supabase_vector_rows(
+  rows_per_shard: list[list[Dict[str, Any]]],
+  *,
+  top_k: int,
+) -> list[Dict[str, Any]]:
+  merged_by_id: Dict[str, Dict[str, Any]] = {}
+
+  for shard_idx, rows in enumerate(rows_per_shard):
+    for local_rank, row in enumerate(rows, start=1):
+      if not isinstance(row, dict):
+        continue
+      pid = str(row.get("id") or "").strip()
+      if not pid:
+        continue
+      similarity = _resolve_supabase_similarity(row)
+      existing = merged_by_id.get(pid)
+      should_replace = False
+      if existing is None:
+        should_replace = True
+      else:
+        old_similarity = float(existing.get("_merged_similarity") or 0.0)
+        old_shard_idx = int(existing.get("_merged_shard_idx") or 0)
+        old_local_rank = int(existing.get("_merged_local_rank") or 0)
+        if similarity > old_similarity:
+          should_replace = True
+        elif similarity == old_similarity and (
+          shard_idx < old_shard_idx
+          or (shard_idx == old_shard_idx and local_rank < old_local_rank)
+        ):
+          should_replace = True
+
+      if not should_replace:
+        continue
+
+      normalized = dict(row)
+      normalized["_merged_similarity"] = similarity
+      normalized["_merged_shard_idx"] = shard_idx
+      normalized["_merged_local_rank"] = local_rank
+      merged_by_id[pid] = normalized
+
+  merged = sorted(
+    merged_by_id.values(),
+    key=lambda item: (
+      -float(item.get("_merged_similarity") or 0.0),
+      int(item.get("_merged_shard_idx") or 0),
+      int(item.get("_merged_local_rank") or 0),
+      str(item.get("id") or ""),
+    ),
+  )
+  if top_k > 0:
+    merged = merged[:top_k]
+
+  for item in merged:
+    item.pop("_merged_similarity", None)
+    item.pop("_merged_shard_idx", None)
+    item.pop("_merged_local_rank", None)
+  return merged
+
+
+def _query_supabase_vector_window(
+  *,
+  url: str,
+  api_key: str,
+  rpc_name: str,
+  query_embedding: list[float],
+  match_count: int,
+  schema: str,
+  start_dt: datetime,
+  end_dt: datetime,
+  time_fields: tuple[str, ...],
+  shard_days: int,
+  min_shard_days: int = 1,
+  depth: int = 0,
+  rpc_mode: str = "exact",
+  filter_sources: List[str] | None = None,
+) -> tuple[list[list[Dict[str, Any]]], int, list[str]]:
+  rows, msg = match_papers_by_embedding(
+    url=url,
+    api_key=api_key,
+    rpc_name=rpc_name,
+    query_embedding=query_embedding,
+    match_count=match_count,
+    schema=schema,
+    start_dt=start_dt,
+    end_dt=end_dt,
+    time_fields=time_fields,
+    filter_sources=filter_sources,
+  )
+  window = f"{start_dt.isoformat()} ~ {end_dt.isoformat()}"
+  log(
+    f"[Supabase Vector:{rpc_mode}] "
+    f"depth={depth} "
+    f"window={window} "
+    f"{msg}"
+  )
+  if msg.startswith("rpc 查询成功"):
+    return ([rows], 1, [])
+
+  failure_message = f"depth={depth} window={window} {msg}"
+  safe_start = _normalize_utc_datetime(start_dt)
+  safe_end = _normalize_utc_datetime(end_dt)
+  if safe_start is None or safe_end is None or safe_end <= safe_start:
+    return ([], 0, [failure_message])
+  if "57014" not in msg:
+    return ([], 0, [failure_message])
+
+  span_seconds = max((safe_end - safe_start).total_seconds(), 0.0)
+  span_days = max(int(math.ceil(span_seconds / 86400.0)), 1)
+  safe_min_shard_days = max(int(min_shard_days or 1), 1)
+  if span_days <= safe_min_shard_days:
+    return ([], 0, [failure_message])
+
+  next_shard_days = max(span_days // 2, safe_min_shard_days)
+  if shard_days > 1:
+    next_shard_days = min(next_shard_days, shard_days - 1)
+  if next_shard_days >= span_days:
+    next_shard_days = span_days - 1
+  if next_shard_days < safe_min_shard_days:
+    next_shard_days = safe_min_shard_days
+  if next_shard_days >= span_days:
+    return ([], 0, [failure_message])
+
+  sub_shards = split_supabase_time_window(
+    safe_start,
+    safe_end,
+    shard_days=next_shard_days,
+  )
+  if len(sub_shards) <= 1:
+    return ([], 0, [failure_message])
+
+  log(
+    f"[Supabase Vector:{rpc_mode}] "
+    f"timeout fallback window={window} "
+    f"split_to={len(sub_shards)} "
+    f"sub_shard_days={next_shard_days}"
+  )
+
+  rows_per_shard: list[list[Dict[str, Any]]] = []
+  success_count = 0
+  failure_messages: list[str] = []
+  for sub_start, sub_end in sub_shards:
+    sub_rows, sub_success, sub_failures = _query_supabase_vector_window(
+      url=url,
+      api_key=api_key,
+      rpc_name=rpc_name,
+      query_embedding=query_embedding,
+      match_count=match_count,
+      schema=schema,
+      start_dt=sub_start,
+      end_dt=sub_end,
+      time_fields=time_fields,
+      shard_days=next_shard_days,
+      min_shard_days=safe_min_shard_days,
+      depth=depth + 1,
+      rpc_mode=rpc_mode,
+      filter_sources=filter_sources,
+    )
+    rows_per_shard.extend(sub_rows)
+    success_count += sub_success
+    failure_messages.extend(sub_failures)
+
+  if success_count > 0:
+    return (rows_per_shard, success_count, failure_messages)
+  return ([], 0, [failure_message, *failure_messages])
+
+
+def query_supabase_vector_with_shards(
+  *,
+  url: str,
+  api_key: str,
+  rpc_name: str,
+  query_embedding: list[float],
+  match_count: int,
+  schema: str,
+  start_dt: datetime | None,
+  end_dt: datetime | None,
+  time_fields: tuple[str, ...],
+  shard_days: int = SUPABASE_VECTOR_SHARD_DAYS,
+  rpc_mode: str = "exact",
+  filter_sources: List[str] | None = None,
+) -> tuple[list[Dict[str, Any]], str]:
+  safe_start = _normalize_utc_datetime(start_dt)
+  safe_end = _normalize_utc_datetime(end_dt)
+  if safe_start is None or safe_end is None or safe_end <= safe_start:
+    return match_papers_by_embedding(
+      url=url,
+      api_key=api_key,
+      rpc_name=rpc_name,
+      query_embedding=query_embedding,
+      match_count=match_count,
+      schema=schema,
+      start_dt=start_dt,
+      end_dt=end_dt,
+      time_fields=time_fields,
+      filter_sources=filter_sources,
+    )
+
+  shards = split_supabase_time_window(
+    safe_start,
+    safe_end,
+    shard_days=shard_days,
+  )
+  if not shards:
+    return ([], "rpc 分片查询失败：未生成有效时间分片")
+
+  rows_per_shard: list[list[Dict[str, Any]]] = []
+  success_count = 0
+  failure_messages: list[str] = []
+
+  for shard_start, shard_end in shards:
+    sub_rows, sub_success, sub_failures = _query_supabase_vector_window(
+      url=url,
+      api_key=api_key,
+      rpc_name=rpc_name,
+      query_embedding=query_embedding,
+      match_count=match_count,
+      schema=schema,
+      start_dt=shard_start,
+      end_dt=shard_end,
+      time_fields=time_fields,
+      shard_days=max(int(shard_days or 1), 1),
+      rpc_mode=rpc_mode,
+      filter_sources=filter_sources,
+    )
+    rows_per_shard.extend(sub_rows)
+    success_count += sub_success
+    failure_messages.extend(sub_failures)
+
+  merged_rows = merge_supabase_vector_rows(
+    rows_per_shard,
+    top_k=max(int(match_count or 1), 1),
+  )
+  if success_count <= 0:
+    detail = " | ".join(failure_messages[:2]) if failure_messages else "所有分片均失败"
+    return ([], f"rpc 分片查询失败：success=0/{len(shards)} | {detail}")
+
+  summary = (
+    f"rpc 分片查询成功：{len(merged_rows)} 条"
+    f"（initial_shards={len(shards)} success_windows={success_count} failed_windows={len(failure_messages)}）"
+  )
+  if failure_messages:
+    summary += f" | partial_failures={len(failure_messages)}"
+  return (merged_rows, summary)
 
 
 def parse_embedding_value(value: Any) -> Optional[np.ndarray]:
@@ -272,6 +848,17 @@ def try_use_precomputed_embeddings(
   return np.vstack(vectors)
 
 
+def estimate_dynamic_top_k(total_papers: int | None) -> int:
+  try:
+    total = int(total_papers or 0)
+  except Exception:
+    total = 0
+  if total <= 0:
+    return 50
+  blocks = (total - 1) // 1000
+  return 50 * (blocks + 1)
+
+
 def rank_papers_for_queries(
   model,
   papers: List[Paper],
@@ -307,11 +894,19 @@ def rank_papers_for_queries(
 
     log(f"[INFO] 正在处理查询（{q.get('type')}）：tag={q.get('tag') or ''}")
 
-    # 查询向量编码：若底层模型（如 Qwen3-Embedding）支持 "query" prompt，则自动使用
-    q_emb = encode_queries(
-      model,
-      [q_text],
-    )[0]  # 形状为 (D,)
+    raw_cached = q.get("query_embedding")
+    if isinstance(raw_cached, np.ndarray):
+      q_emb = raw_cached
+    elif isinstance(raw_cached, list) and raw_cached:
+      q_emb = np.asarray([float(x) for x in raw_cached], dtype=np.float32)
+    else:
+      if model is None:
+        raise RuntimeError("缺少 query embedding 且未提供可编码模型。")
+      # 查询向量编码：若底层模型（如 Qwen3-Embedding）支持 "query" prompt，则自动使用
+      q_emb = encode_queries(
+        model,
+        [q_text],
+      )[0]  # 形状为 (D,)
 
     # 相似度 = 归一化向量的点积
     sims = np.dot(paper_embeddings, q_emb)  # 形状 (N,)
@@ -337,6 +932,7 @@ def rank_papers_for_queries(
           "type": q.get("type"),
           "tag": q.get("tag"),
           "paper_tag": q.get("paper_tag"),
+          "paper_sources": q.get("paper_sources") or [q.get("active_source") or ARXIV_SOURCE_KEY],
           "query_text": q_text,
           # sim_scores 为字典：paper_id -> { score, rank }
           "sim_scores": sim_scores,
@@ -360,6 +956,7 @@ def rank_papers_for_queries_via_supabase(
   time_fields: tuple[str, ...] = SUPABASE_TIME_FIELDS,
   rpc_name_override: str | None = None,
   rpc_mode: str = "ann",
+  query_filter_sources: bool = False,
 ) -> dict:
   if not queries:
     return {"queries": [], "papers": {}, "total_hits": 0}
@@ -371,8 +968,27 @@ def rank_papers_for_queries_via_supabase(
   if not url or not api_key:
     return {"queries": [], "papers": {}, "total_hits": 0}
 
-  q_texts = [str(q.get("query_text") or "").strip() for q in queries]
-  q_embs = encode_queries(model, q_texts)
+  q_embs: List[np.ndarray] = []
+  missing_indices: List[int] = []
+  missing_texts: List[str] = []
+  for idx, q in enumerate(queries):
+    raw_cached = q.get("query_embedding")
+    if isinstance(raw_cached, np.ndarray):
+      q_embs.append(raw_cached)
+      continue
+    if isinstance(raw_cached, list) and raw_cached:
+      q_embs.append(np.asarray([float(x) for x in raw_cached], dtype=np.float32))
+      continue
+    q_embs.append(np.asarray([], dtype=np.float32))
+    missing_indices.append(idx)
+    missing_texts.append(str(q.get("query_text") or "").strip())
+
+  if missing_indices:
+    if model is None:
+      raise RuntimeError("缺少 query embedding 且未提供可编码模型。")
+    encoded_missing = encode_queries(model, missing_texts)
+    for local_idx, query_idx in enumerate(missing_indices):
+      q_embs[query_idx] = np.asarray(encoded_missing[local_idx], dtype=np.float32)
 
   id_to_paper: Dict[str, Paper] = {}
   results_per_query: List[dict] = []
@@ -401,25 +1017,47 @@ def rank_papers_for_queries_via_supabase(
     )
 
     q_vec = q_embs[idx]
-    rows, msg = match_papers_by_embedding(
-      url=url,
-      api_key=api_key,
-      rpc_name=rpc_name,
-      query_embedding=q_vec.tolist(),
-      match_count=max(int(top_k or 1), 1),
-      schema=schema,
-      start_dt=start_dt,
-      end_dt=end_dt,
-      time_fields=time_fields,
-    )
+    query_embedding = q_vec.tolist()
+    if rpc_mode == "exact":
+      rows, msg = query_supabase_vector_with_shards(
+        url=url,
+        api_key=api_key,
+        rpc_name=rpc_name,
+        query_embedding=query_embedding,
+        match_count=max(int(top_k or 1), 1),
+        schema=schema,
+        start_dt=start_dt,
+        end_dt=end_dt,
+        time_fields=time_fields,
+        rpc_mode=rpc_mode,
+        filter_sources=normalize_source_list(q.get("paper_sources")) if query_filter_sources else None,
+      )
+    else:
+      rows, msg = match_papers_by_embedding(
+        url=url,
+        api_key=api_key,
+        rpc_name=rpc_name,
+        query_embedding=query_embedding,
+        match_count=max(int(top_k or 1), 1),
+        schema=schema,
+        start_dt=start_dt,
+        end_dt=end_dt,
+        time_fields=time_fields,
+        filter_sources=normalize_source_list(q.get("paper_sources")) if query_filter_sources else None,
+      )
     log(f"[Supabase Vector:{rpc_mode}] {msg} | tag={q.get('tag') or ''}")
+
+    # 语句超时（57014）是服务端配置限制，后续批次也会超时，直接跳过
+    if not rows and "57014" in msg:
+      log(f"[Supabase Vector:{rpc_mode}] 检测到数据库语句超时，跳过剩余批次。")
+      break
 
     sim_scores: Dict[str, Dict[str, float | int]] = {}
     for rank_idx, row in enumerate(rows, start=1):
       pid = str(row.get("id") or "").strip()
       if not pid:
         continue
-      score = float(row.get("similarity") or 0.0)
+      score = _resolve_supabase_similarity(row)
       sim_scores[pid] = {"score": score, "rank": rank_idx}
       total_hits += 1
 
@@ -443,6 +1081,7 @@ def rank_papers_for_queries_via_supabase(
         "type": q.get("type"),
         "tag": q.get("tag"),
         "paper_tag": q.get("paper_tag"),
+        "paper_sources": q.get("paper_sources") or [q.get("active_source") or ARXIV_SOURCE_KEY],
         "query_text": q_text,
         "sim_scores": sim_scores,
       }
@@ -583,6 +1222,8 @@ def main() -> None:
     log("[ERROR] 未能从订阅配置中解析到 Embedding 查询，退出。")
     return
 
+  multi_source_backend = resolve_multi_source_vector_backend(config, queries) if multi_source_rpc_enabled() else None
+
   # 使用 EmbeddingCoarseFilter 类进行粗筛（模型只加载一次）
   coarse_filter = None
 
@@ -598,136 +1239,242 @@ def main() -> None:
       )
     return coarse_filter
 
-  def process_single_file(input_path: str, output_path: str) -> None:
-    papers = load_paper_pool(input_path)
-    if not papers:
-      log(f"[ERROR] 论文池为空，跳过文件：{input_path}")
+  cache_stats = hydrate_query_embeddings_from_config(
+    config=config,
+    queries=queries,
+    model_name=args.model,
+    model_provider=lambda: get_filter().model,
+    batch_size=args.batch_size,
+    max_length=args.max_length,
+    config_path=CONFIG_FILE,
+  )
+  log(
+    "[INFO] Query embedding cache："
+    f"hits={cache_stats.get('hits', 0)} "
+    f"misses={cache_stats.get('misses', 0)} "
+    f"written={cache_stats.get('written', 0)}"
+  )
+  # 注意：分组会复制 query dict。必须在 embedding hydrate 之后再分组，
+  # 否则 source_queries 会拿到不含 query_embedding 的旧副本。
+  query_groups = group_queries_by_source(queries)
+  for source_key in query_groups:
+    if source_key == ARXIV_SOURCE_KEY:
+      continue
+    if not get_source_backend(config, source_key):
+      log(f"[ERROR] 词条引用了论文源「{source_key}」，但未配置 source_backends.{source_key}。")
       return
 
-    total_papers = len(papers)
-
-    # 自适应计算 Top K：<=1000 篇取 50；每增加 1000 篇增加 50
-    if args.top_k is None or args.top_k <= 0:
-      if total_papers <= 0:
-        dynamic_top_k = 50
-      else:
-        blocks = (total_papers - 1) // 1000  # 0: <=1000, 1: 1001~2000, ...
-        dynamic_top_k = 50 * (blocks + 1)
-      log(
-        f"[INFO] 文件 {os.path.basename(input_path)} 原始论文数为 {total_papers} 篇，"
-        f"自适应设置每个查询 Top K = {dynamic_top_k}。"
-      )
-    else:
-      dynamic_top_k = args.top_k
-      log(
-        f"[INFO] 文件 {os.path.basename(input_path)} 使用命令行指定的 Top K = {dynamic_top_k}，"
-        f"原始论文数为 {total_papers} 篇。"
-      )
-
-    # 更新粗筛器的 top_k
-    filter_inst = get_filter()
-    filter_inst.top_k = dynamic_top_k
-
-    result: Optional[dict] = None
-    supabase_enabled = (
-      bool(supabase_conf.get("enabled"))
-      and bool(supabase_conf.get("use_vector_rpc"))
+  def run_supabase_vector_recall_for_source(
+    output_path: str,
+    source_key: str,
+    source_queries: List[dict],
+    *,
+    top_k: int | None = None,
+  ) -> dict | None:
+    """指定 source 的 Supabase-only 向量召回。"""
+    backend_conf = supabase_conf if source_key == ARXIV_SOURCE_KEY else get_source_backend(config, source_key)
+    backend_enabled = (
+      bool(backend_conf.get("enabled"))
+      and bool(backend_conf.get("use_vector_rpc"))
       and not bool(args.disable_supabase_vector)
     )
+    if not source_queries:
+      return None
+    if not backend_enabled:
+      if source_key == ARXIV_SOURCE_KEY:
+        return None
+      raise RuntimeError(f"论文源「{source_key}」未配置可用的向量 RPC。")
 
-    # 1) 优先数据库侧向量召回（Supabase pgvector RPC）
-    if supabase_enabled:
-      group_start(f"Step 2.2 - supabase vector recall ({os.path.basename(input_path)})")
-      try:
-        exact_rpc = str(supabase_conf.get("vector_rpc_exact") or "").strip()
-        ann_rpc = str(
-          supabase_conf.get("vector_rpc_ann")
-          or supabase_conf.get("vector_rpc")
-          or "match_arxiv_papers"
-        ).strip()
-        rpc_plan: List[tuple[str, str]] = []
-        if exact_rpc:
-          rpc_plan.append(("exact", exact_rpc))
-        if ann_rpc and all(x[1] != ann_rpc for x in rpc_plan):
-          rpc_plan.append(("ann", ann_rpc))
-
-        if not rpc_plan:
-          log("[WARN] Supabase 向量召回未配置可用 RPC，将回退本地 embedding 检索。")
-
-        for mode, rpc_name in rpc_plan:
-          log(f"[INFO] Supabase 向量召回尝试：mode={mode} rpc={rpc_name}")
-          result_sb = rank_papers_for_queries_via_supabase(
-            model=filter_inst.model,
-            queries=queries,
-            top_k=dynamic_top_k,
-            supabase_conf=supabase_conf,
-            start_dt=sb_start_dt,
-            end_dt=sb_end_dt,
-            time_fields=SUPABASE_TIME_FIELDS,
-            rpc_name_override=rpc_name,
-            rpc_mode=mode,
-          )
-          total_hits = int(result_sb.get("total_hits") or 0)
-          non_empty_queries = int(result_sb.get("non_empty_queries") or 0)
-          query_total = len(queries)
-          avg_hits_per_query = (float(total_hits) / float(query_total)) if query_total > 0 else 0.0
-          expected_top = min(dynamic_top_k, total_papers)
-
-          if total_hits <= 0:
-            log(f"[WARN] Supabase 向量召回无命中（mode={mode} rpc={rpc_name}）。")
-            continue
-
-          if mode == "ann" and expected_top >= 200 and avg_hits_per_query < (expected_top * 0.8):
-            log(
-              "[WARN] Supabase ANN 召回密度偏低："
-              f"avg_hits_per_query={avg_hits_per_query:.1f}, expected≈{expected_top}。"
-              "将回退本地 embedding 精确检索。"
-            )
-            continue
-
-          log(
-            f"[INFO] Supabase 向量召回命中 {total_hits} 条，采用数据库召回结果。"
-            f" mode={mode} rpc={rpc_name} "
-            f"non_empty_queries={non_empty_queries}/{query_total} "
-            f"avg_hits_per_query={avg_hits_per_query:.1f}"
-          )
-          result = result_sb
-          break
-
-        if result is None and rpc_plan:
-          log("[WARN] Supabase 向量召回未通过可用性检查，将回退本地 embedding 检索。")
-      except Exception as e:
-        log(f"[WARN] Supabase 向量召回异常，将回退本地 embedding 检索：{e}")
-      finally:
-        group_end()
-
-    # 2) 回退：本地 embedding 检索（保留原有逻辑）
-    if result is None:
-      paper_embeddings = try_use_precomputed_embeddings(papers, expected_model=args.model)
-      if paper_embeddings is not None:
-        group_start(f"Step 2.2 - use precomputed embeddings ({os.path.basename(input_path)})")
-        log(
-          f"[INFO] 使用预置论文 embedding：{paper_embeddings.shape[0]} 篇，"
-          f"dim={paper_embeddings.shape[1]}。"
-        )
-        group_end()
-      else:
-        group_start(f"Step 2.2 - compute embeddings ({os.path.basename(input_path)})")
-        coarse_result = filter_inst.filter(items=papers, queries=queries)
-        group_end()
-        paper_embeddings = coarse_result["embeddings"]
-
-      group_start(f"Step 2.2 - rank queries ({os.path.basename(input_path)})")
-      result = rank_papers_for_queries(
-        model=filter_inst.model,
-        papers=papers,
-        paper_embeddings=paper_embeddings,
-        queries=queries,
-        top_k=dynamic_top_k,
+    label = os.path.basename(output_path)
+    if isinstance(top_k, int) and top_k > 0:
+      dynamic_top_k = top_k
+      count_value = None
+    else:
+      count_value, count_msg = count_papers_by_date_range(
+        url=str(backend_conf.get("url") or "").strip(),
+        api_key=str(backend_conf.get("anon_key") or "").strip(),
+        papers_table=str(backend_conf.get("papers_table") or "papers").strip(),
+        start_dt=sb_start_dt,
+        end_dt=sb_end_dt,
+        schema=str(backend_conf.get("schema") or "public").strip(),
       )
+      log(f"[INFO] Supabase 向量召回窗口计数（source={source_key}）：{count_msg}")
+      dynamic_top_k = estimate_dynamic_top_k(count_value)
+    if not (isinstance(top_k, int) and top_k > 0):
+      log(
+        f"[INFO] Supabase 向量召回自适应 Top K = {dynamic_top_k} "
+        f"(source={source_key}, window_count={count_value if count_value is not None else 'unknown'})，"
+        f"输出文件：{label}"
+      )
+    group_start(f"Step 2.2 - supabase vector recall ({source_key}:{label})")
+    try:
+      exact_rpc = str(
+        backend_conf.get("vector_rpc_exact")
+        or backend_conf.get("vector_rpc")
+        or "match_papers_exact"
+      ).strip()
+      if not exact_rpc:
+        log("[WARN] Supabase 向量召回未配置可用 RPC。")
+        return None
+
+      mode = "exact"
+      rpc_name = exact_rpc
+      log(f"[INFO] Supabase 向量召回尝试：mode={mode} rpc={rpc_name}")
+      result_sb = rank_papers_for_queries_via_supabase(
+        model=None,
+        queries=source_queries,
+        top_k=dynamic_top_k,
+        supabase_conf=backend_conf,
+        start_dt=sb_start_dt,
+        end_dt=sb_end_dt,
+        time_fields=SUPABASE_TIME_FIELDS,
+        rpc_name_override=rpc_name,
+        rpc_mode=mode,
+      )
+      total_hits = int(result_sb.get("total_hits") or 0)
+      non_empty_queries = int(result_sb.get("non_empty_queries") or 0)
+      query_total = len(queries)
+      avg_hits_per_query = (float(total_hits) / float(query_total)) if query_total > 0 else 0.0
+
+      if total_hits <= 0:
+        log(f"[WARN] Supabase 向量召回无命中（mode={mode} rpc={rpc_name}）。")
+        return None
+
+      log(
+        f"[INFO] Supabase 向量召回命中 {total_hits} 条。"
+        f" mode={mode} rpc={rpc_name} "
+        f"non_empty_queries={non_empty_queries}/{query_total} "
+        f"avg_hits_per_query={avg_hits_per_query:.1f}"
+      )
+      return result_sb
+    except Exception as e:
+      if source_key == ARXIV_SOURCE_KEY:
+        log(f"[WARN] Supabase 向量召回异常：{e}")
+        return None
+      raise
+    finally:
+      group_end()
+    return None
+
+  def run_multi_source_vector_recall(output_path: str, source_queries: List[dict]) -> dict | None:
+    if not multi_source_backend:
+      return None
+    label = os.path.basename(output_path)
+    count_value, count_msg = count_papers_by_date_range(
+      url=str(multi_source_backend.get("url") or "").strip(),
+      api_key=str(multi_source_backend.get("anon_key") or "").strip(),
+      papers_table="multi_source_papers",
+      start_dt=sb_start_dt,
+      end_dt=sb_end_dt,
+      schema=str(multi_source_backend.get("schema") or "public").strip(),
+    )
+    log(f"[INFO] Multi-source 向量召回窗口计数：{count_msg}")
+    dynamic_top_k = args.top_k if isinstance(args.top_k, int) and args.top_k > 0 else estimate_dynamic_top_k(count_value)
+    group_start(f"Step 2.2 - multi-source vector recall ({label})")
+    try:
+      result_sb = rank_papers_for_queries_via_supabase(
+        model=None,
+        queries=source_queries,
+        top_k=dynamic_top_k,
+        supabase_conf=multi_source_backend,
+        start_dt=sb_start_dt,
+        end_dt=sb_end_dt,
+        time_fields=SUPABASE_TIME_FIELDS,
+        rpc_name_override=str(multi_source_backend.get("vector_rpc_exact") or multi_source_backend.get("vector_rpc") or "").strip(),
+        rpc_mode="exact",
+        query_filter_sources=True,
+      )
+      total_hits = int(result_sb.get("total_hits") or 0)
+      if total_hits > 0:
+        log(f"[INFO] Multi-source 向量召回命中 {total_hits} 条。")
+        return result_sb
+      log("[WARN] Multi-source 向量召回未命中。")
+      return None
+    finally:
       group_end()
 
-    save_tagged_results(result, output_path)
+  def process_single_file(input_path: str, output_path: str) -> None:
+    merged_results: List[dict] = []
+    if multi_source_backend:
+      multi_source_result = run_multi_source_vector_recall(output_path, queries)
+      if multi_source_result:
+        save_tagged_results(multi_source_result, output_path)
+        return
+    arxiv_queries = query_groups.get(ARXIV_SOURCE_KEY) or []
+    arxiv_supabase_result = run_supabase_vector_recall_for_source(
+      output_path,
+      ARXIV_SOURCE_KEY,
+      arxiv_queries,
+      top_k=args.top_k,
+    )
+    arxiv_hits = int((arxiv_supabase_result or {}).get("total_hits") or 0)
+    if arxiv_supabase_result and arxiv_hits > 0:
+      merged_results.append(arxiv_supabase_result)
+
+    for source_key, source_queries in query_groups.items():
+      if source_key == ARXIV_SOURCE_KEY:
+        continue
+      result_sb = run_supabase_vector_recall_for_source(
+        output_path,
+        source_key,
+        source_queries,
+        top_k=args.top_k,
+      )
+      if result_sb:
+        merged_results.append(result_sb)
+
+    need_local_arxiv = bool(arxiv_queries) and arxiv_hits <= 0
+    if need_local_arxiv:
+      papers = load_paper_pool(input_path)
+      if not papers:
+        log(f"[ERROR] 论文池为空，且 arxiv 查询无法从 Supabase 命中：{input_path}")
+      else:
+        total_papers = len(papers)
+        if args.top_k is None or args.top_k <= 0:
+          dynamic_top_k = estimate_dynamic_top_k(total_papers)
+          log(
+            f"[INFO] 文件 {os.path.basename(input_path)} 原始论文数为 {total_papers} 篇，"
+            f"自适应设置每个查询 Top K = {dynamic_top_k}。"
+          )
+        else:
+          dynamic_top_k = args.top_k
+          log(
+            f"[INFO] 文件 {os.path.basename(input_path)} 使用命令行指定的 Top K = {dynamic_top_k}，"
+            f"原始论文数为 {total_papers} 篇。"
+          )
+
+        filter_inst = get_filter()
+        filter_inst.top_k = dynamic_top_k
+        paper_embeddings = try_use_precomputed_embeddings(papers, expected_model=args.model)
+        if paper_embeddings is not None:
+          group_start(f"Step 2.2 - use precomputed embeddings ({os.path.basename(input_path)})")
+          log(
+            f"[INFO] 使用预置论文 embedding：{paper_embeddings.shape[0]} 篇，"
+            f"dim={paper_embeddings.shape[1]}。"
+          )
+          group_end()
+        else:
+          group_start(f"Step 2.2 - compute embeddings ({os.path.basename(input_path)})")
+          coarse_result = filter_inst.filter(items=papers, queries=arxiv_queries)
+          group_end()
+          paper_embeddings = coarse_result["embeddings"]
+
+        group_start(f"Step 2.2 - rank queries ({os.path.basename(input_path)})")
+        result_local = rank_papers_for_queries(
+          model=filter_inst.model,
+          papers=papers,
+          paper_embeddings=paper_embeddings,
+          queries=arxiv_queries,
+          top_k=dynamic_top_k,
+        )
+        group_end()
+        merged_results.append(result_local)
+
+    merged = merge_pipeline_results(merged_results)
+    if not merged.get("queries"):
+      log(f"[WARN] 当前文件没有产出任何 Embedding 结果：{input_path}")
+      return
+    save_tagged_results(merged, output_path)
 
   # 决定处理哪些输入文件：
   # - 如果指定了 --input，则只处理该文件；
@@ -753,15 +1500,32 @@ def main() -> None:
 
     process_single_file(input_path, output_path)
   else:
-    if not os.path.isdir(RAW_DIR):
-      log(f"[INFO] 原始目录不存在：{RAW_DIR}（今天没有新论文，将跳过 Embedding 检索）")
-      return
+    if os.path.isdir(RAW_DIR):
+      raw_files = sorted(f for f in os.listdir(RAW_DIR) if f.lower().endswith(".json"))
+    else:
+      raw_files = []
 
-    raw_files = sorted(
-      f for f in os.listdir(RAW_DIR) if f.lower().endswith(".json")
-    )
     if not raw_files:
-      log(f"[INFO] 在 {RAW_DIR} 下未找到任何 .json 原始文件。（今天没有新论文，将跳过 Embedding 检索）")
+      output_path = os.path.join(FILTERED_DIR, f"arxiv_papers_{TODAY_STR}.embedding.json")
+      if multi_source_backend:
+        multi_source_result = run_multi_source_vector_recall(output_path, queries)
+        if multi_source_result:
+          save_tagged_results(multi_source_result, output_path)
+          return
+      merged_results: List[dict] = []
+      for source_key, source_queries in query_groups.items():
+        result_sb = run_supabase_vector_recall_for_source(
+          output_path,
+          source_key,
+          source_queries,
+          top_k=args.top_k,
+        )
+        if result_sb:
+          merged_results.append(result_sb)
+      if merged_results:
+        save_tagged_results(merge_pipeline_results(merged_results), output_path)
+      else:
+        log("[WARN] 无本地原始文件，且没有任何 source backend 返回向量结果。")
       return
 
     log(f"[INFO] 批量模式：将在 {RAW_DIR} 下处理 {len(raw_files)} 个 JSON 文件。")

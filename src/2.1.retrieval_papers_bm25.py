@@ -23,8 +23,18 @@ from query_boolean import (
   clean_expr_for_embedding,
   match_term,
 )
+try:
+  from source_backend_router import group_queries_by_source, merge_pipeline_results
+  from source_config import ARXIV_SOURCE_KEY, get_source_backend, load_config_with_source_migration, normalize_source_list
+except Exception:  # pragma: no cover - 兼容 package 导入路径
+  from src.source_backend_router import group_queries_by_source, merge_pipeline_results
+  from src.source_config import ARXIV_SOURCE_KEY, get_source_backend, load_config_with_source_migration, normalize_source_list
 from subscription_plan import build_pipeline_inputs
-from supabase_source import get_supabase_read_config, match_papers_by_bm25
+from supabase_source import (
+  count_papers_by_date_range,
+  get_supabase_read_config,
+  match_papers_by_bm25,
+)
 
 
 # 当前脚本位于 src/ 下，config.yaml 在上一级目录
@@ -38,6 +48,7 @@ FILTERED_DIR = os.path.join(ARCHIVE_DIR, "filtered")
 DATE_RE_DAY = re.compile(r"^\d{8}$")
 DATE_RE_RANGE = re.compile(r"^\d{8}-\d{8}$")
 SUPABASE_TIME_FIELDS = ("published",)
+SUPABASE_BM25_SHARD_DAYS = 7
 
 
 TOKEN_RE = re.compile(r"[A-Za-z0-9]+|[\u4e00-\u9fff]")
@@ -132,6 +143,7 @@ class Paper:
     """转换为可 JSON 序列化的字典"""
     return {
       "id": self.id,
+      "source": self.source,
       "title": self.title,
       "abstract": self.abstract,
       "authors": self.authors,
@@ -204,18 +216,11 @@ def load_config() -> dict:
     return {}
 
   try:
-    import yaml  # type: ignore
-  except Exception:
-    log("[WARN] 未安装 PyYAML，无法解析 config.yaml。")
+    data = load_config_with_source_migration(CONFIG_FILE, write_back=False)
+    if isinstance(data, dict):
+      return data
+    log("[WARN] config.yaml 顶层结构不是字典，将忽略该配置文件。")
     return {}
-
-  try:
-    with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-      data = yaml.safe_load(f) or {}
-      if isinstance(data, dict):
-        return data
-      log("[WARN] config.yaml 顶层结构不是字典，将忽略该配置文件。")
-      return {}
   except Exception as e:
     log(f"[WARN] 读取 config.yaml 失败：{e}")
     return {}
@@ -240,6 +245,298 @@ def _format_supabase_window_for_log(
     published = window if "published" in safe_fields else "N/A"
     updated = window if "updated_at" in safe_fields else "N/A"
   return published, updated, ",".join(sorted(safe_fields))
+
+
+def _normalize_utc_datetime(value: datetime | None) -> datetime | None:
+  if not isinstance(value, datetime):
+    return None
+  if value.tzinfo is None:
+    return value.replace(tzinfo=timezone.utc)
+  return value.astimezone(timezone.utc)
+
+
+def split_supabase_time_window(
+  start_dt: datetime | None,
+  end_dt: datetime | None,
+  *,
+  shard_days: int = SUPABASE_BM25_SHARD_DAYS,
+) -> list[tuple[datetime, datetime]]:
+  """
+  将较长时间窗口切成多个固定天数分片，避免单次 BM25 RPC 触发 statement timeout。
+  """
+  safe_start = _normalize_utc_datetime(start_dt)
+  safe_end = _normalize_utc_datetime(end_dt)
+  if safe_start is None or safe_end is None or safe_end <= safe_start:
+    return []
+
+  safe_shard_days = max(int(shard_days or 1), 1)
+  step = timedelta(days=safe_shard_days)
+  if safe_end - safe_start <= step:
+    return [(safe_start, safe_end)]
+
+  shards: list[tuple[datetime, datetime]] = []
+  cursor = safe_start
+  while cursor < safe_end:
+    next_dt = min(cursor + step, safe_end)
+    shards.append((cursor, next_dt))
+    cursor = next_dt
+  return shards
+
+
+def _resolve_supabase_row_score(row: Dict[str, Any]) -> float:
+  score_raw = row.get("score")
+  if score_raw is None:
+    score_raw = row.get("similarity")
+  try:
+    return float(score_raw)
+  except Exception:
+    return 0.0
+
+
+def merge_supabase_bm25_rows(
+  rows_per_shard: list[list[Dict[str, Any]]],
+  *,
+  top_k: int,
+) -> list[Dict[str, Any]]:
+  """
+  合并多个分片的 BM25 结果：
+  - 按 id 去重；
+  - 同一论文跨分片重复出现时保留更高分；
+  - 最终按 score 降序截断到 top_k。
+  """
+  merged_by_id: Dict[str, Dict[str, Any]] = {}
+
+  for shard_idx, rows in enumerate(rows_per_shard):
+    for local_rank, row in enumerate(rows, start=1):
+      if not isinstance(row, dict):
+        continue
+      pid = str(row.get("id") or "").strip()
+      if not pid:
+        continue
+      score = _resolve_supabase_row_score(row)
+      existing = merged_by_id.get(pid)
+      should_replace = False
+      if existing is None:
+        should_replace = True
+      else:
+        old_score = float(existing.get("_merged_score") or 0.0)
+        old_shard_idx = int(existing.get("_merged_shard_idx") or 0)
+        old_local_rank = int(existing.get("_merged_local_rank") or 0)
+        if score > old_score:
+          should_replace = True
+        elif score == old_score and (
+          shard_idx < old_shard_idx
+          or (shard_idx == old_shard_idx and local_rank < old_local_rank)
+        ):
+          should_replace = True
+
+      if not should_replace:
+        continue
+
+      normalized = dict(row)
+      normalized["_merged_score"] = score
+      normalized["_merged_shard_idx"] = shard_idx
+      normalized["_merged_local_rank"] = local_rank
+      merged_by_id[pid] = normalized
+
+  merged = sorted(
+    merged_by_id.values(),
+    key=lambda item: (
+      -float(item.get("_merged_score") or 0.0),
+      int(item.get("_merged_shard_idx") or 0),
+      int(item.get("_merged_local_rank") or 0),
+      str(item.get("id") or ""),
+    ),
+  )
+  if top_k > 0:
+    merged = merged[:top_k]
+
+  for item in merged:
+    item.pop("_merged_score", None)
+    item.pop("_merged_shard_idx", None)
+    item.pop("_merged_local_rank", None)
+  return merged
+
+
+def _query_supabase_bm25_window(
+  *,
+  url: str,
+  api_key: str,
+  rpc_name: str,
+  query_text: str,
+  match_count: int,
+  schema: str,
+  start_dt: datetime,
+  end_dt: datetime,
+  time_fields: tuple[str, ...],
+  shard_days: int,
+  min_shard_days: int = 1,
+  depth: int = 0,
+  filter_sources: List[str] | None = None,
+) -> tuple[list[list[Dict[str, Any]]], int, list[str]]:
+  rows, msg = match_papers_by_bm25(
+    url=url,
+    api_key=api_key,
+    rpc_name=rpc_name,
+    query_text=query_text,
+    match_count=match_count,
+    schema=schema,
+    start_dt=start_dt,
+    end_dt=end_dt,
+    time_fields=time_fields,
+    filter_sources=filter_sources,
+  )
+  window = f"{start_dt.isoformat()} ~ {end_dt.isoformat()}"
+  log(
+    "[Supabase BM25] "
+    f"depth={depth} "
+    f"window={window} "
+    f"{msg}"
+  )
+  if msg.startswith("rpc 查询成功"):
+    return ([rows], 1, [])
+
+  failure_message = f"depth={depth} window={window} {msg}"
+  safe_start = _normalize_utc_datetime(start_dt)
+  safe_end = _normalize_utc_datetime(end_dt)
+  if safe_start is None or safe_end is None or safe_end <= safe_start:
+    return ([], 0, [failure_message])
+  if "57014" not in msg:
+    return ([], 0, [failure_message])
+
+  span_seconds = max((safe_end - safe_start).total_seconds(), 0.0)
+  span_days = max(int(math.ceil(span_seconds / 86400.0)), 1)
+  safe_min_shard_days = max(int(min_shard_days or 1), 1)
+  if span_days <= safe_min_shard_days:
+    return ([], 0, [failure_message])
+
+  next_shard_days = max(span_days // 2, safe_min_shard_days)
+  if shard_days > 1:
+    next_shard_days = min(next_shard_days, shard_days - 1)
+  if next_shard_days >= span_days:
+    next_shard_days = span_days - 1
+  if next_shard_days < safe_min_shard_days:
+    next_shard_days = safe_min_shard_days
+  if next_shard_days >= span_days:
+    return ([], 0, [failure_message])
+
+  sub_shards = split_supabase_time_window(
+    safe_start,
+    safe_end,
+    shard_days=next_shard_days,
+  )
+  if len(sub_shards) <= 1:
+    return ([], 0, [failure_message])
+
+  log(
+    "[Supabase BM25] "
+    f"timeout fallback window={window} "
+    f"split_to={len(sub_shards)} "
+    f"sub_shard_days={next_shard_days}"
+  )
+
+  rows_per_shard: list[list[Dict[str, Any]]] = []
+  success_count = 0
+  failure_messages: list[str] = []
+  for sub_start, sub_end in sub_shards:
+    sub_rows, sub_success, sub_failures = _query_supabase_bm25_window(
+      url=url,
+      api_key=api_key,
+      rpc_name=rpc_name,
+      query_text=query_text,
+      match_count=match_count,
+      schema=schema,
+      start_dt=sub_start,
+      end_dt=sub_end,
+      time_fields=time_fields,
+      shard_days=next_shard_days,
+      min_shard_days=safe_min_shard_days,
+      depth=depth + 1,
+      filter_sources=filter_sources,
+    )
+    rows_per_shard.extend(sub_rows)
+    success_count += sub_success
+    failure_messages.extend(sub_failures)
+  if success_count > 0:
+    return (rows_per_shard, success_count, failure_messages)
+  return ([], 0, [failure_message, *failure_messages])
+
+
+def query_supabase_bm25_with_shards(
+  *,
+  url: str,
+  api_key: str,
+  rpc_name: str,
+  query_text: str,
+  match_count: int,
+  schema: str,
+  start_dt: datetime | None,
+  end_dt: datetime | None,
+  time_fields: tuple[str, ...],
+  shard_days: int = SUPABASE_BM25_SHARD_DAYS,
+  filter_sources: List[str] | None = None,
+) -> tuple[list[Dict[str, Any]], str]:
+  safe_start = _normalize_utc_datetime(start_dt)
+  safe_end = _normalize_utc_datetime(end_dt)
+  if safe_start is None or safe_end is None or safe_end <= safe_start:
+    return match_papers_by_bm25(
+      url=url,
+      api_key=api_key,
+      rpc_name=rpc_name,
+      query_text=query_text,
+      match_count=match_count,
+      schema=schema,
+      start_dt=start_dt,
+      end_dt=end_dt,
+      time_fields=time_fields,
+      filter_sources=filter_sources,
+    )
+
+  shards = split_supabase_time_window(
+    safe_start,
+    safe_end,
+    shard_days=shard_days,
+  )
+  if not shards:
+    return ([], "rpc 分片查询失败：未生成有效时间分片")
+
+  rows_per_shard: list[list[Dict[str, Any]]] = []
+  success_count = 0
+  failure_messages: list[str] = []
+
+  for shard_start, shard_end in shards:
+    sub_rows, sub_success, sub_failures = _query_supabase_bm25_window(
+      url=url,
+      api_key=api_key,
+      rpc_name=rpc_name,
+      query_text=query_text,
+      match_count=match_count,
+      schema=schema,
+      start_dt=shard_start,
+      end_dt=shard_end,
+      time_fields=time_fields,
+      shard_days=max(int(shard_days or 1), 1),
+      filter_sources=filter_sources,
+    )
+    rows_per_shard.extend(sub_rows)
+    success_count += sub_success
+    failure_messages.extend(sub_failures)
+
+  merged_rows = merge_supabase_bm25_rows(
+    rows_per_shard,
+    top_k=max(int(match_count or 1), 1),
+  )
+  if success_count <= 0:
+    detail = " | ".join(failure_messages[:2]) if failure_messages else "所有分片均失败"
+    return ([], f"rpc 分片查询失败：success=0/{len(shards)} | {detail}")
+
+  summary = (
+    f"rpc 分片查询成功：{len(merged_rows)} 条"
+    f"（initial_shards={len(shards)} success_windows={success_count} failed_windows={len(failure_messages)}）"
+  )
+  if failure_messages:
+    summary += f" | partial_failures={len(failure_messages)}"
+  return (merged_rows, summary)
 
 
 def load_paper_pool(path: str) -> List[Paper]:
@@ -282,6 +579,66 @@ def build_bm25_index(papers: List[Paper], k1: float = 1.5, b: float = 0.75) -> B
   return BM25Index(tokenized_docs=tokenized, k1=k1, b=b)
 
 
+def estimate_dynamic_top_k(total_papers: int | None) -> int:
+  try:
+    total = int(total_papers or 0)
+  except Exception:
+    total = 0
+  if total <= 0:
+    return 50
+  blocks = (total - 1) // 1000
+  return 50 * (blocks + 1)
+
+
+def multi_source_rpc_enabled() -> bool:
+  return str(os.getenv("DPR_ENABLE_MULTI_SOURCE_RPC") or "").strip().lower() in ("1", "true", "yes", "on")
+
+
+def resolve_multi_source_bm25_backend(config: Dict[str, Any], queries: List[dict]) -> Dict[str, Any] | None:
+  all_sources: List[str] = []
+  for query in queries or []:
+    all_sources.extend(normalize_source_list(query.get("paper_sources")))
+  all_sources = normalize_source_list(all_sources)
+  if len(all_sources) <= 1:
+    return None
+
+  backends = []
+  for source_key in all_sources:
+    backend = get_source_backend(config, source_key)
+    if not backend:
+      return None
+    backends.append(backend)
+  if not backends:
+    return None
+
+  first = backends[0]
+  first_key = (
+    str(first.get("url") or "").strip(),
+    str(first.get("anon_key") or "").strip(),
+    str(first.get("schema") or "public").strip(),
+  )
+  if not all(
+    (
+      str(item.get("url") or "").strip(),
+      str(item.get("anon_key") or "").strip(),
+      str(item.get("schema") or "public").strip(),
+    ) == first_key
+    for item in backends[1:]
+  ):
+    return None
+  if not all(bool(item.get("use_bm25_rpc")) for item in backends):
+    return None
+
+  return {
+    "enabled": True,
+    "use_bm25_rpc": True,
+    "url": first_key[0],
+    "anon_key": first_key[1],
+    "schema": first_key[2],
+    "bm25_rpc": str(os.getenv("DPR_MULTI_SOURCE_BM25_RPC") or "match_multi_source_papers_bm25").strip(),
+  }
+
+
 def rank_papers_for_queries_via_supabase(
   queries: List[dict],
   top_k: int,
@@ -290,6 +647,7 @@ def rank_papers_for_queries_via_supabase(
   start_dt: datetime | None = None,
   end_dt: datetime | None = None,
   time_fields: tuple[str, ...] = SUPABASE_TIME_FIELDS,
+  query_filter_sources: bool = False,
 ) -> dict:
   if not queries:
     return {"queries": [], "papers": {}, "total_hits": 0}
@@ -325,7 +683,7 @@ def rank_papers_for_queries_via_supabase(
       f"time_fields={window_fields}"
     )
 
-    rows, msg = match_papers_by_bm25(
+    rows, msg = query_supabase_bm25_with_shards(
       url=url,
       api_key=api_key,
       rpc_name=rpc_name,
@@ -335,6 +693,7 @@ def rank_papers_for_queries_via_supabase(
       start_dt=start_dt,
       end_dt=end_dt,
       time_fields=time_fields,
+      filter_sources=normalize_source_list(q.get("paper_sources")) if query_filter_sources else None,
     )
     log(f"[Supabase BM25] {msg} | tag={q.get('tag') or ''}")
 
@@ -343,20 +702,14 @@ def rank_papers_for_queries_via_supabase(
       pid = str(row.get("id") or "").strip()
       if not pid:
         continue
-      score_raw = row.get("score")
-      if score_raw is None:
-        score_raw = row.get("similarity")
-      try:
-        score = float(score_raw)
-      except Exception:
-        score = 0.0
+      score = _resolve_supabase_row_score(row)
       sim_scores[pid] = {"score": score, "rank": rank_idx}
       total_hits += 1
 
       if pid not in id_to_paper:
         id_to_paper[pid] = Paper(
           id=pid,
-          source="supabase",
+          source=str(row.get("source") or q.get("active_source") or "supabase").strip() or "supabase",
           title=str(row.get("title") or "").strip(),
           abstract=str(row.get("abstract") or "").strip(),
           authors=[str(a) for a in (row.get("authors") or [])],
@@ -373,6 +726,7 @@ def rank_papers_for_queries_via_supabase(
         "type": q.get("type"),
         "tag": q.get("tag"),
         "paper_tag": q.get("paper_tag"),
+        "paper_sources": q.get("paper_sources") or [q.get("active_source") or ARXIV_SOURCE_KEY],
         "query_text": q_text,
         "logic_cn": q.get("logic_cn") or "",
         "boolean_expr": q.get("boolean_expr") or "",
@@ -547,6 +901,7 @@ def rank_papers_for_queries(
         "type": q.get("type"),
         "tag": q.get("tag"),
         "paper_tag": q.get("paper_tag"),
+        "paper_sources": q.get("paper_sources") or [ARXIV_SOURCE_KEY],
         "query_text": q_text,
         "logic_cn": q.get("logic_cn") or "",
         "boolean_expr": "",
@@ -668,81 +1023,169 @@ def main() -> None:
     log("[ERROR] 未能从订阅配置中解析到 BM25 查询，退出。")
     return
 
-  supabase_enabled = (
-    bool(supabase_conf.get("enabled"))
-    and bool(supabase_conf.get("use_bm25_rpc"))
-    and not bool(args.disable_supabase_bm25)
-  )
+  query_groups = group_queries_by_source(queries)
+  for source_key in query_groups:
+    if source_key == ARXIV_SOURCE_KEY:
+      continue
+    if not get_source_backend(config, source_key):
+      log(f"[ERROR] 词条引用了论文源「{source_key}」，但未配置 source_backends.{source_key}。")
+      return
+  multi_source_backend = resolve_multi_source_bm25_backend(config, queries) if multi_source_rpc_enabled() else None
 
-  def run_supabase_rank(output_path: str) -> bool:
+  def run_supabase_rank_for_source(output_path: str, source_key: str, source_queries: List[dict]) -> dict | None:
+    backend_conf = supabase_conf if source_key == ARXIV_SOURCE_KEY else get_source_backend(config, source_key)
+    backend_enabled = (
+      bool(backend_conf.get("enabled"))
+      and bool(backend_conf.get("use_bm25_rpc"))
+      and not bool(args.disable_supabase_bm25)
+    )
+    if not source_queries:
+      return None
+    if not backend_enabled:
+      if source_key == ARXIV_SOURCE_KEY:
+        return None
+      raise RuntimeError(f"论文源「{source_key}」未配置可用的 BM25 RPC。")
+
     label = os.path.basename(output_path)
     if args.top_k is None or args.top_k <= 0:
-      dynamic_top_k = 50
+      count_value, count_msg = count_papers_by_date_range(
+        url=str(backend_conf.get("url") or "").strip(),
+        api_key=str(backend_conf.get("anon_key") or "").strip(),
+        papers_table=str(backend_conf.get("papers_table") or "papers").strip(),
+        start_dt=sb_start_dt,
+        end_dt=sb_end_dt,
+        schema=str(backend_conf.get("schema") or "public").strip(),
+      )
+      log(f"[INFO] Supabase BM25 窗口计数（source={source_key}）：{count_msg}")
+      dynamic_top_k = estimate_dynamic_top_k(count_value)
+      log(
+        f"[INFO] Supabase BM25 自适应 Top K = {dynamic_top_k} "
+        f"(source={source_key}, window_count={count_value if count_value is not None else 'unknown'})，"
+        f"输出文件：{label}"
+      )
     else:
       dynamic_top_k = args.top_k
-      log(f"[INFO] Supabase BM25 使用命令行指定的 Top K = {dynamic_top_k}，输出文件：{label}")
+      log(f"[INFO] Supabase BM25 使用命令行指定的 Top K = {dynamic_top_k}，source={source_key}，输出文件：{label}")
 
-    group_start(f"Step 2.1 - supabase bm25 recall ({label})")
+    group_start(f"Step 2.1 - supabase bm25 recall ({source_key}:{label})")
     try:
       result_sb = rank_papers_for_queries_via_supabase(
-        queries=queries,
+        queries=source_queries,
         top_k=dynamic_top_k,
-        supabase_conf=supabase_conf,
+        supabase_conf=backend_conf,
         start_dt=sb_start_dt,
         end_dt=sb_end_dt,
         time_fields=SUPABASE_TIME_FIELDS,
       )
       total_hits = int(result_sb.get("total_hits") or 0)
       if total_hits > 0:
-        log(f"[INFO] Supabase BM25 命中 {total_hits} 条，采用数据库端召回结果。")
-        save_tagged_results(result_sb, output_path)
-        return True
-      log("[WARN] Supabase BM25 未命中，准备回退本地 BM25。")
+        log(f"[INFO] Supabase BM25 命中 {total_hits} 条（source={source_key}）。")
+      else:
+        log(f"[WARN] Supabase BM25 未命中（source={source_key}）。")
+      return result_sb
     except Exception as e:
-      log(f"[WARN] Supabase BM25 异常，将回退本地 BM25：{e}")
+      if source_key == ARXIV_SOURCE_KEY:
+        log(f"[WARN] Supabase BM25 异常，将回退本地 BM25：{e}")
+        return None
+      raise
     finally:
       group_end()
-    return False
+
+  def run_multi_source_supabase_rank(output_path: str, source_queries: List[dict]) -> dict | None:
+    if not multi_source_backend:
+      return None
+    label = os.path.basename(output_path)
+    count_value, count_msg = count_papers_by_date_range(
+      url=str(multi_source_backend.get("url") or "").strip(),
+      api_key=str(multi_source_backend.get("anon_key") or "").strip(),
+      papers_table="multi_source_papers",
+      start_dt=sb_start_dt,
+      end_dt=sb_end_dt,
+      schema=str(multi_source_backend.get("schema") or "public").strip(),
+    )
+    log(f"[INFO] Multi-source BM25 窗口计数：{count_msg}")
+    dynamic_top_k = args.top_k if isinstance(args.top_k, int) and args.top_k > 0 else estimate_dynamic_top_k(count_value)
+    group_start(f"Step 2.1 - multi-source bm25 recall ({label})")
+    try:
+      result_sb = rank_papers_for_queries_via_supabase(
+        queries=source_queries,
+        top_k=dynamic_top_k,
+        supabase_conf=multi_source_backend,
+        start_dt=sb_start_dt,
+        end_dt=sb_end_dt,
+        time_fields=SUPABASE_TIME_FIELDS,
+        query_filter_sources=True,
+      )
+      total_hits = int(result_sb.get("total_hits") or 0)
+      if total_hits > 0:
+        log(f"[INFO] Multi-source BM25 命中 {total_hits} 条。")
+        return result_sb
+      log("[WARN] Multi-source BM25 未命中。")
+      return None
+    finally:
+      group_end()
 
   def process_single_file(input_path: str, output_path: str) -> None:
-    papers = load_paper_pool(input_path)
-    if not papers:
-      log(f"[ERROR] 论文池为空，跳过文件：{input_path}")
-      return
+    merged_results: List[dict] = []
+    if multi_source_backend:
+      multi_source_result = run_multi_source_supabase_rank(output_path, queries)
+      if multi_source_result:
+        save_tagged_results(multi_source_result, output_path)
+        return
 
-    total_papers = len(papers)
-    if args.top_k is None or args.top_k <= 0:
-      if total_papers <= 0:
-        dynamic_top_k = 50
+    arxiv_queries = query_groups.get(ARXIV_SOURCE_KEY) or []
+    arxiv_supabase_result = run_supabase_rank_for_source(output_path, ARXIV_SOURCE_KEY, arxiv_queries)
+    arxiv_hits = int((arxiv_supabase_result or {}).get("total_hits") or 0)
+    if arxiv_supabase_result and arxiv_hits > 0:
+      merged_results.append(arxiv_supabase_result)
+
+    for source_key, source_queries in query_groups.items():
+      if source_key == ARXIV_SOURCE_KEY:
+        continue
+      result_sb = run_supabase_rank_for_source(output_path, source_key, source_queries)
+      if result_sb:
+        merged_results.append(result_sb)
+
+    need_local_arxiv = bool(arxiv_queries) and arxiv_hits <= 0
+    if need_local_arxiv:
+      papers = load_paper_pool(input_path)
+      if not papers:
+        log(f"[ERROR] 论文池为空，且 arxiv 查询无法从 Supabase 命中：{input_path}")
       else:
-        blocks = (total_papers - 1) // 1000
-        dynamic_top_k = 50 * (blocks + 1)
-      log(
-        f"[INFO] 文件 {os.path.basename(input_path)} 原始论文数为 {total_papers} 篇，"
-        f"自适应设置每个查询 Top K = {dynamic_top_k}。"
-      )
-    else:
-      dynamic_top_k = args.top_k
-      log(
-        f"[INFO] 文件 {os.path.basename(input_path)} 使用命令行指定的 Top K = {dynamic_top_k}，"
-        f"原始论文数为 {total_papers} 篇。"
-      )
+        total_papers = len(papers)
+        if args.top_k is None or args.top_k <= 0:
+          dynamic_top_k = estimate_dynamic_top_k(total_papers)
+          log(
+            f"[INFO] 文件 {os.path.basename(input_path)} 原始论文数为 {total_papers} 篇，"
+            f"自适应设置每个查询 Top K = {dynamic_top_k}。"
+          )
+        else:
+          dynamic_top_k = args.top_k
+          log(
+            f"[INFO] 文件 {os.path.basename(input_path)} 使用命令行指定的 Top K = {dynamic_top_k}，"
+            f"原始论文数为 {total_papers} 篇。"
+          )
 
-    group_start(f"Step 2.1 - build BM25 index ({os.path.basename(input_path)})")
-    log(f"[INFO] 正在为 {total_papers} 篇论文构建 BM25 索引...")
-    bm25 = build_bm25_index(papers, k1=float(args.k1), b=float(args.b))
-    group_end()
+        group_start(f"Step 2.1 - build BM25 index ({os.path.basename(input_path)})")
+        log(f"[INFO] 正在为 {total_papers} 篇论文构建 BM25 索引...")
+        bm25 = build_bm25_index(papers, k1=float(args.k1), b=float(args.b))
+        group_end()
 
-    group_start(f"Step 2.1 - rank queries ({os.path.basename(input_path)})")
-    result = rank_papers_for_queries(
-      bm25=bm25,
-      papers=papers,
-      queries=queries,
-      top_k=dynamic_top_k,
-    )
-    group_end()
+        group_start(f"Step 2.1 - rank queries ({os.path.basename(input_path)})")
+        result_local = rank_papers_for_queries(
+          bm25=bm25,
+          papers=papers,
+          queries=arxiv_queries,
+          top_k=dynamic_top_k,
+        )
+        group_end()
+        merged_results.append(result_local)
 
-    save_tagged_results(result, output_path)
+    merged = merge_pipeline_results(merged_results)
+    if not merged.get("queries"):
+      log(f"[WARN] 当前文件没有产出任何 BM25 结果：{input_path}")
+      return
+    save_tagged_results(merged, output_path)
 
   if args.input:
     input_path = args.input
@@ -764,35 +1207,37 @@ def main() -> None:
 
     process_single_file(input_path, output_path)
   else:
-    if not os.path.isdir(RAW_DIR):
-      log(f"[INFO] 原始目录不存在：{RAW_DIR}（今天没有新论文，将跳过 BM25 检索）")
-      return
+    if os.path.isdir(RAW_DIR):
+      raw_files = sorted(f for f in os.listdir(RAW_DIR) if f.lower().endswith(".json"))
+    else:
+      raw_files = []
 
-    raw_files = sorted(f for f in os.listdir(RAW_DIR) if f.lower().endswith(".json"))
     if not raw_files:
-      log(f"[INFO] 在 {RAW_DIR} 下未找到任何 .json 原始文件。（今天没有新论文，将跳过 BM25 检索）")
+      output_path = os.path.join(FILTERED_DIR, f"arxiv_papers_{TODAY_STR}.bm25.json")
+      if multi_source_backend:
+        multi_source_result = run_multi_source_supabase_rank(output_path, queries)
+        if multi_source_result:
+          save_tagged_results(multi_source_result, output_path)
+          return
+      merged_results: List[dict] = []
+      for source_key, source_queries in query_groups.items():
+        result_sb = run_supabase_rank_for_source(output_path, source_key, source_queries)
+        if result_sb:
+          merged_results.append(result_sb)
+      if merged_results:
+        save_tagged_results(merge_pipeline_results(merged_results), output_path)
+      else:
+        log("[WARN] 无本地原始文件，且没有任何 source backend 返回结果。")
       return
 
     log(f"[INFO] 批量模式：将在 {RAW_DIR} 下处理 {len(raw_files)} 个 JSON 文件。")
-    if supabase_enabled:
-      log("[INFO] Supabase BM25 已启用：将直接使用数据库端召回（如异常则回退本地）。")
-      for name in raw_files:
-        input_path = os.path.join(RAW_DIR, name)
-        base = name
-        if base.lower().endswith(".json"):
-          base = base[:-5]
-        output_path = os.path.join(FILTERED_DIR, f"{base}.bm25.json")
-        if run_supabase_rank(output_path):
-          continue
-        process_single_file(input_path, output_path)
-    else:
-      for name in raw_files:
-        input_path = os.path.join(RAW_DIR, name)
-        base = name
-        if base.lower().endswith(".json"):
-          base = base[:-5]
-        output_path = os.path.join(FILTERED_DIR, f"{base}.bm25.json")
-        process_single_file(input_path, output_path)
+    for name in raw_files:
+      input_path = os.path.join(RAW_DIR, name)
+      base = name
+      if base.lower().endswith(".json"):
+        base = base[:-5]
+      output_path = os.path.join(FILTERED_DIR, f"{base}.bm25.json")
+      process_single_file(input_path, output_path)
 
 
 if __name__ == "__main__":
