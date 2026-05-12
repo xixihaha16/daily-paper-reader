@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2604.17312v1/fig-001.webp",
+      "caption": "Figure 1: Overview of LLM-based reinforcement learning under data scarcity, illustrating data-, training-, and framework-centric perspectives.",
+      "page": 1,
+      "index": 1,
+      "width": 458,
+      "height": 281
+    },
+    {
+      "url": "assets/figures/arxiv/2604.17312v1/fig-002.webp",
+      "caption": "Figure 2: A taxonomy of RL-based LLM Training under Data Scarcity.",
+      "page": 3,
+      "index": 2,
+      "width": 954,
+      "height": 967
+    },
+    {
+      "url": "assets/figures/arxiv/2604.17312v1/fig-003.webp",
+      "caption": "Figure 3: RL for LLMs in data-centric perspective.",
+      "page": 4,
+      "index": 3,
+      "width": 457,
+      "height": 279
+    },
+    {
+      "url": "assets/figures/arxiv/2604.17312v1/fig-004.webp",
+      "caption": "Table 1: Summary of Referenced Papers",
+      "page": 19,
+      "index": 4,
+      "width": 833,
+      "height": 1364
+    }
+  ]
+}
