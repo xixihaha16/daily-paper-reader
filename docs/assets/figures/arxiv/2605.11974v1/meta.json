@@ -1,0 +1,94 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2605.11974v1/fig-001.webp",
+      "caption": "Figure 6: Impact of input order on the performance of Qwen-2.5-3B across 8 random orders.",
+      "page": 15,
+      "index": 1,
+      "width": 902,
+      "height": 471
+    },
+    {
+      "url": "assets/figures/arxiv/2605.11974v1/fig-002.webp",
+      "caption": "Figure 7: Impact of input order on the performance of Gemma-3-4B across 8 random orders.",
+      "page": 15,
+      "index": 2,
+      "width": 902,
+      "height": 472
+    },
+    {
+      "url": "assets/figures/arxiv/2605.11974v1/fig-003.webp",
+      "caption": "Table 2: Accuracy and order stability metrics of LLMs with different training methods. +/− indicates improvement or degradation relative to the SFT baseline. ↑ indicates that higher values of this metric represent better model accuracy or stronger order stability, ↓ indicates that lower values of this metric represent lower model hallucination.",
+      "page": 7,
+      "index": 3,
+      "width": 460,
+      "height": 687
+    },
+    {
+      "url": "assets/figures/arxiv/2605.11974v1/fig-004.webp",
+      "caption": "Figure 5: Comparison examples of PAFT and DGAO test results.",
+      "page": 14,
+      "index": 4,
+      "width": 919,
+      "height": 404
+    },
+    {
+      "url": "assets/figures/arxiv/2605.11974v1/fig-005.webp",
+      "caption": "Table 8: Hyperparameter α sweeping experiments (using Llama-3.2-3B as the base model).",
+      "page": 14,
+      "index": 5,
+      "width": 457,
+      "height": 280
+    },
+    {
+      "url": "assets/figures/arxiv/2605.11974v1/fig-006.webp",
+      "caption": "Table 7: Accuracy and order stability metrics of LLMs with different training methods. +/− indicates improvement or degradation relative to the SFT baseline. ↑ indicates that higher values of this metric represent better model accuracy or stronger order stability, ↓ indicates that lower values of this metric represent lower model hallucination.",
+      "page": 13,
+      "index": 6,
+      "width": 462,
+      "height": 473
+    },
+    {
+      "url": "assets/figures/arxiv/2605.11974v1/fig-007.webp",
+      "caption": "Figure 2: DGAO algorithm framework. A batch contains M (e.g., M = 2 in the figure) queries, each query consists of text prompts and Q. Each text prompt is constructed into N order variants, and rewards are obtained through respective inference. Based on the rewards, intra-group relative advantage Aind and inter-group relative advantage Agroup are calculated respectively, and the aggregated final advantage Afinal is obtained to guide parameter updates.",
+      "page": 4,
+      "index": 7,
+      "width": 431,
+      "height": 333
+    },
+    {
+      "url": "assets/figures/arxiv/2605.11974v1/fig-008.webp",
+      "caption": "Figure 3: Impact of input order on the performance of Llama-3.2-3B across 8 random orders.",
+      "page": 5,
+      "index": 8,
+      "width": 457,
+      "height": 885
+    },
+    {
+      "url": "assets/figures/arxiv/2605.11974v1/fig-009.webp",
+      "caption": "Figure 8: Example of SST2 dataset.",
+      "page": 16,
+      "index": 9,
+      "width": 457,
+      "height": 523
+    },
+    {
+      "url": "assets/figures/arxiv/2605.11974v1/fig-010.webp",
+      "caption": "Figure 9: Example of SQuAD v2 dataset.",
+      "page": 16,
+      "index": 10,
+      "width": 457,
+      "height": 522
+    },
+    {
+      "url": "assets/figures/arxiv/2605.11974v1/fig-011.webp",
+      "caption": "Figure 10: Example of GSM8K dataset.",
+      "page": 16,
+      "index": 11,
+      "width": 456,
+      "height": 500
+    }
+  ]
+}
