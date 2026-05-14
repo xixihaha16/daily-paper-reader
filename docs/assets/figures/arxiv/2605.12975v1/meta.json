@@ -1,0 +1,174 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-001.webp",
+      "caption": "Table 2: Exact Match (%) of training-free methods on five QA benchmarks. All methods use the same setting and identical evaluation splits. Best result within each backbone size is in bold; second best is underlined. ∆ shows improvement over Vanilla RAG within the same backbone.",
+      "page": 6,
+      "index": 1,
+      "width": 783,
+      "height": 593
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-002.webp",
+      "caption": "Figure 13: When Step 4 returns the sentinel \"unknown\", execution-guided refinement triggers a broader re-retrieval (Step 5–6, highlighted). The plan structure is preserved; only the under-evidenced sub-step is repaired. Adaptive retrieval recovers from an under-evidenced sub-step without modifying the overall plan, illustrating the benefit of execution-grounded refinement.",
+      "page": 25,
+      "index": 2,
+      "width": 829,
+      "height": 706
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-003.webp",
+      "caption": "Figure 14: Boolean conjunction over a 2×2 grid of predicates. The plan reduces a “both X and Y” question to a Cartesian grid of yes/no probes whose conjunction is decided by the Python keyword all. The boolean structure is enforced by the program; the answer agent never has to perform multi-clause logical reasoning over a free-form prompt. The decision rule is expressed as a Python expression rather than delegated to the answer agent.",
+      "page": 26,
+      "index": 3,
+      "width": 829,
+      "height": 667
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-004.webp",
+      "caption": "Figure 7: Plan Agent user-side context. Top: the per-question template filled with the original query, the decomposed sub-queries, and the one-shot CODE_EXAMPLE. Bottom: the example itself, demonstrating variable threading across hops and the two-part synthesis call.",
+      "page": 21,
+      "index": 4,
+      "width": 829,
+      "height": 879
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-005.webp",
+      "caption": "Figure 18: Final aggregation misreads its own variable bindings. Written as a Python program, the failure is sharply localized: every retrieved variable holds the right value, yet the final answer(...) call returns \"Neither\". The bug is therefore neither retrieval nor variable binding, it is the answer agent misreading its own variable bindings inside the final aggregation step. This isolates a clear bottleneck and motivates more structured aggregation prompts (e.g. typed slots) as future work. Because every variable is recorded in the trace, the contradiction between childers = \"yes\" and final = \"Neither\" is directly verifiable.",
+      "page": 30,
+      "index": 5,
+      "width": 829,
+      "height": 566
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-006.webp",
+      "caption": "Figure 1: Comparison across Vanilla RAG, Search Agents, and PyRAG (Ours). Given the multi-hop question “Who is older, Jed Hoyer or John William Henry II?”, (a) Vanilla RAG performs single-shot retrieval and is prone to incomplete or noisy evidence; (b) Search Agents follow an unstructured iterative trajectory where vague queries and entity drift (e.g., retrieving “Henry II of England” instead of “John William Henry II”) accumulate errors across steps; (c) PyRAG decomposes the question into atomic sub-queries and generates an executable program that retrieves, answers, and composes intermediate results through explicit variables, yielding a controllable, inspectable, and accurate reasoning process.",
+      "page": 2,
+      "index": 6,
+      "width": 822,
+      "height": 433
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-007.webp",
+      "caption": "Table 3: Exact Match (%) of RL-trained methods on four QA benchmarks. All methods are evaluated under the same retrieval setting. The best result within each backbone is in bold. † denotes in-domain evaluation; remaining datasets are out-of-domain.",
+      "page": 7,
+      "index": 7,
+      "width": 746,
+      "height": 611
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-008.webp",
+      "caption": "Figure 17: Retrieval failure that propagates because a sentinel value is treated as a content string. The string \"unknown\" returned at Step 4 is a sentinel meaning “no evidence,” but the plan treats it as a normal value and interpolates it into Step 5’s query. This points to a concrete fix: hops whose answer matches the \"unknown\" sentinel should branch into guarded fallback rather than continuing the data-flow chain. The executable trace localizes this to a single edge in the data dependency graph.",
+      "page": 29,
+      "index": 8,
+      "width": 829,
+      "height": 704
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-009.webp",
+      "caption": "Figure 8: Runtime-level self-repair template. Triggered when an executed program raises a Python exception; the traceback and the original question are surfaced back as deterministic, grounded feedback signals.",
+      "page": 22,
+      "index": 9,
+      "width": 829,
+      "height": 554
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-010.webp",
+      "caption": "Figure 9: Syntax-level self-repair template. Triggered when the generated code fails to compile; the parser’s error location is fed back to the same generation call.",
+      "page": 22,
+      "index": 10,
+      "width": 829,
+      "height": 319
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-011.webp",
+      "caption": "Figure 5: Prompts used by the Decompose Agent. The system prompt enforces a parseable JSON-list contract; the user template supplies the question and a one-shot example fixing sub-query granularity.",
+      "page": 18,
+      "index": 11,
+      "width": 829,
+      "height": 409
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-012.webp",
+      "caption": "Figure 10: Answer Agent system prompt — evidence mode. Used when at least one retrieved passage is supplied. The schema fixes question-type matching and reserves “unknown” as the sentinel that drives adaptive retrieval.",
+      "page": 23,
+      "index": 12,
+      "width": 829,
+      "height": 691
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-013.webp",
+      "caption": "Figure 16: Decomposition-stage entity drift. The Step 3 query should have been f\"...control {program}?\", but the planning agent emitted the literal string \"iTunes\" instead. Because the plan exposes variables as first-class objects, the drift is precisely localizable to the planning stage—a free-form CoT trace would mix this error into surrounding reasoning text. The executable trace makes the failure point unambiguous.",
+      "page": 28,
+      "index": 13,
+      "width": 829,
+      "height": 608
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-014.webp",
+      "caption": "Figure 2: The PyRAG framework. Given a multi-hop question, PyRAG proceeds in three stages: (1) Decompose: an LLM breaks the question into atomic, independently answerable sub-queries; (2) Plan: a code-specialized LLM synthesizes an executable Python program over two tool primitives, retrieve(query, topk) and answer(query, docs), where intermediate results are bound to variables and composed through explicit data dependencies; (3) Execute: the program is run stepby-step in a Python interpreter, producing an inspectable trace and a grounded final answer. Two execution-guided refinement mechanisms refine this pipeline: (A) Compiler-Grounded Self-Repair, which uses runtime exceptions (e.g., SyntaxError, NameError) as deterministic signals for the planner to revise and re-execute the program; and (B) Execution-Driven Adaptive Retrieval, which boosts the top-k retrieval budget for sub-steps whose answer indicates insufficient evidence. Both mechanisms are training-free and rely on grounded execution feedback rather than LLM self-reflection.",
+      "page": 4,
+      "index": 14,
+      "width": 822,
+      "height": 464
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-015.webp",
+      "caption": "Table 4: Dataset statistics for training and evaluation.",
+      "page": 17,
+      "index": 15,
+      "width": 648,
+      "height": 252
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-016.webp",
+      "caption": "Figure 20: Type confusion in a for-loop. The bug is a single-line type confusion: clients is a comma-joined string, not a list, so iterating it character-by-character is silently legal Python and the executor fans out into hundreds of nonsensical retrievals on \"L\", \"e\", \"B\", . . . The fix is the one-line cast shown above, after which the original for-loop iterates over actual client names. Such failures are uniquely visible in the executable trace: the explosion of single-character queries makes the type error mechanically obvious, whereas in a free-form CoT the same confusion would surface as “the model got distracted” or “hallucinated names.” The failure mode is unique to the executable interface, but so is the diagnosis—the trace pinpoints the exact line that needs a .split(\",\").",
+      "page": 32,
+      "index": 16,
+      "width": 829,
+      "height": 654
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-017.webp",
+      "caption": "Figure 15: Arithmetic over retrieved values. The final answer is not contained in any retrieved document and cannot be produced by retrieve+answer alone—it is the difference of two retrieved years. PyRAG handles this by lifting the retrieved strings into Python integers via int(...) and computing the subtraction deterministically. An LLM doing arithmetic on natural-language dates inside a free-form prompt is a known source of error; here the computation is moved outside the model entirely. PyRAG separates retrieval (handled by tools) from computation (handled by Python), giving deterministic numeric answers without relying on LLM mental arithmetic.",
+      "page": 27,
+      "index": 17,
+      "width": 829,
+      "height": 492
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-018.webp",
+      "caption": "Figure 12: A representative correct example. Variables produced at one step are explicitly consumed by subsequent calls through string interpolation.",
+      "page": 24,
+      "index": 18,
+      "width": 829,
+      "height": 568
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-019.webp",
+      "caption": "Figure 11: Answer Agent system prompt — aggregation mode. Used when the docs argument is empty, i.e. in the final synthesis call. Forbids yes/no responses to wh-questions, eliminating the failure mode where the synthesis call collapses into fact verification.",
+      "page": 24,
+      "index": 19,
+      "width": 829,
+      "height": 554
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-020.webp",
+      "caption": "Figure 19: Boolean conjunction misexecuted by the answer agent. Both flags entries hold \"yes\", but the answer agent’s reasoning trace narrates “both Northwestern University and Middlebury College are public institutions” before returning \"No\". The conjunction is the failure point—precisely the operation Python expresses with one keyword. Replacing the final answer(...) call with the one-line all(...) expression shown above eliminates the failure mode entirely. This is the inverse of Case C: when the boolean structure is enforced by the program rather than narrated to the LLM, the result is deterministic.",
+      "page": 31,
+      "index": 20,
+      "width": 829,
+      "height": 583
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12975v1/fig-021.webp",
+      "caption": "Figure 6: Plan Agent system prompt. Codifies the executable interface as a contract — function signatures, data-flow discipline, and the two-part synthesis format that prevents answer leakage into the final question.",
+      "page": 20,
+      "index": 21,
+      "width": 829,
+      "height": 1167
+    }
+  ]
+}
