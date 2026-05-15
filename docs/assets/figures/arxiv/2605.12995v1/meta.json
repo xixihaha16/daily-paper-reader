@@ -1,0 +1,118 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2605.12995v1/fig-001.webp",
+      "caption": "Table 1: Recall@k and NDCG@k on LastFM and MovieLens for Qwen3-4B and Qwen3.5-2B. All values are percentages. Bold: best among LLM methods; Underlined: second best.",
+      "page": 6,
+      "index": 1,
+      "width": 830,
+      "height": 586
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12995v1/fig-002.webp",
+      "caption": "Figure 5: Evaluation metrics during training for F-GRPO and GRPO on Qwen3-4B. F-GRPO converges faster and reaches higher values on most metrics, with the clearest gains at higher cutoffs. Faint lines show raw values, bold lines are smoothed.",
+      "page": 25,
+      "index": 2,
+      "width": 822,
+      "height": 311
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12995v1/fig-003.webp",
+      "caption": "Table 8: Precision@k and Hit@k on MuSiQue and HotpotQA for Qwen3-4B and Qwen3.5-2B. All values are percentages. Bold: best among LLM methods; Underlined: second best.",
+      "page": 25,
+      "index": 3,
+      "width": 829,
+      "height": 586
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12995v1/fig-004.webp",
+      "caption": "Table 9: Error attribution for F-GRPO (Qwen3-4B). Errors are distributed across both phases rather than dominated by one, confirming that each requires its own credit signal.",
+      "page": 26,
+      "index": 4,
+      "width": 829,
+      "height": 606
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12995v1/fig-005.webp",
+      "caption": "Table 4: Comparison of QA reranking methods. N is the number of candidate passages. Dedicated rerankers are trained on MS MARCO and applied zero-shot; our methods are trained in-domain with RL.",
+      "page": 21,
+      "index": 5,
+      "width": 826,
+      "height": 278
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12995v1/fig-006.webp",
+      "caption": "Figure 1: (a) Black-box ranking conflates candidate selection and ordering, yielding ambiguous credit assignment. (b) Factorized in-context generation and ranking with phase-specific goals within a single autoregressive rollout.",
+      "page": 2,
+      "index": 6,
+      "width": 393,
+      "height": 565
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12995v1/fig-007.webp",
+      "caption": "Figure 2: Training dynamics on LastFM. (a) Slate reward ablation. (b) The slate generator matures before the ranker.",
+      "page": 7,
+      "index": 7,
+      "width": 820,
+      "height": 295
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12995v1/fig-008.webp",
+      "caption": "Table 5: Shared SFT training hyperparameters for baseline, factorized, and decoupled models.",
+      "page": 22,
+      "index": 8,
+      "width": 826,
+      "height": 330
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12995v1/fig-009.webp",
+      "caption": "Table 6: Shared GRPO hyperparameters for baseline and factorized models.",
+      "page": 23,
+      "index": 9,
+      "width": 826,
+      "height": 455
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12995v1/fig-010.webp",
+      "caption": "Table 2: Recall@k and NDCG@k on MuSiQue and HotpotQA for Qwen3-4B and Qwen3.5-2B. All values are percentages. Bold: best among LLM methods; Underlined: second best.",
+      "page": 8,
+      "index": 10,
+      "width": 830,
+      "height": 586
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12995v1/fig-011.webp",
+      "caption": "Figure 3: Precision–recall redistribution between the slate and ranker on LastFM across two model sizes. The ranker trades recall for precision by filtering the slate.",
+      "page": 8,
+      "index": 11,
+      "width": 814,
+      "height": 192
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12995v1/fig-012.webp",
+      "caption": "Table 3: Dataset statistics. Counts reflect subsampled splits used in experiments.",
+      "page": 17,
+      "index": 12,
+      "width": 632,
+      "height": 196
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12995v1/fig-013.webp",
+      "caption": "Figure 4: Hyperparameter sensitivity for F-GRPO. (a) λ=1.0 yields the best or near-best performance across all metrics; underweighting the ranking loss (λ=0.5) degrades topposition quality. (b) Performance peaks at slate size n=10; smaller slates limit coverage while larger slates dilute the candidate pool.",
+      "page": 24,
+      "index": 13,
+      "width": 662,
+      "height": 476
+    },
+    {
+      "url": "assets/figures/arxiv/2605.12995v1/fig-014.webp",
+      "caption": "Table 7: Precision@k on LastFM and MovieLens for Qwen3-4B and Qwen3.5-2B. All values are percentages. Bold: best among LLM methods; Underlined: second best.",
+      "page": 24,
+      "index": 14,
+      "width": 418,
+      "height": 442
+    }
+  ]
+}
