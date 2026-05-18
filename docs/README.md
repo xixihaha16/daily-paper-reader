@@ -6,71 +6,64 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-05-16
-- 运行时间：2026-05-16 19:52:37 UTC
+- 最新运行日期：2026-05-18
+- 运行时间：2026-05-18 20:25:36 UTC
 - 运行状态：成功
-- 本次总论文数：17
-- 精读区：6
+- 本次总论文数：14
+- 精读区：3
 - 速读区：11
 
 ### 今日简报（AI）
-今日深挖 17 篇 AI 论文，重点突破 RAG 检索增强推理的规模化扩展与多语言文档理解。
-- 详情：[/202605/16/README](/202605/16/README)
+今日聚焦 14 篇 AI 前沿进展，深度探讨 RAG 性能优化与长文本处理的权衡策略。
+核心结论指出，通过激活 LLM 的潜在路由能力可实现 RAG 与长文本的智能切换，并从图视角揭示了检索增强失效的底层诱因。
+建议优先关注“先路由后检索”方案，根据具体场景灵活优化检索链路以提升问答准确度。
+- 详情：[/202605/18/README](/202605/18/README)
 
 ### 精读区论文标签
-1. [Scaling Retrieval-Augmented Reasoning with Parallel Search and Explicit Merging](/202605/16/2605.13534v1-scaling-retrieval-augmented-reasoning-with-parallel-search-and-explicit-merging)  
-   标签：评分：9.5/10、query:rag
-   evidence：基于强化学习的RAG多查询检索和显式合并框架
-2. [Qwen Goes Brrr: Off-the-Shelf RAG for Ukrainian Multi-Domain Document Understanding](/202605/16/2605.10296v1-qwen-goes-brrr-off-the-shelf-rag-for-ukrainian-multi-domain-document-understanding)  
-   标签：评分：9.0/10、query:rag
-   evidence：用于文档理解的检索增强流水线
-3. [CDS4RAG: Cyclic Dual-Sequential Hyperparameter Optimization for RAG](/202605/16/2605.08333v1-cds4rag-cyclic-dual-sequential-hyperparameter-optimization-for-rag)  
+1. [Route Before Retrieve: Activating Latent Routing Abilities of LLMs for RAG vs. Long-Context Selection](/202605/18/2605.10235v2-route-before-retrieve-activating-latent-routing-abilities-of-llms-for-rag-vs-long-context-selection)  
    标签：评分：8.5/10、query:rag
-   evidence：通过循环双序列公式利用查询优化完整的RAG超参数
-4. [Generating Leakage-Free Benchmarks for Robust RAG Evaluation](/202605/16/2605.08838v1-generating-leakage-free-benchmarks-for-robust-rag-evaluation)  
+   evidence：针对RAG与长文本选择的主动路由框架
+2. [Why Retrieval-Augmented Generation Fails: A Graph Perspective](/202605/18/2605.14192v1-why-retrieval-augmented-generation-fails-a-graph-perspective)  
    标签：评分：8.0/10、query:rag
-   evidence：通过减轻知识泄露实现稳健的RAG评估
-5. [Assessment of RAG and Fine-Tuning for Industrial Question-Answering-Applications](/202605/16/2605.09533v1-assessment-of-rag-and-fine-tuning-for-industrial-question-answering-applications)  
+   evidence：使用归因图对RAG失败原因进行模型内部研究
+3. [Does RAG Know When Retrieval Is Wrong? Diagnosing Context Compliance under Knowledge Conflict](/202605/18/2605.14473v1-does-rag-know-when-retrieval-is-wrong-diagnosing-context-compliance-under-knowledge-conflict)  
    标签：评分：8.0/10、query:rag
-   evidence：工业问答场景下RAG与微调的评估对比
-6. [Route Before Retrieve: Activating Latent Routing Abilities of LLMs for RAG vs. Long-Context Selection](/202605/16/2605.10235v1-route-before-retrieve-activating-latent-routing-abilities-of-llms-for-rag-vs-long-context-selection)  
-   标签：评分：8.0/10、query:rag
-   evidence：RAG与长文本选择的路由框架
+   evidence：诊断RAG中的上下文合规性与知识冲突
 
 ### 速读区论文标签
-1. [Route Before Retrieve: Activating Latent Routing Abilities of LLMs for RAG vs. Long-Context Selection](/202605/16/2605.10235v2-route-before-retrieve-activating-latent-routing-abilities-of-llms-for-rag-vs-long-context-selection)  
-   标签：评分：8.0/10、query:rag
-   evidence：在RAG和长上下文策略之间选择的主动路由框架
-2. [Very Efficient Listwise Multimodal Reranking for Long Documents](/202605/16/2605.11864v1-very-efficient-listwise-multimodal-reranking-for-long-documents)  
-   标签：评分：8.0/10、query:rag
-   evidence：长文档的多模态RAG重排序
-3. [Towards Order Fairness: Mitigating LLMs Order Sensitivity through Dual Group Advantage Optimization](/202605/16/2605.11974v1-towards-order-fairness-mitigating-llms-order-sensitivity-through-dual-group-advantage-optimization)  
-   标签：评分：8.0/10、query:rag
-   evidence：通过双组优势优化减轻RAG中的顺序敏感性
-4. [Deepchecks: Evaluating Retrieval-Augmented Generation (RAG)](/202605/16/2605.14488v1-deepchecks-evaluating-retrieval-augmented-generation-rag)  
-   标签：评分：8.0/10、query:rag
-   evidence：评估RAG应用的全面框架
-5. [Is Grep All You Need? How Agent Harnesses Reshape Agentic Search](/202605/16/2605.15184v1-is-grep-all-you-need-how-agent-harnesses-reshape-agentic-search)  
-   标签：评分：8.0/10、query:rag
-   evidence：对智能体RAG系统中检索策略选择的系统性比较
-6. [Retrieval is Cheap, Show Me the Code: Executable Multi-Hop Reasoning for Retrieval-Augmented Generation](/202605/16/2605.12975v1-retrieval-is-cheap-show-me-the-code-executable-multi-hop-reasoning-for-retrieval-augmented-generation)  
+1. [Leveraging RAG for Training-Free Alignment of LLMs](/202605/18/2605.11217v1-leveraging-rag-for-training-free-alignment-of-llms)  
    标签：评分：7.5/10、query:rag
-   evidence：使用代码专门化语言模型为RAG提供结构化多跳推理
-7. [RAG-Enhanced Large Language Models for Dynamic Content Expiration Prediction in Web Search](/202605/16/2605.13052v1-rag-enhanced-large-language-models-for-dynamic-content-expiration-prediction-in-web-search)  
+   evidence：基于RAG的大语言模型对齐算法
+2. [Deepchecks: Evaluating Retrieval-Augmented Generation (RAG)](/202605/18/2605.14488v1-deepchecks-evaluating-retrieval-augmented-generation-rag)  
    标签：评分：7.5/10、query:rag
-   evidence：RAG增强的LLM用于网页搜索中查询感知的动态内容过期预测
-8. [Leveraging RAG for Training-Free Alignment of LLMs](/202605/16/2605.11217v1-leveraging-rag-for-training-free-alignment-of-llms)  
+   evidence：RAG应用评估的综合框架
+3. [Route Before Retrieve: Activating Latent Routing Abilities of LLMs for RAG vs. Long-Context Selection](/202605/18/2605.10235v1-route-before-retrieve-activating-latent-routing-abilities-of-llms-for-rag-vs-long-context-selection)  
    标签：评分：7.0/10、query:rag
-   evidence：利用RAG实现无需训练的LLM对齐
-9. [Derivation Prompting: A Logic-Based Method for Improving Retrieval-Augmented Generation](/202605/16/2605.14053v1-derivation-prompting-a-logic-based-method-for-improving-retrieval-augmented-generation)  
+   evidence：RAG与长文本选择的主动路由框架
+4. [Qwen Goes Brrr: Off-the-Shelf RAG for Ukrainian Multi-Domain Document Understanding](/202605/18/2605.10296v1-qwen-goes-brrr-off-the-shelf-rag-for-ukrainian-multi-domain-document-understanding)  
    标签：评分：7.0/10、query:rag
-   evidence：改进检索增强生成（RAG）生成步骤的逻辑驱动方法
-10. [Self-Distilled Agentic Reinforcement Learning](/202605/16/2605.15155v1-self-distilled-agentic-reinforcement-learning)  
+   evidence：用于文档理解的检索增强流水线
+5. [Retrieval is Cheap, Show Me the Code: Executable Multi-Hop Reasoning for Retrieval-Augmented Generation](/202605/18/2605.12975v1-retrieval-is-cheap-show-me-the-code-executable-multi-hop-reasoning-for-retrieval-augmented-generation)  
    标签：评分：7.0/10、query:rag
-   evidence：针对具备技能检索能力的智能体的强化学习
-11. [From Clouds to Hallucinations: Atmospheric Retrieval Hijacking in Remote Sensing Vision-Language RAG](/202605/16/2605.07273v1-from-clouds-to-hallucinations-atmospheric-retrieval-hijacking-in-remote-sensing-vision-language-rag)  
+   evidence：检索增强生成的多跳推理
+6. [Is Grep All You Need? How Agent Harnesses Reshape Agentic Search](/202605/18/2605.15184v1-is-grep-all-you-need-how-agent-harnesses-reshape-agentic-search)  
+   标签：评分：7.0/10、query:rag
+   evidence：智能体搜索系统中的检索策略选择
+7. [Fairness-Aware Retrieval Optimization for Retrieval-Augmented Generation](/202605/18/2605.15790v1-fairness-aware-retrieval-optimization-for-retrieval-augmented-generation)  
+   标签：评分：7.0/10、query:rag
+   evidence：RAG的公平感知检索优化
+8. [Very Efficient Listwise Multimodal Reranking for Long Documents](/202605/18/2605.11864v1-very-efficient-listwise-multimodal-reranking-for-long-documents)  
+   标签：评分：6.5/10、query:rag
+   evidence：多模态RAG的高效重排序
+9. [GRLO: Towards Generalizable Reinforcement Learning in Open-Ended Environments from Zero](/202605/18/2605.15464v1-grlo-towards-generalizable-reinforcement-learning-in-open-ended-environments-from-zero)  
+   标签：评分：6.5/10、query:rag
+   evidence：包含可验证奖励的可泛化强化学习范式
+10. [Assessment of RAG and Fine-Tuning for Industrial Question-Answering-Applications](/202605/18/2605.09533v1-assessment-of-rag-and-fine-tuning-for-industrial-question-answering-applications)  
    标签：评分：6.0/10、query:rag
-   evidence：多模态RAG证据检索阶段的输入空间威胁
+   evidence：工业问答中RAG与微调的评估
+11. [Towards Order Fairness: Mitigating LLMs Order Sensitivity through Dual Group Advantage Optimization](/202605/18/2605.11974v1-towards-order-fairness-mitigating-llms-order-sensitivity-through-dual-group-advantage-optimization)  
+   标签：评分：6.0/10、query:rag
+   evidence：减轻检索增强生成中的顺序偏差
 
 
 <div class="dpr-home-promo-card">
