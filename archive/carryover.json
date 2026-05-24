@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-05-23T20:32:53.698754+00:00",
-  "updated_date": "20260523",
+  "generated_at": "2026-05-24T19:52:16.172297+00:00",
+  "updated_date": "20260524",
   "carryover_days": 9,
   "tag_states": {
     "rag": {
@@ -54,7 +54,7 @@
       ]
     },
     "RAG": {
-      "updated_date": "20260523",
+      "updated_date": "20260524",
       "carryover_days": 9,
       "items": []
     }
