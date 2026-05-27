@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2605.25641v1/fig-001.webp",
+      "caption": "Table 1: Held-out results split by query source. INO leads to large gains in both retrieval and citation.",
+      "page": 6,
+      "index": 1,
+      "width": 769,
+      "height": 186
+    },
+    {
+      "url": "assets/figures/arxiv/2605.25641v1/fig-002.webp",
+      "caption": "Figure 3: Answer-level judge results on held-out queries for the standard nugget baseline and INO. INO increases the share of answers that address the requested correction (73.4% vs. 52.2%; McNemar p ≈ 0.003), and improves nugget availability without increasing major regressions or hallucinations. If the nugget is absent, the label is N/A.",
+      "page": 6,
+      "index": 2,
+      "width": 950,
+      "height": 254
+    },
+    {
+      "url": "assets/figures/arxiv/2605.25641v1/fig-003.webp",
+      "caption": "Figure 2: Overview of INO. User feedback is first filtered for actionable factual corrections. A correction is converted into a structured factual nugget. The nugget is then optimized with the production agentic RAG stack in the loop: generated test queries are replayed, retrieved competitors and generated answers are inspected, and the nugget is revised until it becomes discoverable and usable for relevant future queries.",
+      "page": 3,
+      "index": 3,
+      "width": 950,
+      "height": 538
+    },
+    {
+      "url": "assets/figures/arxiv/2605.25641v1/fig-004.webp",
+      "caption": "Figure 1: Overview of our method and setting. Factual corrections from users are detected and transformed into initial “nuggets.” We iteratively refine these nuggets using the agentic RAG system as a test harness, until they are discoverable and optimized for future queries.",
+      "page": 1,
+      "index": 4,
+      "width": 458,
+      "height": 395
+    }
+  ]
+}

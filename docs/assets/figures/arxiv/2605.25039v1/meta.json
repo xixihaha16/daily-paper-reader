@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2605.25039v1/fig-001.webp",
+      "caption": "Fig. 3. Qualitative observations on retrieved-context question answering. Four representative queries from astronomy and geography are shown (blue). For each query, the model selects an answer (gray) and provides supporting retrieved passages, illustrating: (a) magnitude–brightness reasoning, (b) category discrimination among celestial objects, (c) sidereal time reasoning, and (d) time-zone conversion.",
+      "page": 6,
+      "index": 1,
+      "width": 1052,
+      "height": 416
+    },
+    {
+      "url": "assets/figures/arxiv/2605.25039v1/fig-002.webp",
+      "caption": "TABLE II PERFORMANCE COMPARISON OF RAG-BASED QUESTION ANSWERING ON THE ASTROQA DATASET [21]. WE EVALUATE MULTIPLE MODELS INCLUDING THE BASELINE MISTRAL-7B [13], DRQA [8], MAP-REDUCE [4], AND OUR PROPOSED RAG-ENHANCED VARIANTS: MISTRAL-7B + ASTRORAG. RESULTS ARE REPORTED IN TERMS OF ACCURACY (ACC%) AND F1-SCORE (F1) ACROSS QUESTION SUBSETS CATEGORIZED BY DIFFICULTY: EASY, MEDIUM, AND HARD.",
+      "page": 5,
+      "index": 2,
+      "width": 1044,
+      "height": 214
+    },
+    {
+      "url": "assets/figures/arxiv/2605.25039v1/fig-003.webp",
+      "caption": "TABLE I COMPARISON OF ZERO-SHOT QUESTION-ANSWER PERFORMANCE ACROSS VARIOUS LLMS ON THE ASTROQA DATASET [21], INCLUDING LLAMA 2-CHAT [2], MISTRAL-7B [13], ASTROSAGE-LLAMA-3.1-8B [22], AND THE PROPOSED RAG-ENHANCED LLAMA 2-CHAT MODEL, MISTRAL-7B AND ASTROSAGE-LLAMA-3.1-8B MODEL. RESULTS ARE REPORTED FOR ACCURACY (ACC%) AND F1-SCORE (F@1) ACROSS DATASETS WITH EASY, MEDIUM, AND HARD DIFFICULTY LEVELS.",
+      "page": 4,
+      "index": 3,
+      "width": 1048,
+      "height": 198
+    },
+    {
+      "url": "assets/figures/arxiv/2605.25039v1/fig-004.webp",
+      "caption": "Fig. 1. Pagerank-based RAG workflow for astronomy QA. Domain documents are chunked and embedded, then indexed in a vector knowledge base. At query time, the retriever embeds the user question and performs similarity search to return the top-k relevant passages with source metadata. The reader re-rank via Pagerank and aggregates these passages into context and builds a prompt for the LLM, which generates a grounded answer (with traceable sources).",
+      "page": 2,
+      "index": 4,
+      "width": 1040,
+      "height": 705
+    }
+  ]
+}

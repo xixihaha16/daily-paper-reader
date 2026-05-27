@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2605.19735v1/fig-001.webp",
+      "caption": "Table 2: Full comparison including HiRAG-Original (numbers from Huang et al. (2025), Tables 2 and 5).1 HiRAGOriginal is included only as cross-stack efficiency context because the released code supports multiple backend paths.2 HiRAG-Gemma est. is a linear indexing-cost estimate from a 20-task stress test that failed during graph construction; no direct quality comparison is claimed.",
+      "page": 7,
+      "index": 1,
+      "width": 698,
+      "height": 217
+    }
+  ]
+}

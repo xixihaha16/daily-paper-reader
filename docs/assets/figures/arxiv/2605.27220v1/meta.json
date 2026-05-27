@@ -1,0 +1,62 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2605.27220v1/fig-001.webp",
+      "caption": "Table 12: Full variance decomposition. R2_cov is the fraction of CO variance explained by the binary has_sources flag (retrieved something vs. nothing; n ≈ 1,000). R2_qual is the fraction of CO variance explained by the continuous retrieval_quality score, restricted to answered queries (nans shown as range). Declining R2_cov for HyDE reflects reduced variance in the binary flag as coverage approaches 1.",
+      "page": 15,
+      "index": 1,
+      "width": 750,
+      "height": 188
+    },
+    {
+      "url": "assets/figures/arxiv/2605.27220v1/fig-002.webp",
+      "caption": "Figure 3: Cost vs. Quality on real user queries.",
+      "page": 7,
+      "index": 2,
+      "width": 454,
+      "height": 285
+    },
+    {
+      "url": "assets/figures/arxiv/2605.27220v1/fig-003.webp",
+      "caption": "Figure 1: The Coverage Illusion, showing retrieval coverage by workflow and query condition.",
+      "page": 4,
+      "index": 3,
+      "width": 446,
+      "height": 290
+    },
+    {
+      "url": "assets/figures/arxiv/2605.27220v1/fig-004.webp",
+      "caption": "Figure 4: Experimental architecture: oracle benchmark construction (top), pre-retrieval routing baselines (a), and post-retrieval cascade (b).",
+      "page": 12,
+      "index": 4,
+      "width": 950,
+      "height": 483
+    },
+    {
+      "url": "assets/figures/arxiv/2605.27220v1/fig-005.webp",
+      "caption": "Figure 5: Retrieval workflow tiers: Tier 1 (retrieval-only) and Tier 2 (LLM-augmented).",
+      "page": 12,
+      "index": 5,
+      "width": 950,
+      "height": 348
+    },
+    {
+      "url": "assets/figures/arxiv/2605.27220v1/fig-006.webp",
+      "caption": "Table 16: R2 sensitivity analysis (real user queries). R2 remains stable as the coverage threshold tightens.",
+      "page": 16,
+      "index": 6,
+      "width": 402,
+      "height": 348
+    },
+    {
+      "url": "assets/figures/arxiv/2605.27220v1/fig-007.webp",
+      "caption": "Table 14: Coverage-fixed quality for queries answered by all five workflows simultaneously (n varies by condition). Coverage is held at 100% across all workflows, so any differences reflect genuine per-answer quality.",
+      "page": 16,
+      "index": 7,
+      "width": 461,
+      "height": 515
+    }
+  ]
+}
