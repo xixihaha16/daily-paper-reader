@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2606.30093v1/fig-001.webp",
+      "caption": "Figure 1: Workflow of TIGRAG, showing graph construction, semantic expansion, and iterative multi-hop retrieval",
+      "page": 6,
+      "index": 1,
+      "width": 720,
+      "height": 406
+    },
+    {
+      "url": "assets/figures/arxiv/2606.30093v1/fig-002.webp",
+      "caption": "Table 3: Question answering performance (EM and F1) on multi-hop Question Answering benchmarks",
+      "page": 14,
+      "index": 2,
+      "width": 704,
+      "height": 183
+    },
+    {
+      "url": "assets/figures/arxiv/2606.30093v1/fig-003.webp",
+      "caption": "Figure 2: Prompt template used during the generation phase for Question Answering. <CONTEXT_STR> represents the retrieved context, while <QUESTION> is the question to be answered.",
+      "page": 12,
+      "index": 3,
+      "width": 704,
+      "height": 375
+    }
+  ]
+}

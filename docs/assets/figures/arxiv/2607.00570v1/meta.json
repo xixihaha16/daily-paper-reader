@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2607.00570v1/fig-001.webp",
+      "caption": "Figure 1: Overview of Dual-Confidence Contrastive Decoding (DCCD). Given a query x and retrieved documents {d1, . . . , dn}, zi denotes the next-token logits conditioned on document di. DCCD combines document-level (qi) and token-level (c(i,t)) confidence scores to select positive and negative document-conditioned streams at each decoding step. The margin between the selected scores controls the strength of the contrastive term ϵt.",
+      "page": 6,
+      "index": 1,
+      "width": 946,
+      "height": 338
+    },
+    {
+      "url": "assets/figures/arxiv/2607.00570v1/fig-002.webp",
+      "caption": "Table 1: Experiment results for DCCD and baseline decoding strategies with Qwen3.5-2B, Qwen3.5-9B and Phi-3-medium (14B). We report the str-em accuracy for NQ, TriviaQA, RetrievalQA, PopQA, and LLM-as-ajudge accuracy for DRQA for top-5 (@5) and top-10 (@10) documents provided by the respective datasets. The best result for each setting is bolded.",
+      "page": 7,
+      "index": 2,
+      "width": 783,
+      "height": 706
+    },
+    {
+      "url": "assets/figures/arxiv/2607.00570v1/fig-003.webp",
+      "caption": "Table 2: Ablation results with Qwen3.5-2B using the top-5 (@5) and top-10 (@10) documents. Performance differences are reported relative to DCCD, where green indicates improvement and red indicates degradation.",
+      "page": 8,
+      "index": 3,
+      "width": 439,
+      "height": 358
+    },
+    {
+      "url": "assets/figures/arxiv/2607.00570v1/fig-004.webp",
+      "caption": "Table 7: Main decoding hyperparameters used in the experiments. Hyperparameters are fixed across datasets and models.",
+      "page": 19,
+      "index": 4,
+      "width": 451,
+      "height": 320
+    }
+  ]
+}

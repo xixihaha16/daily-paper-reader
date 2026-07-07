@@ -1,0 +1,62 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2607.04242v1/fig-001.webp",
+      "caption": "Figure 3: Overview of ProGPO. State potentials are estimated from rollout outcomes, expanded with nearby states when needed, and fused across history depths before transition credit is computed.",
+      "page": 6,
+      "index": 1,
+      "width": 826,
+      "height": 452
+    },
+    {
+      "url": "assets/figures/arxiv/2607.04242v1/fig-002.webp",
+      "caption": "Figure 1: Motivation for ProGPO. Left: rollout trajectories. Middle: step-level grouping by the current state can mix different histories. Right: context-consistent grouping creates smaller peer groups.",
+      "page": 2,
+      "index": 2,
+      "width": 826,
+      "height": 204
+    },
+    {
+      "url": "assets/figures/arxiv/2607.04242v1/fig-003.webp",
+      "caption": "Figure 2: Sparse-signal diagnostic. (a) WebShop exact state groups. (b) Training-trace shares for small value groups, zero peer signal, and residual zero-signal steps.",
+      "page": 3,
+      "index": 3,
+      "width": 798,
+      "height": 301
+    },
+    {
+      "url": "assets/figures/arxiv/2607.04242v1/fig-004.webp",
+      "caption": "Table 1: Performance on ALFWorld and WebShop. Prompting, PPO, and RLOO numbers are cited from prior reports; GRPO, GiGPO, HGPO, and ProGPO are local Qwen2.5-1.5B-Instruct reruns. Parentheses denote standard deviations over three seeds when available.",
+      "page": 8,
+      "index": 4,
+      "width": 827,
+      "height": 412
+    },
+    {
+      "url": "assets/figures/arxiv/2607.04242v1/fig-005.webp",
+      "caption": "Figure 4: Training curves for ProGPO (red), HGPO (orange), GiGPO (green), and GRPO (blue). Lighter curves show raw values; darker curves use EMA smoothing with decay 𝛼 = 0.95.",
+      "page": 9,
+      "index": 5,
+      "width": 822,
+      "height": 244
+    },
+    {
+      "url": "assets/figures/arxiv/2607.04242v1/fig-006.webp",
+      "caption": "Figure 5: Mechanism diagnostics over 160 training updates. Transition-active denotes the union of transition-only and peer-and-transition steps. Curves are EMA-smoothed; faint traces show raw transition-only shares.",
+      "page": 9,
+      "index": 6,
+      "width": 829,
+      "height": 312
+    },
+    {
+      "url": "assets/figures/arxiv/2607.04242v1/fig-007.webp",
+      "caption": "Table 2: Mechanism diagnostics averaged over training traces. Peer-zero is measured before transition credit; still-zero is measured after credit composition.",
+      "page": 9,
+      "index": 7,
+      "width": 598,
+      "height": 259
+    }
+  ]
+}

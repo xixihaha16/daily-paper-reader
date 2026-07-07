@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2606.29778v1/fig-001.webp",
+      "caption": "Table 3: LoCoMo accuracy (%) comparison among different memory systems. † denotes our reproduced results.",
+      "page": 7,
+      "index": 1,
+      "width": 926,
+      "height": 257
+    },
+    {
+      "url": "assets/figures/arxiv/2606.29778v1/fig-002.webp",
+      "caption": "Table 5: Latency comparison for memory retrieval (Search) and memory insertion (Add), measured in milliseconds.",
+      "page": 8,
+      "index": 2,
+      "width": 973,
+      "height": 221
+    },
+    {
+      "url": "assets/figures/arxiv/2606.29778v1/fig-003.webp",
+      "caption": "Figure 1: Overview of Mandol’s hierarchical memory model.",
+      "page": 4,
+      "index": 3,
+      "width": 948,
+      "height": 494
+    },
+    {
+      "url": "assets/figures/arxiv/2606.29778v1/fig-004.webp",
+      "caption": "Figure 2: The semantic data structures and quantitative retrieval mechanism in Mandol.",
+      "page": 5,
+      "index": 4,
+      "width": 1049,
+      "height": 316
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2607.03456v1/fig-001.webp",
+      "caption": "Table 1: Comparison of adversarial attack methods and SentAttack variants on MS-MARCO Document and Passage Ranking Dataset under different difficulty levels. The best results in each column are highlighted in bold, while the second-best results are underlined.",
+      "page": 6,
+      "index": 1,
+      "width": 998,
+      "height": 410
+    },
+    {
+      "url": "assets/figures/arxiv/2607.03456v1/fig-002.webp",
+      "caption": "Figure 5: NSP scores of natural and adversarial texts across difficulty levels. The figure reports the average NSP scores on the MS-MARCO benchmarks, where the top panel corresponds to the Document dataset and the bottom panel corresponds to the Passage dataset.",
+      "page": 11,
+      "index": 2,
+      "width": 496,
+      "height": 299
+    },
+    {
+      "url": "assets/figures/arxiv/2607.03456v1/fig-003.webp",
+      "caption": "Table 5: Performance comparison of different adversarial attack methods on MS-MARCO Document and Passage datasets. Best results in each column are highlighted in bold. SentAttacknoit denotes the variant without iterative retrieval.",
+      "page": 11,
+      "index": 3,
+      "width": 1050,
+      "height": 404
+    },
+    {
+      "url": "assets/figures/arxiv/2607.03456v1/fig-004.webp",
+      "caption": "Table 7: Middle-level case study for the query “hillsborough community college president.” The target document “Information provided about Plaza: Plaza meaning in Hindi: Get detailed meaning of PLAZA in Hindi language. This page shows Plaza meaning in Hindi with Plaza definition, translation and usage. This page provides translation and definition of Plaza in Hindi language along with grammar, synonyms and antonyms” is initially ranked 8067. After concatenation with centroid documents, the initial candidate rankings vary widely (243, outside top-10000 , 4503), and the best candidate is further refined through synonym substitutions, resulting in a final ranking of 1.",
+      "page": 15,
+      "index": 4,
+      "width": 1085,
+      "height": 750
+    },
+    {
+      "url": "assets/figures/arxiv/2607.03456v1/fig-005.webp",
+      "caption": "Table 6: Easy-level case study for the query “hillsborough community college president.” The target document “What does GRIP stand for? Note: We have 100 other definitions for GRIP in our Acronym Attic; new search; suggest new definition; Search for GRIP in Online Dictionary Encyclopedia” is initially ranked 1025. After concatenation with centroid documents, the initial candidate rankings vary widely (2, 6662, 1339), and the best candidate is further refined through synonym substitutions, resulting in a final ranking of 18.",
+      "page": 14,
+      "index": 5,
+      "width": 1085,
+      "height": 614
+    },
+    {
+      "url": "assets/figures/arxiv/2607.03456v1/fig-006.webp",
+      "caption": "Figure 2: Overview of SentAttack. For the query “What is the best-selling electric vehicle brand worldwide?” (the correct answer: Tesla), the original target document mentioning NIO is not retrieved by the dense retriever. After applying SentAttack to the target document, it becomes highly relevant to the query and is successfully retrieved within the top-K results. (NIO is used here only as an illustrative example.)",
+      "page": 3,
+      "index": 6,
+      "width": 922,
+      "height": 528
+    },
+    {
+      "url": "assets/figures/arxiv/2607.03456v1/fig-007.webp",
+      "caption": "Table 8: Hard-level case study for the query “hillsborough community college president.” The target document is initially extremely irrelevant (not ranked in top-10000). After concatenation with centroid documents, the initial candidate rankings vary (243, outside top10000, outside top-10000), and the best candidate is further refined through synonym substitutions, resulting in a final ranking of 1.",
+      "page": 16,
+      "index": 7,
+      "width": 1085,
+      "height": 635
+    }
+  ]
+}

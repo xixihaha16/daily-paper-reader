@@ -1,0 +1,150 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2607.02966v1/fig-001.webp",
+      "caption": "Figure 11: Korean translation prompt. Prompt template used to translate English queries into Korean (ko) when constructing BioASQ-ENKB5 and Hotpot-ENKB5.",
+      "page": 25,
+      "index": 1,
+      "width": 677,
+      "height": 674
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02966v1/fig-002.webp",
+      "caption": "Figure 12: Thai translation prompt. Prompt template used to translate English queries into Thai (th) when constructing BioASQ-ENKB5 and Hotpot-ENKB5.",
+      "page": 26,
+      "index": 2,
+      "width": 677,
+      "height": 693
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02966v1/fig-003.webp",
+      "caption": "Table 1: Performance comparison in BioASQ-ENKB5, with Llama-3.2-3B-Instruct as the backbone, and Llama-3.3-70B-Instruct as the teacher. Bold is the best, and underline is the runner-up. The teacher (Llama-3.3-70B-Instruct) and base (Llama-3.2-3B-Instruct) rows are reference-only and are not included in the best/runner-up ranking.",
+      "page": 7,
+      "index": 3,
+      "width": 798,
+      "height": 804
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02966v1/fig-004.webp",
+      "caption": "Figure 15: The language control instructions of the Prompt-Control baseline [56, 65].",
+      "page": 29,
+      "index": 4,
+      "width": 773,
+      "height": 907
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02966v1/fig-005.webp",
+      "caption": "Figure 25: Case study. Llama-3.2-3B-Instruct as the backbone, Vietnamese as language, in HotpotENKB5.",
+      "page": 39,
+      "index": 5,
+      "width": 829,
+      "height": 240
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02966v1/fig-006.webp",
+      "caption": "Figure 22: Case study. Llama-3.2-3B-Instruct as the backbone, Japanese as language, in HotpotENKB5.",
+      "page": 39,
+      "index": 6,
+      "width": 826,
+      "height": 406
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02966v1/fig-007.webp",
+      "caption": "Figure 23: Case study. Llama-3.2-3B-Instruct as the backbone, Korean as language, in HotpotENKB5.",
+      "page": 39,
+      "index": 7,
+      "width": 829,
+      "height": 225
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02966v1/fig-008.webp",
+      "caption": "Table 10: Performance comparison in Hotpot-ENKB5, with Llama-3.2-3B-Instruct as the backbone, and Llama-3.3-70B-Instruct as the teacher. Bold is the best, and underline is the runner-up. The teacher (Llama-3.3-70B-Instruct) and base (Llama-3.2-3B-Instruct) rows are reference-only and are not ranked. See the note in Section D.5 on the language-consistency plateau in this table.",
+      "page": 34,
+      "index": 8,
+      "width": 830,
+      "height": 988
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02966v1/fig-009.webp",
+      "caption": "Figure 8: Qualitative case study (Llama-3.2-3B-Instruct backbone, Indonesian, Hotpot-ENKB5). Highlighting is consistent across panels: red marks language drift (Indonesian slipping into copied English spans) or evidence-unsupported content, and green marks correct, evidence-grounded content in the target language. Baseline systems drift and latch onto a salient but unsupported entity, whereas TR-RAG stays in fluent Indonesian and returns the entity justified by the full evidence chain. Best viewed in color.",
+      "page": 10,
+      "index": 9,
+      "width": 829,
+      "height": 186
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02966v1/fig-010.webp",
+      "caption": "Table 3: Generalization to naturally multilingual MKQA with English-evidence (Llama-3.2-3B-Instruct backbone). Per-language Composite, Qwen3-Next-80B Judge, and cross-family Llama-3.3-70B Judge are reported. Bold/underline denote best/runner-up.",
+      "page": 10,
+      "index": 10,
+      "width": 790,
+      "height": 289
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02966v1/fig-011.webp",
+      "caption": "Figure 1: Overview. (a) English-evidence cross-lingual RAG: queries/answers are in a target language while retrieved passages are English. (The panel labels the retrieved documents “Top-K” in the generic retrieval sense; throughout the text their count is denoted M , as K is reserved for the number of on-policy rollouts per input.) (b) Two prefix-dependent failure modes—language drift and evidence-use failures—induce two training obstacles: prefix mismatch under fixed-trajectory supervision and high-variance optimization under sequence-level rewards. (c) TR-RAG couples on-policy RL with on-policy distillation: a frozen teacher is queried on student-visited prefixes to produce a dense reverse-KL anchor KL(πθ∥πT ) (no teacher rollouts). “T.A.” denotes this teacher anchor.",
+      "page": 3,
+      "index": 11,
+      "width": 783,
+      "height": 363
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02966v1/fig-012.webp",
+      "caption": "Table 9: Performance comparison in BioASQ-ENKB5, with Qwen3-4B-Instruct-2507 as the backbone, and Qwen3-30B-A3B-Instruct-2507 as the teacher. Bold is the best, and underline is the runner-up. The teacher (Qwen3-30B-A3B-Instruct-2507) and base (Qwen3-4B-Instruct-2507) rows are reference-only and are not ranked.",
+      "page": 33,
+      "index": 12,
+      "width": 830,
+      "height": 933
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02966v1/fig-013.webp",
+      "caption": "Table 11: Performance comparison in Hotpot-ENKB5, with Qwen3-4B-Instruct-2507 as the backbone, and Qwen3-30B-A3B-Instruct-2507 as the teacher. Bold is the best, and underline is the runner-up. The teacher (Qwen3-30B-A3B-Instruct-2507) and base (Qwen3-4B-Instruct-2507) rows are reference-only and are not ranked. See the note in Section D.5 on the language-consistency plateau in this table.",
+      "page": 35,
+      "index": 13,
+      "width": 830,
+      "height": 934
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02966v1/fig-014.webp",
+      "caption": "Figure 9: Indonesian translation prompt. Prompt template used to translate English queries into Indonesian (id) when constructing BioASQ-ENKB5 and Hotpot-ENKB5.",
+      "page": 23,
+      "index": 14,
+      "width": 677,
+      "height": 672
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02966v1/fig-015.webp",
+      "caption": "Figure 14: LLM-judge prompt. We use a rubric-based evaluator prompt to score student answers for RAG, conditioned on the question q, retrieved English context D, reference answer a⋆ (training only), and student output y. The prompt instructs the judge to assess (i) faithfulness (hallucination checking against D), (ii) correctness (alignment with a⋆, with entity focus for BioASQ and multihop completeness for HotpotQA), and (iii) conciseness. The judge returns a scalar score in [0, 1] following a strict rubric (e.g., 1.0/0.8/0.5/0.2/0.0) and outputs it in a constrained XML format for reliable parsing.",
+      "page": 28,
+      "index": 15,
+      "width": 802,
+      "height": 970
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02966v1/fig-016.webp",
+      "caption": "Figure 13: Vietnamese translation prompt. Prompt template used to translate English queries into Vietnamese (vi) when constructing BioASQ-ENKB5 and Hotpot-ENKB5.",
+      "page": 27,
+      "index": 16,
+      "width": 677,
+      "height": 704
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02966v1/fig-017.webp",
+      "caption": "Figure 10: Japanese translation prompt. Prompt template used to translate English queries into Japanese (ja) when constructing BioASQ-ENKB5 and Hotpot-ENKB5.",
+      "page": 24,
+      "index": 17,
+      "width": 677,
+      "height": 664
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02966v1/fig-018.webp",
+      "caption": "Figure 2: Framework. (a) Inputs: a multilingual query q and English-only evidence D. (b) The student samples on-policy rollouts and receives the task reward. (c) The teacher is queried only on student prefixes to compute a KL anchor (no teacher rollouts). (d) The student is updated with policy gradients and a frozen-teacher reverse-KL anchor.",
+      "page": 5,
+      "index": 18,
+      "width": 786,
+      "height": 293
+    }
+  ]
+}

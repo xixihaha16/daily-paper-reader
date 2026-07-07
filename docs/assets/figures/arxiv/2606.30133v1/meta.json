@@ -1,0 +1,54 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2606.30133v1/fig-001.webp",
+      "caption": "TABLE II KNOWLEDGE-GRAPH STATISTICS FOR EACH BENCHMARK.",
+      "page": 7,
+      "index": 1,
+      "width": 1074,
+      "height": 485
+    },
+    {
+      "url": "assets/figures/arxiv/2606.30133v1/fig-002.webp",
+      "caption": "TABLE I THE PROPOSED METHOD AMONG REPRESENTATIVE GRAPH RAG SYSTEMS.",
+      "page": 3,
+      "index": 2,
+      "width": 1002,
+      "height": 271
+    },
+    {
+      "url": "assets/figures/arxiv/2606.30133v1/fig-003.webp",
+      "caption": "Fig. 1. Two-phase architecture. The indexing phase (top) extracts entities and relations from the corpus via an LLM, resolves and embeds them, and stores the result as a typed knowledge graph in Neo4j. The query phase (bottom) uses an LLM to map the question to seed nodes, runs spreading activation for T iterations in a single Cypher query, and passes the activated subgraph to an LLM to generate the answer.",
+      "page": 4,
+      "index": 3,
+      "width": 1076,
+      "height": 591
+    },
+    {
+      "url": "assets/figures/arxiv/2606.30133v1/fig-004.webp",
+      "caption": "Fig. 2. Knowledge-graph schema. Document and paragraph nodes preserve the original structure of the corpus; :MENTIONS edges record entity mentions at two levels: the document (aggregated) and the paragraph (with exact location). Entities and their typed binary relations form the basis for multi-hop reasoning. The self-loop denotes the :RELATES_TO edge, which connects two entities and stores the relation label as a property.",
+      "page": 4,
+      "index": 4,
+      "width": 1076,
+      "height": 257
+    },
+    {
+      "url": "assets/figures/arxiv/2606.30133v1/fig-005.webp",
+      "caption": "TABLE V COMPONENT ABLATION OVER ELEVEN CONFIGURATIONS (n = 500).",
+      "page": 9,
+      "index": 5,
+      "width": 1052,
+      "height": 776
+    },
+    {
+      "url": "assets/figures/arxiv/2606.30133v1/fig-006.webp",
+      "caption": "Fig. 3. Sensitivity analysis over the propagation depth (left) and the decay factor (right) at n = 500 per dataset. Stars mark the default configuration T = 3, α = 0.7. The dashed horizontal lines show the naive-vector baseline F1 on each dataset.",
+      "page": 9,
+      "index": 6,
+      "width": 1076,
+      "height": 460
+    }
+  ]
+}

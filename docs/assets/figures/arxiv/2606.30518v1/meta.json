@@ -1,0 +1,54 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2606.30518v1/fig-001.webp",
+      "caption": "Figure 1: Motivation for regime-aware peer specialization. (a) Contextual-knowledge reliability is modeled as a continuous spectrum and partitioned into three regimes—Resistance (R, low reliability), Arbitration (A, medium), and Grounding (G, high)—each requiring a distinct behavior: PK retention, selective trust, or evidence integration. (b) Per-regime accuracy of representative methods (bars) against the oracle peer specialist upper bound (dashed lines). RAG and Mixed SFT collapse on Resistance; single-teacher OPD (OPCD) improves over them but still falls well short of the oracle across all regimes. RAPS-DA substantially narrows this gap without requiring regime labels at inference.",
+      "page": 2,
+      "index": 1,
+      "width": 575,
+      "height": 322
+    },
+    {
+      "url": "assets/figures/arxiv/2606.30518v1/fig-002.webp",
+      "caption": "Figure 4: Training dynamics under different annealing schedules. Each panel reports validation EM over training steps for one regime or the overall average. RAPS-DA with linear annealing (solid orange) reaches the highest final plateau across all regimes. On Resistance, Sliding Hard→Easy collapses to 16.3% and Fixed Easy to 13.4%, confirming that the easy-to-hard ordering is essential for learning adversarial context rejection.",
+      "page": 14,
+      "index": 2,
+      "width": 819,
+      "height": 186
+    },
+    {
+      "url": "assets/figures/arxiv/2606.30518v1/fig-003.webp",
+      "caption": "Table 5: Model-scale generalization on Qwen2.5-Instruct at 3B and 14B. EM (%) is reported for all five scenarios and three regime averages. KR1 baseline numbers are reproduced from Lin et al. [22]; “—” denotes results not reported in the original paper. The 7B results appear in Table 1.",
+      "page": 14,
+      "index": 3,
+      "width": 830,
+      "height": 367
+    },
+    {
+      "url": "assets/figures/arxiv/2606.30518v1/fig-004.webp",
+      "caption": "Table 3: Motivation-validating ablations on Qwen2.5-7B-Instruct. Each row removes or replaces a single design choice while keeping all other components and hyperparameters fixed. The upper block validates our core design motivations; the lower block isolates individual selector components.",
+      "page": 13,
+      "index": 4,
+      "width": 829,
+      "height": 325
+    },
+    {
+      "url": "assets/figures/arxiv/2606.30518v1/fig-005.webp",
+      "caption": "Table 2: Out-of-distribution evaluation on ConflictQA (EM, %) and TruthfulQA (EM, %, nocontext). Neither benchmark participates in any training stage. Best in bold, second best underlined.",
+      "page": 12,
+      "index": 5,
+      "width": 627,
+      "height": 252
+    },
+    {
+      "url": "assets/figures/arxiv/2606.30518v1/fig-006.webp",
+      "caption": "Figure 2: Overview of the RAPS-DA framework. Panel 1: A shared base model is fine-tuned into three regime-specialized peer teachers via SFT on the Grounding, Arbitration, and Resistance subsets. Panel 2: Each training sample is hard-routed by its regime label to the matched teacher; the student generates on-policy rollouts and receives routed reverse-KL supervision. Panel 3: Three token-level diagnostic signals—inter-teacher conflict C(t), student–teacher gap G(t), and student entropy H(t)—are computed at each position. Panel 4: The token selection landscape, spanned by G(t) and C(t), partitions tokens into four regions; a curriculum frontier expands over training to cover increasingly difficult tokens. Panel 5: A dual-layer selector first applies a hard mask (information, curriculum, and stability filters) for eligibility, then a soft priority weight that upweights confident-but-misaligned tokens. Panel 6: Difficulty annealing progressively narrows the retained token set from broad coverage to the top-p(s) most difficult tokens, and the unified objective aggregates the selected, weighted reverse-KL loss.",
+      "page": 5,
+      "index": 6,
+      "width": 781,
+      "height": 377
+    }
+  ]
+}

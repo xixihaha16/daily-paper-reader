@@ -1,0 +1,94 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2607.04364v1/fig-001.webp",
+      "caption": "Table 7: Comparison of Qwen3-VL-8B multimodal performance under different fine-tuning settings across diverse benchmarks.",
+      "page": 11,
+      "index": 1,
+      "width": 798,
+      "height": 365
+    },
+    {
+      "url": "assets/figures/arxiv/2607.04364v1/fig-002.webp",
+      "caption": "Figure 1: Plasticity–stability Pareto frontier during continual post-training. The y-axis reports the cumulative mean accuracy improvement (CAI) on current target tasks, while the x-axis reports the cumulative mean accuracy delta (CAD) on previously learned tasks. Definitions of CAI and CAD are provided in Appendix B. Both RL and SFT baselines exhibit severe catastrophic forgetting, whereas our method preserves prior knowledge more effectively while maintaining strong plasticity.",
+      "page": 2,
+      "index": 2,
+      "width": 806,
+      "height": 238
+    },
+    {
+      "url": "assets/figures/arxiv/2607.04364v1/fig-003.webp",
+      "caption": "Table 5: Comparison of Qwen3-VL-2B multimodal performance under different fine-tuning settings across diverse benchmarks.",
+      "page": 10,
+      "index": 3,
+      "width": 798,
+      "height": 367
+    },
+    {
+      "url": "assets/figures/arxiv/2607.04364v1/fig-004.webp",
+      "caption": "Table 6: Comparison of Qwen3-VL-4B multimodal performance under different fine-tuning settings across diverse benchmarks.",
+      "page": 10,
+      "index": 4,
+      "width": 798,
+      "height": 367
+    },
+    {
+      "url": "assets/figures/arxiv/2607.04364v1/fig-005.webp",
+      "caption": "Figure 2: An overview of MRCL benchmark. It incorporates newly released tasks designed to evaluate diverse cognitive reasoning, evaluating the plasticity and stability of VLMs.",
+      "page": 3,
+      "index": 5,
+      "width": 824,
+      "height": 493
+    },
+    {
+      "url": "assets/figures/arxiv/2607.04364v1/fig-006.webp",
+      "caption": "Table 1: Basic statistics and answer formats of the evaluated tasks.",
+      "page": 4,
+      "index": 6,
+      "width": 776,
+      "height": 186
+    },
+    {
+      "url": "assets/figures/arxiv/2607.04364v1/fig-007.webp",
+      "caption": "Table 4: Comparison of our proposed method with baseline approaches on Qwen3-VL-8B.",
+      "page": 9,
+      "index": 7,
+      "width": 826,
+      "height": 321
+    },
+    {
+      "url": "assets/figures/arxiv/2607.04364v1/fig-008.webp",
+      "caption": "Table 3: Comparison of our proposed method with baseline approaches on Qwen3-VL-4B.",
+      "page": 9,
+      "index": 8,
+      "width": 826,
+      "height": 343
+    },
+    {
+      "url": "assets/figures/arxiv/2607.04364v1/fig-009.webp",
+      "caption": "Table 2: Comparison of our proposed method with baseline approaches on Qwen3-VL-2B.",
+      "page": 9,
+      "index": 9,
+      "width": 826,
+      "height": 345
+    },
+    {
+      "url": "assets/figures/arxiv/2607.04364v1/fig-010.webp",
+      "caption": "Figure 4: Regularization loss curves of CPO with masked L1 movement regularization and its masked L2 variant on Qwen3-VL-2B. The L1 coefficient is set to 1e2 and the L2 coefficient is set to 1e5. Both regularization losses remain active during training, indicating that the inferior performance of the L2 variant is not due to an inactive regularization signal.",
+      "page": 20,
+      "index": 10,
+      "width": 804,
+      "height": 314
+    },
+    {
+      "url": "assets/figures/arxiv/2607.04364v1/fig-011.webp",
+      "caption": "Figure 3: Parameter movement heatmaps of CPO and its masked L2 variant on Qwen3-VL-2B. Masked L2 induces dense movement across many top movement parameters, especially in later continual stages, while masked L1 keeps most top movement parameters close to the previous checkpoint and produces a sparse movement pattern.",
+      "page": 20,
+      "index": 11,
+      "width": 799,
+      "height": 375
+    }
+  ]
+}
