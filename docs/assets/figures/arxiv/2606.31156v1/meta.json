@@ -1,0 +1,54 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2606.31156v1/fig-001.webp",
+      "caption": "Figure 1: The session coverage gap. A user setting up a website needs articles about domains, templates, and payments, but these reside in distant regions of the semantic embedding space. Vanilla RAG retrieves only documents within the top-k similarity radius of the query (dashed circle), missing semantically distant but session-relevant articles. Our cluster expansion recovers these, raising session coverage from 41% to 58%.",
+      "page": 1,
+      "index": 1,
+      "width": 446,
+      "height": 330
+    },
+    {
+      "url": "assets/figures/arxiv/2606.31156v1/fig-002.webp",
+      "caption": "Figure 4: Retrieval calls to reach session coverage thresholds. Hybrid retrieval requires 26 to 36% fewer calls across all targets.",
+      "page": 6,
+      "index": 2,
+      "width": 419,
+      "height": 293
+    },
+    {
+      "url": "assets/figures/arxiv/2606.31156v1/fig-003.webp",
+      "caption": "Figure 5: Semantic similarity vs. co-occurrence strength (schematic from 10K sampled pairs). The red triangle region (low similarity, high co-occurrence) contains document pairs that vanilla RAG cannot surface together. Weak Pearson correlation (r=0.20) confirms the signals are complementary.",
+      "page": 7,
+      "index": 3,
+      "width": 419,
+      "height": 299
+    },
+    {
+      "url": "assets/figures/arxiv/2606.31156v1/fig-004.webp",
+      "caption": "Table 12: Full hyperparameter configuration.",
+      "page": 10,
+      "index": 4,
+      "width": 433,
+      "height": 339
+    },
+    {
+      "url": "assets/figures/arxiv/2606.31156v1/fig-005.webp",
+      "caption": "Figure 2: System overview. (a) Offline: Documents from the same user session (same color) are scattered in semantic embedding space but cluster together after Word2Vec training on co-occurrence sequences. (b) Online: Given a query, we retrieve the top-3 by similarity (gray dots), expand through their cluster neighborhoods (blue dots, +12 candidates), and re-rank the union to return the top-8 with 58% session coverage.",
+      "page": 4,
+      "index": 5,
+      "width": 880,
+      "height": 316
+    },
+    {
+      "url": "assets/figures/arxiv/2606.31156v1/fig-006.webp",
+      "caption": "Figure 3: Session coverage vs. retrieval budget. The shaded area represents the coverage gap that cluster expansion closes. Notably, the gap widens with k.",
+      "page": 5,
+      "index": 6,
+      "width": 431,
+      "height": 299
+    }
+  ]
+}

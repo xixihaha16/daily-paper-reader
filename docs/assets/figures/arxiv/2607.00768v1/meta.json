@@ -1,0 +1,46 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2607.00768v1/fig-001.webp",
+      "caption": "Table 1: ACORN-1 collapse vs HNSW on GIST 1M baseline.",
+      "page": 2,
+      "index": 1,
+      "width": 506,
+      "height": 480
+    },
+    {
+      "url": "assets/figures/arxiv/2607.00768v1/fig-002.webp",
+      "caption": "Figure 1: Left: Adaptive Search Fallback (§4.1) — when onehop predicate-satisfying candidates are insufficient, filterfailing nodes are recruited as transient bridges (yellow dashed) to detour around the severed path. RACORN-1’s core mechanism. Right: Stride sampling (§4.2) — uniform extraction at interval 𝜎 from the bridge/two-hop candidate pool, promoting radial spatial diversity. Applied at two call sites in RACORN1-EXPAND.",
+      "page": 3,
+      "index": 2,
+      "width": 506,
+      "height": 246
+    },
+    {
+      "url": "assets/figures/arxiv/2607.00768v1/fig-003.webp",
+      "caption": "Figure 7: QPS–Recall Pareto curves at ≤ 10% selectivity, HNSW vs RACORN-1+, 4-point ef sweep; yellow vertical line marks the HNSW@sel=100%@ef=256 reference.",
+      "page": 12,
+      "index": 3,
+      "width": 1056,
+      "height": 463
+    },
+    {
+      "url": "assets/figures/arxiv/2607.00768v1/fig-004.webp",
+      "caption": "Table 5: Speedup × (recall) vs HNSW across selectivity, 4-way comparison.",
+      "page": 9,
+      "index": 4,
+      "width": 1075,
+      "height": 323
+    },
+    {
+      "url": "assets/figures/arxiv/2607.00768v1/fig-005.webp",
+      "caption": "Table 2: Time complexity comparison (base layer, small 𝑠).",
+      "page": 5,
+      "index": 5,
+      "width": 506,
+      "height": 574
+    }
+  ]
+}

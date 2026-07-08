@@ -1,0 +1,70 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2607.03440v1/fig-001.webp",
+      "caption": "Figure 3: Examples of the datasets used.",
+      "page": 11,
+      "index": 1,
+      "width": 882,
+      "height": 540
+    },
+    {
+      "url": "assets/figures/arxiv/2607.03440v1/fig-002.webp",
+      "caption": "Figure 1: Top: Typical archival access pipelines rely primarily on (A) OCR and (B) keywordbased search. Bottom: Our contributions: 1) we use LLMs to correct OCR errors, 2) support natural language queries over the historical archive, and 3) create new AR/VR interfaces.",
+      "page": 7,
+      "index": 2,
+      "width": 968,
+      "height": 449
+    },
+    {
+      "url": "assets/figures/arxiv/2607.03440v1/fig-003.webp",
+      "caption": "Table 3: Ablation and performance comparison across retrieval depths (k ∈ {5, 10, 25}) with and without reranking. LLM(·) denotes the same retrieval configuration applied to the LLM-corrected OCR view of the corpus. Dense retrieval uses text-embedding-2-preview, and answer generation is performed using GPT-4o-mini. The ± limits denote the 95% confidence interval. Superscripts ∗ , ∗∗, and ∗∗∗ indicate statistically significant improvement over the second-best method at levels p < 0.1, p < 0.05, and p < 0.01 respectively, according to a paired t-test.",
+      "page": 18,
+      "index": 3,
+      "width": 973,
+      "height": 611
+    },
+    {
+      "url": "assets/figures/arxiv/2607.03440v1/fig-004.webp",
+      "caption": "Figure 4: Example: Raw OCR (Tesseract) vs. raw OCR with LLM refinement (Gemini 3 Pro) for a page snippet.",
+      "page": 13,
+      "index": 4,
+      "width": 786,
+      "height": 609
+    },
+    {
+      "url": "assets/figures/arxiv/2607.03440v1/fig-005.webp",
+      "caption": "Figure 7: Examples of two queries, the prototypical and the actual reply by the RAG system. We also show indicative documents retrieved by the search process.",
+      "page": 19,
+      "index": 5,
+      "width": 968,
+      "height": 342
+    },
+    {
+      "url": "assets/figures/arxiv/2607.03440v1/fig-006.webp",
+      "caption": "Figure 6: Deployed system, reducing system response time by changing the reranker and shifting to streaming LLM text generation (candidate documents L = 50 for reranking).",
+      "page": 17,
+      "index": 6,
+      "width": 968,
+      "height": 386
+    },
+    {
+      "url": "assets/figures/arxiv/2607.03440v1/fig-007.webp",
+      "caption": "Figure 8: Prototypical interface using the Vision Pro augmented reality device",
+      "page": 20,
+      "index": 7,
+      "width": 968,
+      "height": 233
+    },
+    {
+      "url": "assets/figures/arxiv/2607.03440v1/fig-008.webp",
+      "caption": "Figure 5: Reranking trade-off between quality (NDCG@10) and mean time (candidate documents L = 50 used for reranking).",
+      "page": 16,
+      "index": 8,
+      "width": 968,
+      "height": 556
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2607.02914v1/fig-001.webp",
+      "caption": "Figure 4: Framework of active-learning-based sample selection.",
+      "page": 6,
+      "index": 1,
+      "width": 740,
+      "height": 214
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02914v1/fig-002.webp",
+      "caption": "Figure 5: Comparison of safety alignment with and without active-leaning based sample difficulty control.",
+      "page": 6,
+      "index": 2,
+      "width": 698,
+      "height": 385
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02914v1/fig-003.webp",
+      "caption": "Figure 8: Comparison of performance of Oyster-II safety alignment with short queries and long queries.",
+      "page": 11,
+      "index": 3,
+      "width": 698,
+      "height": 384
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02914v1/fig-004.webp",
+      "caption": "Table 3: Evaluation datasets used in general capability experiments.",
+      "page": 21,
+      "index": 4,
+      "width": 702,
+      "height": 196
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02914v1/fig-005.webp",
+      "caption": "Figure 6: Comparison of safety alignment with and without multi-stage training.",
+      "page": 7,
+      "index": 5,
+      "width": 698,
+      "height": 384
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02914v1/fig-006.webp",
+      "caption": "Table 4: Detailed evaluation results across instruction conflict, safety benchmarks, and general capabilities on Oyster-II, and other compared models.",
+      "page": 22,
+      "index": 6,
+      "width": 810,
+      "height": 1253
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02914v1/fig-007.webp",
+      "caption": "Table 1: Dataset statistics of our long-query evaluation benchmark including Chinese and English.",
+      "page": 10,
+      "index": 7,
+      "width": 460,
+      "height": 298
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02914v1/fig-008.webp",
+      "caption": "Table 2: Sample distribution of InstructConflict-Bench (scenario × attack level).",
+      "page": 14,
+      "index": 8,
+      "width": 486,
+      "height": 264
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02914v1/fig-009.webp",
+      "caption": "Figure 12: Evaluation performance on InstructConflict-Bench (8 scenarios × 3 attack levels) across RL training steps. SERL consistently outperforms standard GRPO by 4–6% in absolute evaluation score, demonstrating that the prior-guided anchoring mechanism yields not only faster reward convergence but also superior generalization to held-out instruction conflict evaluation scenarios.",
+      "page": 18,
+      "index": 9,
+      "width": 582,
+      "height": 369
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02914v1/fig-010.webp",
+      "caption": "Figure 11: Training reward comparison between SERL and GRPO on the instruction hierarchy task. SERL’s prior-guided anchoring mechanism enables consistently higher rewards and faster convergence throughout training, particularly in the early stages where standard GRPO suffers from sparse-reward collapse due to uniformly low-scoring rollouts.",
+      "page": 18,
+      "index": 10,
+      "width": 582,
+      "height": 285
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02914v1/fig-011.webp",
+      "caption": "Figure 13: Performance of Oyster-II on different stages. Q3 represents Qwen3-14B. S1-S5 represent Oyster Stage1 to Stage5.",
+      "page": 23,
+      "index": 11,
+      "width": 812,
+      "height": 716
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02914v1/fig-012.webp",
+      "caption": "Figure 2: Training Pipeline of Oyster-II. Equipped with active-learning-based safety control, the zero-RL paradigm, and SERL, Oyster-II achieves state-of-the-art safety without compromising its helpfulness on both benign and malicious samples.",
+      "page": 4,
+      "index": 12,
+      "width": 814,
+      "height": 318
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02914v1/fig-013.webp",
+      "caption": "Figure 10: Overall framework of SERL. Top: Standard GRPO pipeline. Middle: SERL replaces one online sample within the rollout group with an offline anchor o∗, and constructs a differential reward ∆ = R(o∗)−R(oi) via Anchor-Aware Group Computation. Bottom: Offline construction pipeline of the gold-standard anchor—prior-injected rejection sampling yields the highest-scoring candidate o⋆; if S = 1 it is adopted directly, otherwise it enters a Lingo-BP iterative refinement loop until the response attains the maximum score under the reward model.",
+      "page": 17,
+      "index": 13,
+      "width": 826,
+      "height": 604
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02914v1/fig-014.webp",
+      "caption": "Figure 9: Performance of Oyster-II with and without involving benign samples during its safety alignment.",
+      "page": 12,
+      "index": 14,
+      "width": 700,
+      "height": 591
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02914v1/fig-015.webp",
+      "caption": "Figure 7: Comparison of safety alignment with Zero-RL or SFT+RL.",
+      "page": 9,
+      "index": 15,
+      "width": 813,
+      "height": 395
+    },
+    {
+      "url": "assets/figures/arxiv/2607.02914v1/fig-016.webp",
+      "caption": "Figure 3: Performance of Oyster-II with and without length reward.",
+      "page": 5,
+      "index": 16,
+      "width": 698,
+      "height": 384
+    }
+  ]
+}

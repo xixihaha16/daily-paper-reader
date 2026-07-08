@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2607.03880v1/fig-001.webp",
+      "caption": "Figure 4: Illustration of the LLM prompt setup for query rewriting. We combine the original user query with selected product attributes to form prompts that guide our generative model in producing diverse and relevant search queries.",
+      "page": 5,
+      "index": 1,
+      "width": 785,
+      "height": 381
+    },
+    {
+      "url": "assets/figures/arxiv/2607.03880v1/fig-002.webp",
+      "caption": "Figure 3: Overview of our end-to-end RAG based query writing system.",
+      "page": 5,
+      "index": 2,
+      "width": 785,
+      "height": 263
+    },
+    {
+      "url": "assets/figures/arxiv/2607.03880v1/fig-003.webp",
+      "caption": "Figure 1: The Two-Tower BERT model uses distinct encoders to generate embeddings for user queries (Embedding, U) and product titles (Embedding, V), enabling a nuanced match-making process. Through pooling operations, these embeddings are refined to represent the essential characteristics of the inputs. The system then uses cosine similarity to evaluate the degree of match between queries and products, thereby training the model to identify products most relevant to a given user query.",
+      "page": 4,
+      "index": 3,
+      "width": 700,
+      "height": 204
+    },
+    {
+      "url": "assets/figures/arxiv/2607.03880v1/fig-004.webp",
+      "caption": "Figure 2: The Query Rewrite LLM is enhanced through a two-pronged fine-tuning approach. Initially, the model learns to process and execute structured instructions. It is then further refined using LowRank Adaptation (LoRA), which allows for efficient, targeted adjustments to its architecture, enabling the generation of contextually relevant and inventory-aware query rewrites. This fine-tuning process ensures that the LLM can produce search queries that accurately reflect current inventory and user interests.",
+      "page": 4,
+      "index": 4,
+      "width": 700,
+      "height": 218
+    }
+  ]
+}

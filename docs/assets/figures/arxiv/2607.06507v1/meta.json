@@ -1,0 +1,70 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2607.06507v1/fig-001.webp",
+      "caption": "Figure 1: DynaKRAG overcomes fragmented, methodspecific RAG pipelines by learning unified control over valid atomic evidence operations, enabling effective and tokenefficient evidence acquisition.",
+      "page": 1,
+      "index": 1,
+      "width": 481,
+      "height": 679
+    },
+    {
+      "url": "assets/figures/arxiv/2607.06507v1/fig-002.webp",
+      "caption": "Table 1: Answer accuracy and token use on the full evaluation splits across answer-model backbones. All baselines use the same backbone, retrieval resources, corpus, and evaluation code as DynaKRAG within each block. The DynaKRAG controller is trained with Qwen2.5-7B-Instruct and transferred to GPT-4o-mini and Llama-3.1-8B-Instruct; the Llama 2Wiki result uses lightweight inference-time calibration. Tok. reports average token use on the corresponding dataset, where lower is better. The best and second-best results within each backbone are highlighted in bold and underline, respectively.",
+      "page": 6,
+      "index": 2,
+      "width": 1018,
+      "height": 696
+    },
+    {
+      "url": "assets/figures/arxiv/2607.06507v1/fig-003.webp",
+      "caption": "Figure 4: Mean selected-action composition per example. The controller consistently combines frontier retrieval, sufficiency checking, and gap-focused retrieval, while rewrite and bridge actions remain sparse. R calls denotes the mean number of retrieval-producing actions.",
+      "page": 7,
+      "index": 3,
+      "width": 483,
+      "height": 303
+    },
+    {
+      "url": "assets/figures/arxiv/2607.06507v1/fig-004.webp",
+      "caption": "Figure 5: F1 difference between the full controller and four comparators across 2Wiki question structures. Positive values favor the full controller. Fixed-K is the static reference; Uniform uses the uniform-valid controller; No suff. and No comp. remove sufficiency checking and terminal compression, respectively.",
+      "page": 7,
+      "index": 4,
+      "width": 483,
+      "height": 329
+    },
+    {
+      "url": "assets/figures/arxiv/2607.06507v1/fig-005.webp",
+      "caption": "Figure 3: F1 under controlled retrieval-call caps. HotpotQA and 2Wiki benefit from larger caps, whereas MuSiQue peaks at two calls and declines at three despite the additional retrieval. Stars mark the best cap per dataset.",
+      "page": 7,
+      "index": 5,
+      "width": 975,
+      "height": 266
+    },
+    {
+      "url": "assets/figures/arxiv/2607.06507v1/fig-006.webp",
+      "caption": "Table 5: Atomic actions and their principal validity conditions.",
+      "page": 10,
+      "index": 6,
+      "width": 1052,
+      "height": 342
+    },
+    {
+      "url": "assets/figures/arxiv/2607.06507v1/fig-007.webp",
+      "caption": "Figure 2: Overview of DynaKRAG training and inference. During training, gold support is used only to supervise state–action transitions through changes in support recall. At inference time, the learned action-value model controls evidence acquisition without access to gold evidence.",
+      "page": 4,
+      "index": 7,
+      "width": 1010,
+      "height": 585
+    },
+    {
+      "url": "assets/figures/arxiv/2607.06507v1/fig-008.webp",
+      "caption": "Table 4: Default implementation settings.",
+      "page": 9,
+      "index": 8,
+      "width": 496,
+      "height": 286
+    }
+  ]
+}

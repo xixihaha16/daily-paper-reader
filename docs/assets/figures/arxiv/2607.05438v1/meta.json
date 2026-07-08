@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2607.05438v1/fig-001.webp",
+      "caption": "Figure 1: Accuracy versus visual cost on MultiModalQA (operating points; see Table 2 for the strict held-out, multi-seed comparison). The calibrated router (ours) sits on or above the pre-retrieval frontier across the budget range and reaches close to the gold modality oracle (⋆) from learned signals, approaching always-on vision (♢) at far lower escalation.",
+      "page": 5,
+      "index": 1,
+      "width": 917,
+      "height": 643
+    }
+  ]
+}
